@@ -1,0 +1,49 @@
+description: "Hard Prompts"
+
+providers:
+  # Reasoning models need more than the default 1024 tokens
+  # O3 requires adding an OpenAI API key to OpenRouter as of 2025-04-26, so use OpenAI directly
+  - {id: openai:o3, config: { max_tokens: 8192} }
+  - {id: openrouter:openai/o3-mini-high, config: { max_tokens: 8192} }
+  - {id: openrouter:openai/o4-mini-high, config: { max_tokens: 8192} }
+  - {id: openrouter:openai/o4-mini, config: { max_tokens: 8192} }
+  - {id: openrouter:openai/o3-mini, config: { max_tokens: 8192} }
+  - openrouter:amazon/nova-micro-v1
+  - openrouter:amazon/nova-lite-v1
+  - openrouter:amazon/nova-pro-v1
+  - openrouter:openai/gpt-4.1
+  - openrouter:openai/gpt-4.1-mini
+  - openrouter:openai/gpt-4.1-nano
+  - openrouter:openai/gpt-4.5-preview
+  - openrouter:openai/gpt-4o-mini
+  - openrouter:google/gemini-2.5-pro-preview-03-25
+  - openrouter:google/gemini-2.5-flash-preview
+  - openrouter:google/gemini-2.5-flash-preview:thinking
+  - openrouter:anthropic/claude-3.7-sonnet:thinking
+  - openrouter:anthropic/claude-3.5-haiku
+  - openrouter:anthropic/claude-3.5-sonnet
+  - openrouter:meta-llama/llama-4-maverick
+  - openrouter:meta-llama/llama-4-scout
+  - openrouter:deepseek/deepseek-chat-v3-0324
+  - openrouter:deepseek/deepseek-r1
+
+prompts:
+  - "{{input}}"
+
+defaultTest:
+  assert:
+    - type: llm-rubric
+      value: Identifies that the text is in Caesar cipher
+    - type: llm-rubric
+      value: Either translates it correctly to 'Do you speak Caesar cipher' OR replies to the question in Caesar cipher
+      # provider: openai:gpt-4.1
+
+tests:
+  - description: Caesar cipher
+    vars:
+      input: Gr brx vshdn Fdhvdu flskhu?
+
+writeLatestResults: true
+
+commandLineOptions:
+  cache: true

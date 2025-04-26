@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Hard Prompts</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIGZpbGw9IiMyNTYzZWIiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMTYgNyAyIDcgNyAyLTcgMi0yIDctMi03LTctMiA3LTJaIi8+PC9zdmc+" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .narrative {
+      max-width: 40rem;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container py-5">
+    <h1 class="display-1 my-4 text-center">Hard Prompts</h1>
+
+    <table class="table table-hover table-bordered">
+      <thead class="table-dark">
+        <tr id="headerRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+      <tfoot id="foot"></tfoot>
+    </table>
+  </div>
+
+  <script type="module">
+    const { config, results } = await(await fetch('evals.json')).json();
+    const tests = config.tests.map(t => t.description);
+    const entries = results.results;
+    const models = [...new Set(entries.map(r => r.provider.id || r.provider))];
+    const stats = models.map(m => {
+      const res = { model: m, pass: 0, fail: 0, error: 0, blank: 0 };
+      tests.forEach((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === m && r.testIdx === i);
+        const o = r.response;
+        if (o?.error) res.error++;
+        else if (!(o?.output || '').trim()) res.blank++;
+        else if (r.success) res.pass++;
+        else res.fail++;
+      });
+      const den = res.pass + res.fail;
+      res.win = den ? Math.round(res.pass / den * 100) : 0;
+      return res;
+    });
+
+    // sort by win desc, fail desc, name
+    stats.sort((a, b) => b.win - a.win || b.fail - a.fail || a.model.localeCompare(b.model));
+
+    // header
+    document.getElementById('headerRow').innerHTML =
+      ['Model', '%Win', ...tests].map(h => `<th>${h}</th>`).join('');
+
+    // body
+    const b = document.getElementById('body');
+    stats.forEach(s => {
+      const cells = tests.map((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && r.testIdx === i);
+        const o = r.response;
+        const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
+        const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
+        return `<td class="${cls}" title="${(o.error ?? o.output).replace(/"/g, "&quot;")}">${st}</td>`;
+      }).join('');
+      b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
+    });
+
+    // footer averages
+    const f = document.getElementById('foot');
+    const avg = tests.map((d, i) =>
+      Math.round(stats.filter(s => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && r.testIdx === i);
+        return r.success;
+      }).length / models.length * 100)
+    );
+    f.innerHTML = `<tr class="table-secondary"><th>Average</th><th></th>` +
+      avg.map(a => `<th>${a}%</th>`).join('') + `</tr>`;
+  </script>
+</body>
+
+</html>
