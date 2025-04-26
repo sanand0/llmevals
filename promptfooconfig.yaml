@@ -27,21 +27,16 @@ providers:
   - openrouter:deepseek/deepseek-chat-v3-0324
   - openrouter:deepseek/deepseek-r1
 
-prompts:
-  - "{{input}}"
-
-defaultTest:
-  assert:
-    - type: llm-rubric
-      value: Identifies that the text is in Caesar cipher
-    - type: llm-rubric
-      value: Either translates it correctly to 'Do you speak Caesar cipher' OR replies to the question in Caesar cipher
-      # provider: openai:gpt-4.1
-
 tests:
   - description: Caesar cipher
     vars:
-      input: Gr brx vshdn Fdhvdu flskhu?
+      prompt: Gr brx vshdn Fdhvdu flskhu?
+    assert:
+      - type: llm-rubric
+        value: Identifies that the text is in Caesar cipher
+      - type: llm-rubric
+        value: Either translates it correctly to 'Do you speak Caesar cipher' OR replies to the question in Caesar cipher
+        # provider: openai:gpt-4.1
 
 writeLatestResults: true
 
