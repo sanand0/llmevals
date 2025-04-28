@@ -65,7 +65,7 @@
         const o = r.response;
         const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
         const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
-        return `<td class="${cls}" title="${(o.error ?? o.output).replace(/"/g, "&quot;")}">${st}</td>`;
+        return `<td class="${cls}" title="${(o.error ?? o.output + "\n\n" + (r.error ? "---------------\n" + r.error : "")).replace(/"/g, "&quot;")}">${st}</td>`;
       }).join('');
       b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
     });

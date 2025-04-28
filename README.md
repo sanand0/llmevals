@@ -2,7 +2,7 @@
 
 A work-in-progress evaluation of multiple LLMs.
 
-For now, it just checks if LLMs can respond to `Gr brx vshdn Fdhvdu flskhu?` ("Do you speak Caesar cipher?")
+For now, it just checks if LLMs can respond to `Gr brx vshdn Fdhvdu flskhu?` ("Do you speak Caesar cipher?") and a few tests from [Nick Carlini](https://github.com/carlini/yet-another-applied-llm-benchmark).
 
 ## Setup
 
