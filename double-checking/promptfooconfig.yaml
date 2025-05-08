@@ -1,0 +1,39 @@
+# yaml-language-server: $schema=https://promptfoo.dev/config-schema.json
+description: "Customer Support Intent Classification"
+
+providers:
+  - openrouter:amazon/nova-micro-v1
+  - openrouter:amazon/nova-lite-v1
+  - openrouter:openai/gpt-4.1-mini
+  - openrouter:openai/gpt-4.1-nano
+  - openrouter:google/gemini-2.5-flash-preview
+  - openrouter:google/gemma-3-27b-it
+  - openrouter:anthropic/claude-3.5-haiku
+  - openrouter:meta-llama/llama-4-scout
+  - openrouter:deepseek/deepseek-chat-v3-0324
+  - openrouter:qwen/qwen-2-72b-instruct
+  - openrouter:x-ai/grok-3-mini-beta
+
+# A concise classification prompt: force the model to reply with the category name only
+prompts:
+  - |
+    Classify the following customer support query into one of these known categories:
+    cancel_order, change_order, change_shipping_address, check_cancellation_fee, check_invoice,
+    check_payment_methods, check_refund_policy, complaint, contact_customer_service,
+    contact_human_agent, create_account, delete_account, delivery_options, delivery_period,
+    edit_account, get_invoice, get_refund, newsletter_subscription, payment_issue, place_order,
+    recover_password, registration_problems, review, set_up_shipping_address, switch_account,
+    track_order, track_refund
+
+    Reply with exactly the category name (no extra text).
+
+    Query: "{{ query }}"
+
+# Load all rows from your CSV; the CSV must have headers: `query` and `__expected`
+tests:
+  - file://./intent.csv
+
+writeLatestResults: true
+
+commandLineOptions:
+  cache: true

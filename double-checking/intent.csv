@@ -1,0 +1,136 @@
+query,__expected
+how do I cancel my order?,cancel_order
+question about canceling my orders,cancel_order
+I need help cancelling an order I made,cancel_order
+I have a problem with cancelling my last order,cancel_order
+help with cancelling the order I have made,cancel_order
+I have a problem with changing some items of an order,change_order
+I forgot to include some items in my order,change_order
+could I remove several items from an order?,change_order
+I have to change my last order,change_order
+help with adding some items,change_order
+i need asistance trying to edit my shipping address,change_shipping_address
+I want ot update the address,change_shipping_address
+give me information about changing my shipping address,change_shipping_address
+I don't know how I could change my shipping address,change_shipping_address
+help to change the shipping address,change_shipping_address
+"I cannot find the termination charge, can I get some help ?",check_cancellation_fee
+I do not know how I can check the cancellation fee,check_cancellation_fee
+can uhelp me seeing the cancellation fees,check_cancellation_fee
+see the termination fee,check_cancellation_fee
+can you help me to check the cancellation fee?,check_cancellation_fee
+can you help me check the invoices from five purchases ago?,check_invoice
+I don't know what I have to do to find the invoice,check_invoice
+will you show me the invoices from last month?,check_invoice
+could I take a quick look at my invoice?,check_invoice
+will you show me the invoice from 6 months ago?,check_invoice
+i do not know how i can check the avaqilable payment methods,check_payment_methods
+help checking your allowed payment options,check_payment_methods
+where can I check what payment options are accepted?,check_payment_methods
+can you tell me your allowed payment methods?,check_payment_methods
+I try to check your allowed payment methods,check_payment_methods
+how could I check your money back policy?,check_refund_policy
+would it be possible to check your money back policy?,check_refund_policy
+show me your refund policy,check_refund_policy
+I have to check your refund policy,check_refund_policy
+can I check how long refunds usually take?,check_refund_policy
+help to file a complaint against your business,complaint
+I want to file a consumer complaint against your company,complaint
+I try to make a complaint,complaint
+"I am not happy with your services, make a claim",complaint
+assistance filing a complaint against your business,complaint
+how do I check what hours I can call customer assistance?,contact_customer_service
+I need help to contact customer service,contact_customer_service
+"I need to speak to customer assistance, can I get some help?",contact_customer_service
+help checking at what time customer assistance available is,contact_customer_service
+tell me at what time I can contact customer service,contact_customer_service
+i need help talking to a human agent,contact_human_agent
+can you transfer to me an agent?,contact_human_agent
+I want an agent,contact_human_agent
+help me contacting an agent,contact_human_agent
+I don't know what to do to talk to an agent,contact_human_agent
+what do I need to do to register?,create_account
+how to open a new standard account?,create_account
+need help to create a different online account for my mom,create_account
+help registering,create_account
+is it possible to create another online account?,create_account
+i need help to close the online account,delete_account
+I don't know how I can delete an account,delete_account
+I have to delete the account,delete_account
+assistance to cancel the goddamn user account,delete_account
+how do I delete the account?,delete_account
+could you show me the options for delivery?,delivery_options
+problems with the delivery options,delivery_options
+I have a question about the options for delivery,delivery_options
+can I check what options for delivery you offer?,delivery_options
+I have got to check the options for delivery,delivery_options
+where to check how soon can I expect the item?,delivery_period
+I am looking for delivery periods,delivery_period
+could you help me checking when will my item arrive?,delivery_period
+I need help checking how long the delivery takes,delivery_period
+where can I check when my item is going to arrive?,delivery_period
+I want assistance editing my personal information,edit_account
+i do not know what to do to edit the data on my profile,edit_account
+"I need to edit my user details, how can I do it?",edit_account
+I need to edit the information on my account,edit_account
+I want assistance to edit my personal information,edit_account
+could I get the invoices from five purchases ago?,get_invoice
+I would like to get the invoices from 2 purchases ago,get_invoice
+could you help me getting the invoices?,get_invoice
+I am trying to get the invoices from 5 purchases ago,get_invoice
+I try to get the invoice from last month,get_invoice
+I need help getting my money back,get_refund
+where could I get a refund?,get_refund
+how to get a refund of money?,get_refund
+would it be possible to get a refund?,get_refund
+I need assistance to get a refund,get_refund
+I needto unsubscribe to the newsletter,newsletter_subscription
+I cannot cancel the company newsletter subscription,newsletter_subscription
+find information about subscribing to your newslewtter,newsletter_subscription
+i do not know how  to sign up to the corporate newsletter,newsletter_subscription
+where to cancel the company newsletter subscription?,newsletter_subscription
+could you help me to solve a payment issue?,payment_issue
+help reporting payment issues,payment_issue
+can you help me to report payment issues?,payment_issue
+I have to report issues with payments,payment_issue
+I need assistance to report a payment issue,payment_issue
+I need assistance to buy some of your item,place_order
+I want help to buy some items,place_order
+I don't know how to buy several of your item,place_order
+I am trying to make a purchase,place_order
+I am trying to buy an item,place_order
+I would like to know about forgotten passwords,recover_password
+how can i get information about the password reset,recover_password
+where can I find information about a forgotten password?,recover_password
+I would like information about forgotten passwords,recover_password
+I cannot reset my damn user account pwd,recover_password
+how do I report registration issues?,registration_problems
+I have got to report registration issues,registration_problems
+can you help me report a registration issue?,registration_problems
+i cant notify of a registration error,registration_problems
+assistance toi notify of a sign-up problem,registration_problems
+where do I submit some feedback for your company?,review
+help to submit some feedback for your services,review
+how can I submit some feedback for your company?,review
+I need assistance to leave a review for your company,review
+I do not know what to do to leave a review,review
+set a new shipping address up,set_up_shipping_address
+I do not know how to set up a new shipping address,set_up_shipping_address
+assistance setting a new shipping address up,set_up_shipping_address
+I am trying to set up a new shipping address,set_up_shipping_address
+I try to set a different shipping address up,set_up_shipping_address
+i do not  use this user how can i change to the other one,switch_account
+how to use another account?,switch_account
+I want to switch user,switch_account
+I have to switch to another account,switch_account
+i do not ned this user help using my new one,switch_account
+I don't know how to track my order,track_order
+I need assistance tracking an order,track_order
+I need assistance to track an order,track_order
+when will I receive my order?,track_order
+could you show me my order ETA?,track_order
+I can't check the refund status,track_refund
+help me check the status of my refund,track_refund
+is it possible to check the status of the refund?,track_refund
+help me checking the status of my refund,track_refund
+how could I check the status of the refund?,track_refund

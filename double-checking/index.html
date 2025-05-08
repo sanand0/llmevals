@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LLM Mental Math</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIGZpbGw9IiMyNTYzZWIiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMTYgNyAyIDcgNyAyLTcgMi0yIDctMi03LTctMiA3LTJaIi8+PC9zdmc+" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .narrative {
+      max-width: 40rem;
+    }
+
+    .popover-body {
+      white-space: pre-wrap;
+      font-family: var(--bs-font-monospace);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+  <div class="container pt-5">
+    <h1 class="display-1 my-4 text-center">Dealing with Hallucinations</h1>
+    <h2 class="display-6 text-center">How can we rely on unreliable LLMs?</h2>
+  </div>
+
+  <div class="container-fluid">
+    <div class="fs-5 p-3 mx-auto narrative">
+      <p>Large language models can feel magical—until they start confidently
+        making things up. In a recent evaluation of 11 state-of-the-art LLMs on
+        a real-world customer-support intent task, we discovered a simple way to
+        tame those “hallucinations” with only a modest hit to automation.</p>
+      <p>We tested 11 LLMs on Kaggle’s <a
+          href="https://www.kaggle.com/datasets/scodepy/customer-support-intent-dataset">Customer
+          Support Intent Dataset</a>, asking them to classify thousands of user
+        messages (billing, refunds, order changes, etc.).</p>
+
+      <p>For more details, see the repo at <a href="https://github.com/sanand0/llmmath">github.com/sanand0/llmmath</a>.</p>
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="table-dark">
+        <tr id="headerRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+      <tfoot id="foot"></tfoot>
+    </table>
+  </div>
+
+  <div class="fs-5 p-3 mx-auto narrative">
+    <p>The headline findings:</p>
+    <ul>
+      <li><strong>Median accuracy ~90%.</strong> Over half the models got at
+        least 90% of the examples right—so even a random pick would nail most
+        queries.</li>
+      <li><strong>Error rate ~15%.</strong> But in scale-sensitive settings
+        (customer support, compliance, etc.) a 1 in 10 mistake rate can be
+        disastrous.</li>
+    </ul>
+  </div>
+
+  <div class="container text-center">
+    <img class="img-fluid" src="model-accuracy.webp" alt="Graph of classification accuracy. Only 20% of the customer intents are classified with under 80% accuracy">
+  </div>
+
+  <div class="fs-5 my-5 p-3 mx-auto narrative">
+    <p>Different LLMs tend to trip over different edge cases. One might misinterpret “cancel my order”; another might choke on a subtle refund clause. That diversity of mistakes is actually our superpower.</p>
+
+    <h2 id="crosschecking-with-two-models" class="mt-5">Cross‐checking with two models</h2>
+    <p>Imagine running each query through <strong>two</strong> independent LLMs and flagging any time they disagree. The correlation between LLM models is fairly low, as shown below:</p>
+  </div>
+
+  <div class="container text-center">
+    <img class="img-fluid" src="correlation.webp" alt="Correlation between LLMs. Numbers are typically between 10-30%">
+  </div>
+
+  <div class="fs-5 my-5 p-3 mx-auto narrative">
+    <p>The correlation between most LLMs is ~10-30%. If we double-check the results with an LLM with a low correlation, then:</p>
+    <ul>
+      <li><strong>Disagreement ≈ 20%.</strong> In our experiments, two-model ensembles disagreed on about one-fifth of the inputs, so you’d still automate <strong>80%</strong> end-to-end.</li>
+      <li><strong>Error rate ↓ from ~15% to ~0.25%.</strong> If both models agree, they’re almost always right: accuracy jumps to ~99.75%.</li>
+    </ul>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th class="text-end">Single Model</th>
+          <th class="text-end">Double-checking</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Automation (%)</td>
+          <td class="text-end">100%</td>
+          <td class="text-end">80%</td>
+        </tr>
+        <tr>
+          <td>Error Rate (%)</td>
+          <td class="text-end">~15%</td>
+          <td class="text-end">~0.25%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>You pay a <strong>20% review load</strong> for a <strong>60×
+        reduction</strong> in mistakes.</p>
+
+    <h2 id="three-way-majority-quality-over-quantity" class="mt-5">Three-way majority:
+      quality over quantity</h2>
+    <p>Take it further with <strong>three</strong> LLMs and use majority
+      voting:</p>
+    <ul>
+      <li><strong>Disagreement ≈ 24%</strong>, so about <strong>76%</strong> fully automated.</li>
+      <li><strong>Error rate ~0.005%</strong>, i.e. <strong>99.995%</strong> accuracy on agreed-upon items.</li>
+    </ul>
+    <table class="table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th class="text-end">Single Model</th>
+          <th class="text-end">3-Model Majority</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>Automation (%)</td>
+          <td class="text-end">100%</td>
+          <td class="text-end">76%</td>
+        </tr>
+        <tr>
+          <td>Error Rate (%)</td>
+          <td class="text-end">~15%</td>
+          <td class="text-end">~0.005%</td>
+        </tr>
+      </tbody>
+    </table>
+    <p>A <strong>25% hit</strong> to throughput nets you <strong>99.99% precision</strong>—dramatic improvements with minimal extra cost.</p>
+
+    <h2 id="why-this-works" class="mt-5">Why this works</h2>
+    <ol type="1">
+      <li><strong>Independent mistakes.</strong> LLMs trained on different data and architectures tend to err in uncorrelated ways.</li>
+      <li><strong>Majority voting.</strong> If two out of three models agree, the odds are overwhelmingly in your favor that they’re right.</li>
+      <li><strong>Human-in-the-loop only when needed.</strong> Reviewers only see the ~20–25% cases where models disagree, saving time and catching nearly every error.</li>
+    </ol>
+
+    <h2 id="takeaway" class="mt-5">Takeaway</h2>
+    <p>If you’re battling hallucinations in your LLM pipeline, you don’t need a perfect single model—just <strong>double-check</strong>:</p>
+    <blockquote>
+      <p><strong>For a 20-25% review load, you can boost accuracy from ~85% to ~99.99%.</strong></p>
+    </blockquote>
+    <p>In short, <strong>rely on multiple unreliable LLMs</strong> rather than a single imperfect one. By turning your model fleet into a built-in safety net, you can automate at speed <strong>and</strong> quality—finally making hallucination a thing of the past.</p>
+  </div>
+
+  <script type="module">
+    const { config, results } = await(await fetch('evals.json')).json();
+    let tests = [...new Set(results.results.map(t => t.vars.query))];
+    const entries = results.results;
+    const providers = [...new Set(entries.map(r => r.provider.id || r.provider))];
+    const stats = providers.map(m => {
+      const res = { model: m, pass: 0, fail: 0, error: 0, blank: 0 };
+      tests.forEach((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === m && r.vars.query === d);
+        const o = r.response;
+        if (o?.error) res.error++;
+        else if (!(o?.output || '').trim()) res.blank++;
+        else if (r.success) res.pass++;
+        else res.fail++;
+      });
+      const den = res.pass + res.fail;
+      res.win = den ? Math.round(res.pass / den * 100) : 0;
+      return res;
+    });
+
+    const avg = Object.fromEntries(tests.map((d, i) =>
+      [d, Math.round(stats.filter(s => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && r.vars.query == d);
+        return r.success;
+      }).length / providers.length * 100)]
+    ));
+
+    // sort rows by win desc, fail desc, name
+    stats.sort((a, b) => b.win - a.win || b.fail - a.fail || a.model.localeCompare(b.model));
+
+    // sort cols by win desc
+    tests.sort((a, b) => avg[a] - avg[b]).map(t => t.test);
+
+    // header
+    document.getElementById('headerRow').innerHTML =
+      ['Model', '%Win', ...tests].map(h => `<th>${h}</th>`).join('');
+
+    // body
+    const b = document.getElementById('body');
+    stats.forEach(s => {
+      const cells = tests.map((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && r.vars.query == d);
+        const o = r.response;
+        const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
+        const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
+        return `<td class="${cls}" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${r.gradingResult?.reason.replace(/"/g, '&quot;') ?? o.error}">${st}</td>`;
+      }).join('');
+      b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
+    });
+
+    // Initialize popovers
+    bootstrap.Popover.getOrCreateInstance(document.body, { selector: '[data-bs-toggle="popover"]', trigger: 'hover' });
+
+    // footer averages
+    const f = document.getElementById('foot');
+    f.innerHTML = `<tr class="table-secondary"><th>Average</th><th></th>` +
+      tests.map(d => `<th>${avg[d]}%</th>`).join('') + `</tr>`;
+  </script>
+</body>
+
+</html>
