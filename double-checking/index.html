@@ -31,16 +31,8 @@
 
   <div class="container-fluid">
     <div class="fs-5 p-3 mx-auto narrative">
-      <p>Large language models can feel magical—until they start confidently
-        making things up. In a recent evaluation of 11 state-of-the-art LLMs on
-        a real-world customer-support intent task, we discovered a simple way to
-        tame those “hallucinations” with only a modest hit to automation.</p>
-      <p>We tested 11 LLMs on Kaggle’s <a
-          href="https://www.kaggle.com/datasets/scodepy/customer-support-intent-dataset">Customer
-          Support Intent Dataset</a>, asking them to classify thousands of user
-        messages (billing, refunds, order changes, etc.).</p>
-
-      <p>For more details, see the repo at <a href="https://github.com/sanand0/llmmath">github.com/sanand0/llmmath</a>.</p>
+      <p>Large language models can feel magical—until they start confidently making things up. In a recent evaluation of 11 state-of-the-art LLMs on a real-world customer-support intent task, we discovered a simple way to tame those “hallucinations” with only a modest hit to automation.</p>
+      <p>We tested 11 LLMs on Kaggle’s <a href="https://www.kaggle.com/datasets/scodepy/customer-support-intent-dataset">Customer Support Intent Dataset</a>, asking them to classify user messages (billing, refunds, order changes, etc.).</p>
     </div>
   </div>
 
@@ -57,12 +49,8 @@
   <div class="fs-5 p-3 mx-auto narrative">
     <p>The headline findings:</p>
     <ul>
-      <li><strong>Median accuracy ~90%.</strong> Over half the models got at
-        least 90% of the examples right—so even a random pick would nail most
-        queries.</li>
-      <li><strong>Error rate ~15%.</strong> But in scale-sensitive settings
-        (customer support, compliance, etc.) a 1 in 10 mistake rate can be
-        disastrous.</li>
+      <li><strong>Median accuracy ~90%.</strong> Over half the models got at least 90% of the examples right—so even a random pick would nail most queries.</li>
+      <li><strong>Error rate ~14%.</strong> But in scale-sensitive settings (customer support, compliance, etc.) a 1 in 7 mistake rate can be expensive.</li>
     </ul>
   </div>
 
@@ -73,8 +61,8 @@
   <div class="fs-5 my-5 p-3 mx-auto narrative">
     <p>Different LLMs tend to trip over different edge cases. One might misinterpret “cancel my order”; another might choke on a subtle refund clause. That diversity of mistakes is actually our superpower.</p>
 
-    <h2 id="crosschecking-with-two-models" class="mt-5">Cross‐checking with two models</h2>
-    <p>Imagine running each query through <strong>two</strong> independent LLMs and flagging any time they disagree. The correlation between LLM models is fairly low, as shown below:</p>
+    <h2 id="crosscheck-with-other-models">Cross‐check with other models</h2>
+    <p>Imagine running each query through two independent LLMs and flagging any time they disagree. The correlation between LLM models is fairly low, as shown below:</p>
   </div>
 
   <div class="container text-center">
@@ -82,79 +70,61 @@
   </div>
 
   <div class="fs-5 my-5 p-3 mx-auto narrative">
-    <p>The correlation between most LLMs is ~10-30%. If we double-check the results with an LLM with a low correlation, then:</p>
-    <ul>
-      <li><strong>Disagreement ≈ 20%.</strong> In our experiments, two-model ensembles disagreed on about one-fifth of the inputs, so you’d still automate <strong>80%</strong> end-to-end.</li>
-      <li><strong>Error rate ↓ from ~15% to ~0.25%.</strong> If both models agree, they’re almost always right: accuracy jumps to ~99.75%.</li>
-    </ul>
-    <table class="table">
+    <p>So, if you asked two or more models the same question, we can pass any disagreements to a human to cross-check. This adds effort but improves quality. By how much?</p>
+    <table class="table table-striped">
       <thead>
         <tr>
-          <th>Metric</th>
-          <th class="text-end">Single Model</th>
-          <th class="text-end">Double-checking</th>
+          <th style="text-align: right;">Models</th>
+          <th style="text-align: right;">Effort</th>
+          <th style="text-align: right;">Error</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <td>Automation (%)</td>
-          <td class="text-end">100%</td>
-          <td class="text-end">80%</td>
+          <td style="text-align: right;">1</td>
+          <td style="text-align: right;">0%</td>
+          <td style="text-align: right;">14.1%</td>
         </tr>
         <tr>
-          <td>Error Rate (%)</td>
-          <td class="text-end">~15%</td>
-          <td class="text-end">~0.25%</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">12.6%</td>
+          <td style="text-align: right;">3.7%</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">3</td>
+          <td style="text-align: right;">18.5%</td>
+          <td style="text-align: right;">2.2%</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">23.0%</td>
+          <td style="text-align: right;">1.5%</td>
+        </tr>
+        <tr>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">28.1%</td>
+          <td style="text-align: right;">0.7%</td>
         </tr>
       </tbody>
     </table>
-    <p>You pay a <strong>20% review load</strong> for a <strong>60×
-        reduction</strong> in mistakes.</p>
-
-    <h2 id="three-way-majority-quality-over-quantity" class="mt-5">Three-way majority:
-      quality over quantity</h2>
-    <p>Take it further with <strong>three</strong> LLMs and use majority
-      voting:</p>
+    <p>That is, in this case:</p>
     <ul>
-      <li><strong>Disagreement ≈ 24%</strong>, so about <strong>76%</strong> fully automated.</li>
-      <li><strong>Error rate ~0.005%</strong>, i.e. <strong>99.995%</strong> accuracy on agreed-upon items.</li>
+      <li>If you double-check with 2 models, they typically disagree ~13% of the time, so automation only saves 87% effort. But errors <strong>drop from 14% to ~4%</strong>!</li>
+      <li>If you <em>triple</em>-check, automation saves only ~81% effort with errors improving to ~2%</li>
+      <li>If you <em>quadruple</em>-check, saving is ~77% with errors of ~1.5%</li>
+      <li>If you <em>quintuple</em>-check, saving is ~72% with errors under 1%</li>
     </ul>
-    <table class="table">
-      <thead>
-        <tr>
-          <th>Metric</th>
-          <th class="text-end">Single Model</th>
-          <th class="text-end">3-Model Majority</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <td>Automation (%)</td>
-          <td class="text-end">100%</td>
-          <td class="text-end">76%</td>
-        </tr>
-        <tr>
-          <td>Error Rate (%)</td>
-          <td class="text-end">~15%</td>
-          <td class="text-end">~0.005%</td>
-        </tr>
-      </tbody>
-    </table>
-    <p>A <strong>25% hit</strong> to throughput nets you <strong>99.99% precision</strong>—dramatic improvements with minimal extra cost.</p>
-
-    <h2 id="why-this-works" class="mt-5">Why this works</h2>
-    <ol type="1">
-      <li><strong>Independent mistakes.</strong> LLMs trained on different data and architectures tend to err in uncorrelated ways.</li>
-      <li><strong>Majority voting.</strong> If two out of three models agree, the odds are overwhelmingly in your favor that they’re right.</li>
-      <li><strong>Human-in-the-loop only when needed.</strong> Reviewers only see the ~20–25% cases where models disagree, saving time and catching nearly every error.</li>
-    </ol>
-
-    <h2 id="takeaway" class="mt-5">Takeaway</h2>
+    <p>Why does this work? Because the <strong>mistakes are <em>mostly</em> independent.</strong> LLMs trained on different data and architectures err in uncorrelated ways. Two models wrongly picking the <em>same</em> wrong answer from multiple choices is low.</p>
+    <p><strong>WARNING</strong>: Drop models that are consistently bad. In this case, we dropped <code>google/gemma-3-27b-it</code>.</p>
+    <p>So, we can introduce <strong>human-in-the-loop only when needed.</strong> Reviewers only see the ~20–25% cases where models disagree, saving time and catching nearly every error.</p>
+    <p>The choice of model combinations could matter. For example, pairing <code>amazon/nova-lite-v1</code> with <code>openai/gpt-4.1-mini</code> adds only <strong>~10% effort for a 2% error rate</strong>. The best combination would depend on your use case.</p>
+    <h2 id="takeaway">Takeaway</h2>
     <p>If you’re battling hallucinations in your LLM pipeline, you don’t need a perfect single model—just <strong>double-check</strong>:</p>
-    <blockquote>
-      <p><strong>For a 20-25% review load, you can boost accuracy from ~85% to ~99.99%.</strong></p>
+    <blockquote class="blockquote">
+      <p><strong>For a ~25% review load, multi-modal checks boost accuracy from ~85% to ~99%.</strong></p>
     </blockquote>
-    <p>In short, <strong>rely on multiple unreliable LLMs</strong> rather than a single imperfect one. By turning your model fleet into a built-in safety net, you can automate at speed <strong>and</strong> quality—finally making hallucination a thing of the past.</p>
+    <p>In short, <strong>rely on multiple (unreliable) LLMs</strong> rather than a single imperfect one. By turning your model fleet into a built-in safety net, you can automate at speed <strong>and</strong> quality—finally making hallucination a thing of the past.</p>
+    <p>Oh, it also saves 25% of the jobs, but you’ll need to train them on reviewing.</p>
   </div>
 
   <script type="module">
