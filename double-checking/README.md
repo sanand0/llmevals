@@ -33,6 +33,8 @@ So, if you asked two or more models the same question, we can pass any disagreem
 |      4 |  23.0% |  1.5% |
 |      5 |  28.1% |  0.7% |
 
+![As models increase, effort increases roughly linearly and error tapers to zero](improvement.webp)
+
 That is, in this case:
 
 - If you double-check with 2 models, they typically disagree \~13% of the time, so automation only saves 87% effort. But errors **drop from 14% to ~4%**!
