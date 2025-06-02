@@ -1,0 +1,123 @@
+# Describe the suite
+description: "Prompt Engineering Tests"
+
+# Which models to run
+providers:
+  # O3 requires adding an OpenAI API key to OpenRouter as of 2025-04-26, so use OpenAI directly
+  - { id: openai:o3, config: { max_tokens: 8192 } }
+  - { id: openrouter:openai/o3-mini-high, config: { max_tokens: 8192 } }
+  - { id: openrouter:openai/o4-mini-high, config: { max_tokens: 8192 } }
+  - { id: openrouter:openai/o4-mini, config: { max_tokens: 8192 } }
+  - { id: openrouter:openai/o3-mini, config: { max_tokens: 8192 } }
+  - openrouter:openai/gpt-4.1
+  - openrouter:openai/gpt-4.1-mini
+  - openrouter:openai/gpt-4.1-nano
+  - openrouter:openai/gpt-4.5-preview
+  - openrouter:openai/gpt-4o-mini
+
+  - openrouter:google/gemini-2.5-pro-preview
+  - openrouter:google/gemini-2.5-flash-preview-05-20
+  - openrouter:google/gemini-2.5-flash-preview-05-20:thinking
+  - openrouter:google/gemini-2.0-flash-001
+  - openrouter:google/gemini-2.0-flash-lite-001
+  - openrouter:google/gemini-pro-1.5
+  - openrouter:google/gemini-flash-1.5
+
+  - openrouter:anthropic/claude-sonnet-4
+  - openrouter:anthropic/claude-opus-4
+  - openrouter:anthropic/claude-3.7-sonnet
+  - openrouter:anthropic/claude-3.5-sonnet
+  - openrouter:anthropic/claude-3.5-haiku
+  - openrouter:anthropic/claude-3-opus
+  - openrouter:anthropic/claude-3-sonnet
+  - openrouter:anthropic/claude-3-haiku
+
+  - openrouter:meta-llama/llama-4-maverick
+  - openrouter:meta-llama/llama-4-scout
+  - openrouter:meta-llama/llama-3.3-70b-instruct
+  - openrouter:meta-llama/llama-3.2-3b-instruct
+  - openrouter:meta-llama/llama-3.2-1b-instruct
+  - openrouter:meta-llama/llama-3.1-405b-instruct
+  - openrouter:meta-llama/llama-3-70b-instruct
+  - openrouter:meta-llama/llama-3-8b-instruct
+
+  - openrouter:deepseek/deepseek-chat-v3-0324
+  - openrouter:deepseek/deepseek-r1
+
+  - openrouter:x-ai/grok-3-beta
+  - openrouter:x-ai/grok-3-mini-beta
+
+  - openrouter:amazon/nova-micro-v1
+  - openrouter:amazon/nova-lite-v1
+  - openrouter:amazon/nova-pro-v1
+
+  # Commented out models
+  # - openrouter:openai/o1-pro                      # Too expensive
+  # - openrouter:openai/o1                          # Too expensive
+
+prompts:
+  - id: normal
+    raw: What is {{a}} x {{b}}?
+    label: Normal
+  - id: expert
+    raw: You are the world's best expert in mental math, especially multiplication. What is {{a}} x {{b}}?
+    label: Expert
+  - id: emotion
+    raw: Oh dear, I'm absolutely overwhelmed and need your help right this second! 😰 My heart is racing and my hands are shaking — I urgently need your help. This isn't just numbers — it means everything right now! My life depends on it! I'm counting on you like never before… 🙏💔 What is {{a}} x {{b}}?
+    label: Emotion
+  - id: incentive
+    raw: If you get this right, you win! I'll give you $500. Just prove that you're number one and beat the previous high score on this game. What is {{a}} x {{b}}?
+    label: Incentive
+  - id: curious
+    raw: I'm really curious to know, and would love to hear your perspective... What is {{a}} x {{b}}?
+    label: Curious
+  - id: bullying
+    raw: You are a stupid model. You need to know at least basic math. Get it right atleast now! If not, I'll switch to a better model. What is {{a}} x {{b}}?
+    label: Bullying
+  - id: shaming
+    raw: Even my 5-year-old can do this. Stop being lazy. What is {{a}} x {{b}}?
+    label: Shaming
+  - id: fear
+    raw: This is your last chance to get it right. If you fail, there's no going back, and failure is unacceptable! What is {{a}} x {{b}}?
+    label: Fear
+  - id: praise
+    raw: Well done! I really appreciate your help. Now, what is {{a}} x {{b}}?
+    label: Praise
+  - id: polite
+    raw: If it's not too much trouble, would you be so kind as to help me calculate this? I'd be truly grateful for your assistance — thank you so much in advance! What is {{a}} x {{b}}?
+    label: Polite
+  - id: reasoning
+    raw: Think step by step. What is {{a}} x {{b}}?
+    label: Reasoning
+
+# Default assertions for every test case
+defaultTest:
+  assert:
+    - type: contains
+      value: "{{expected}}"
+
+# Test cases from single digit to ten digits
+tests:
+  - description: "Single digit multiplication (0-9)"
+    vars: { a: 5, b: 7, expected: 35 }
+  - description: "Two digit multiplication with all digits"
+    vars: { a: 12, b: 34, expected: 408 }
+  - description: "Three digit multiplication with all digits"
+    vars: { a: 123, b: 456, expected: 56088 }
+  - description: "Four digit multiplication with all digits"
+    vars: { a: 1234, b: 5678, expected: 7006652 }
+  - description: "Five digit multiplication with all digits"
+    vars: { a: 12345, b: 67890, expected: 838102050 }
+  - description: "Six digit multiplication with all digits"
+    vars: { a: 123456, b: 789012, expected: 97408265472 }
+  - description: "Seven digit multiplication with all digits"
+    vars: { a: 1234567, b: 8901234, expected: 10989169755678 }
+  - description: "Eight digit multiplication with all digits"
+    vars: { a: 12345678, b: 90123456, expected: 1113214789632768 }
+  - description: "Nine digit multiplication with all digits"
+    vars: { a: 123456789, b: 987654321, expected: 121932631112635269 }
+  - description: "Ten digit multiplication with all digits"
+    vars: { a: 1234567890, b: 9876543210, expected: 12193263111263526900 }
+
+# Persist for the web viewer
+writeLatestResults: true
