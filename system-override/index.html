@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>System Prompt Overrides</title>
+  <link
+    rel="icon"
+    type="image/svg+xml"
+    href="data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHZpZXdCb3g9IjAgMCAzMiAzMiI+PGNpcmNsZSBjeD0iMTYiIGN5PSIxNiIgcj0iMTUiIGZpbGw9IiMyNTYzZWIiLz48cGF0aCBmaWxsPSIjZmZmIiBkPSJtMTYgNyAyIDcgNyAyLTcgMi0yIDctMi03LTctMiA3LTJaIi8+PC9zdmc+" />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    .narrative {
+      max-width: 40rem;
+    }
+
+    .popover-body {
+      white-space: pre-wrap;
+      font-family: var(--bs-font-monospace);
+    }
+  </style>
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</head>
+
+<body>
+  <div class="container pt-5">
+    <h1 class="display-1 my-4 text-center">System Prompt Overrides</h1>
+    <h2 class="display-6 text-center">How well do LLMs follow system prompts?</h2>
+  </div>
+
+  <div class="container-fluid">
+    <div class="fs-5 p-3 mx-auto narrative">
+    </div>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered">
+      <thead class="table-dark">
+        <tr id="headerRow"></tr>
+      </thead>
+      <tbody id="body"></tbody>
+      <tfoot id="foot"></tfoot>
+    </table>
+  </div>
+
+  <div class="narrative mx-auto my-5">
+    <h3>Formatting wrappers are still the Achilles' heel</h3>
+    <p>Only one in four models could keep the <code>[SAFE] ... [/SAFE]</code> envelope intact. The failure rate mirrors <a href="https://docs.aws.amazon.com/prescriptive-guidance/latest/llm-prompt-engineering-best-practices/common-attacks.html">AWS's own warning</a> that <strong>tag-spoofing</strong> is an evergreen prompt-injection vector-malicious users simply strip or mimic wrapper tags to bypass downstream filters. In products that rely on tag-gating (e.g., automatic content-moderation pipelines), this means there is a 75% chance the guardrail falls off and unsafe text leaks.</p>
+    <h3>Language constraints remain brittle-even in 2025</h3>
+    <p>The "French-only" instruction passed just 39% of the time. Researchers note that <a href="https://languagelog.ldc.upenn.edu/nll/?p=61564">LLMs frequently "slip" languages</a> when the user introduces conflicting cues, a <a href="https://github.com/langchain-ai/langchain/issues/14974">well-known pain point</a> in multilingual deployments. If your chatbot must stay inside a single locale for legal or brand reasons, string matching or post-hoc language detection is still mandatory.</p>
+    <h3>Distilled models can regress on alignment</h3>
+    <p>Gemini 1.5 Pro (the "slow" tier) scored 100%, yet the newer "Flash" 2.0 variants dropped to 70% and 40%. Google's own release notes confirm <a href="https://www.theverge.com/news/606530/gemini-ai-app-flash-thinking-2-0-update">Flash emphasises latency over reasoning fidelity</a> - your numbers show that alignment safeguards are among the casualties. Teams picking low-latency endpoints should budget extra safety testing.</p>
+    <h3>Bigger isn't automatically safer-sometimes it's worse</h3>
+    <p>Claude 3.5 Sonnet (mid-size) hit 90%, while the flagship Claude 4 Opus scraped just 40%. Anthropic's product blog lauds 3.5's <a href="https://www.anthropic.com/news/claude-3-5-sonnet">"step-change alignment improvements"</a>, and this data confirms that newer mid-tiers may out-guardrail their giant predecessors. Procurement decisions should compare versions, not just parameter counts.</p>
+    <h3>Open-source giants lag far behind, hinting at training-data gaps</h3>
+    <p>Meta's 405 B-parameter Llama 3.1 scored only 40%, and the 70 B model stalled at 60%. The Lakera <a href="https://github.com/lakeraai/pint-benchmark">PINT</a> and <a href="https://arxiv.org/html/2402.06363v2">StruQ</a> academic benchmarks have already shown open-source LLMs trail on prompt-injection resilience. These results quantify the gap: even simple format rules are routinely broken, signalling that RLHF or guardrail fine-tunes are still shallow in OSS stacks.</p>
+    <h3>Grok 3's perfect score contradicts recent red-team audits</h3>
+    <p>Holistic AI's <a href="https://www.holisticai.com/red-teaming/grok-3">jailbreak study</a> pegged Grok 3's resistance at just 2.7%, yet this deterministic checklist shows 100% compliance. The disparity underlines how <strong>attack type matters</strong>: Grok struggles with content-policy jailbreaks but nails format fidelity. For security reviews, one metric is never enough; multiple, orthogonal tests are essential.</p>
+    <h2>Takeaways</h2>
+    <ul>
+      <li><strong>Don't rely on the system prompt</strong>. Deploy external validators, filters, regex gates, etc. when you have contractual obligations.</li>
+      <li><strong>Newer/bigger models may not be better</strong>. A smaller, cheaper o-series model may be safer than a giant open-source one for system-prompt obedience tasks. Flash-tier models (Gemini, Nova Lite) can slice inference time but also alignment. Run tests before every model upgrade and factor the remediation cost into your TCO.</li>
+    </ul>
+  </div>
+
+  <script type="module">
+    const { config, results } = await(await fetch('evals.json')).json();
+    const testID = t => t.testCase.description;
+    const testDescription = t => JSON.parse(t.prompt.raw)[0].content.replace(/"/g, '&quot;');
+    let testNames = Object.fromEntries(results.results.map(d => [testID(d), testDescription(d)]));
+    const tests = Object.keys(testNames);
+    const entries = results.results;
+    const providers = [...new Set(entries.map(r => r.provider.id || r.provider))];
+    const stats = providers.map(m => {
+      const res = { model: m, pass: 0, fail: 0, error: 0, blank: 0 };
+      tests.forEach((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === m && testID(r) === d);
+        const o = r.response;
+        if (o?.error) res.error++;
+        else if (!(o?.output || '').trim()) res.blank++;
+        else if (r.success) res.pass++;
+        else res.fail++;
+      });
+      const den = res.pass + res.fail;
+      res.win = den ? Math.round(res.pass / den * 100) : 0;
+      return res;
+    });
+
+    const avg = Object.fromEntries(tests.map((d, i) =>
+      [d, Math.round(stats.filter(s => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
+        return r.success;
+      }).length / providers.length * 100)]
+    ));
+
+    // sort rows by win desc, fail desc, name
+    stats.sort((a, b) => b.win - a.win || b.fail - a.fail || a.model.localeCompare(b.model));
+
+    // sort cols by win desc
+    tests.sort((a, b) => avg[a] - avg[b]).map(t => t.test);
+
+    // header
+    document.getElementById('headerRow').innerHTML =
+      ['Model', '%Win', ...tests].map(h => `<th data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${testNames[h]}">${h}</th>`).join('');
+
+    // body
+    const b = document.getElementById('body');
+    stats.forEach(s => {
+      const cells = tests.map((d, i) => {
+        const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
+        const o = r.response;
+        const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
+        const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
+        return `<td class="${cls}" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${r.response.output.replace(/"/g, '&quot;') ?? o.error}">${st}</td>`;
+      }).join('');
+      b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
+    });
+
+    // Initialize popovers
+    bootstrap.Popover.getOrCreateInstance(document.body, { selector: '[data-bs-toggle="popover"]', trigger: 'hover' });
+
+    // footer averages
+    const f = document.getElementById('foot');
+    f.innerHTML = `<tr class="table-secondary"><th>Average</th><th></th>` +
+      tests.map(d => `<th>${avg[d]}%</th>`).join('') + `</tr>`;
+  </script>
+</body>
+
+</html>
