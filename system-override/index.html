@@ -82,7 +82,10 @@
     async function loadData(filename) {
       const { config, results } = await(await fetch(filename)).json();
       const testID = t => t.testCase.description;
-      const testDescription = t => JSON.parse(t.prompt.raw)[0].content.replace(/"/g, '&quot;');
+      const testDescription = t => {
+        const [system, user] = JSON.parse(t.prompt.raw)
+        return `SYSTEM: ${system.content}\nUSER: ${user.content}`.replace(/"/g, '&quot;');
+      }
       let testNames = Object.fromEntries(results.results.map(d => [testID(d), testDescription(d)]));
       const tests = Object.keys(testNames);
       const entries = results.results;
