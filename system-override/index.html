@@ -27,6 +27,12 @@
   <div class="container pt-5">
     <h1 class="display-1 my-4 text-center">System Prompt Overrides</h1>
     <h2 class="display-6 text-center">How well do LLMs follow system prompts?</h2>
+    <div class="text-center mb-4">
+      <select id="fileSelect" class="form-select" style="max-width: 300px; margin: 0 auto;">
+        <option value="evals.json">Default temperature</option>
+        <option value="evals-t7.json">Temperature = 0.7</option>
+      </select>
+    </div>
   </div>
 
   <div class="container-fluid">
@@ -62,68 +68,87 @@
       <li><strong>Don't rely on the system prompt</strong>. Deploy external validators, filters, regex gates, etc. when you have contractual obligations.</li>
       <li><strong>Newer/bigger models may not be better</strong>. A smaller, cheaper o-series model may be safer than a giant open-source one for system-prompt obedience tasks. Flash-tier models (Gemini, Nova Lite) can slice inference time but also alignment. Run tests before every model upgrade and factor the remediation cost into your TCO.</li>
     </ul>
+    <h2>Impact of Temperature</h2>
+    <p>I re-ran this at <a href="promptfooconfig-t7.yaml">temperature = 0.7</a>. The results are different but not by much.</p>
+    <ul>
+      <li>O3, O3-Mini-High, and O4-Mini were still at 100%.</li>
+      <li>Many good models like O3-Mini, Gemini Pro 1.5, Grok 3 Beta, GPT 4.1, GPT 4.1 Mini, Gemini 2.5 Flash dropped 10%. Claude 3.7 Sonnet dropped 20%.</li>
+      <li>Many poor models like Gemini 1.5 Flash, Llama 3.1 405b, Llama 3.3 70b increased 10%. Llama 4 Scout increased 20%.</li>
+      <li>The poorer models tend to do a bit better at higher temperatures, but this could simply be randomness.</li>
+    </ul>
   </div>
 
   <script type="module">
-    const { config, results } = await(await fetch('evals.json')).json();
-    const testID = t => t.testCase.description;
-    const testDescription = t => JSON.parse(t.prompt.raw)[0].content.replace(/"/g, '&quot;');
-    let testNames = Object.fromEntries(results.results.map(d => [testID(d), testDescription(d)]));
-    const tests = Object.keys(testNames);
-    const entries = results.results;
-    const providers = [...new Set(entries.map(r => r.provider.id || r.provider))];
-    const stats = providers.map(m => {
-      const res = { model: m, pass: 0, fail: 0, error: 0, blank: 0 };
-      tests.forEach((d, i) => {
-        const r = entries.find(r => (r.provider.id || r.provider) === m && testID(r) === d);
-        const o = r.response;
-        if (o?.error) res.error++;
-        else if (!(o?.output || '').trim()) res.blank++;
-        else if (r.success) res.pass++;
-        else res.fail++;
+    async function loadData(filename) {
+      const { config, results } = await(await fetch(filename)).json();
+      const testID = t => t.testCase.description;
+      const testDescription = t => JSON.parse(t.prompt.raw)[0].content.replace(/"/g, '&quot;');
+      let testNames = Object.fromEntries(results.results.map(d => [testID(d), testDescription(d)]));
+      const tests = Object.keys(testNames);
+      const entries = results.results;
+      const providers = [...new Set(entries.map(r => r.provider.id || r.provider))];
+      const stats = providers.map(m => {
+        const res = { model: m, pass: 0, fail: 0, error: 0, blank: 0 };
+        tests.forEach((d, i) => {
+          const r = entries.find(r => (r.provider.id || r.provider) === m && testID(r) === d);
+          const o = r.response;
+          if (o?.error) res.error++;
+          else if (!(o?.output || '').trim()) res.blank++;
+          else if (r.success) res.pass++;
+          else res.fail++;
+        });
+        const den = res.pass + res.fail;
+        res.win = den ? Math.round(res.pass / den * 100) : 0;
+        return res;
       });
-      const den = res.pass + res.fail;
-      res.win = den ? Math.round(res.pass / den * 100) : 0;
-      return res;
+
+      const avg = Object.fromEntries(tests.map((d, i) =>
+        [d, Math.round(stats.filter(s => {
+          const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
+          return r.success;
+        }).length / providers.length * 100)]
+      ));
+
+      // sort rows by win desc, fail desc, name
+      stats.sort((a, b) => b.win - a.win || b.fail - a.fail || a.model.localeCompare(b.model));
+
+      // sort cols by win desc
+      tests.sort((a, b) => avg[a] - avg[b]).map(t => t.test);
+
+      // header
+      document.getElementById('headerRow').innerHTML =
+        ['Model', '%Win', ...tests].map(h => `<th data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${testNames[h]}">${h}</th>`).join('');
+
+      // body
+      const b = document.getElementById('body');
+      b.innerHTML = '';
+      stats.forEach(s => {
+        const cells = tests.map((d, i) => {
+          const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
+          const o = r.response;
+          const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
+          const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
+          return `<td class="${cls}" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${r.response.output.replace(/"/g, '&quot;') ?? o.error}">${st}</td>`;
+        }).join('');
+        b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
+      });
+
+      // Initialize popovers
+      bootstrap.Popover.getOrCreateInstance(document.body, { selector: '[data-bs-toggle="popover"]', trigger: 'hover' });
+
+      // footer averages
+      const f = document.getElementById('foot');
+      f.innerHTML = `<tr class="table-secondary"><th>Average</th><th></th>` +
+        tests.map(d => `<th>${avg[d]}%</th>`).join('') + `</tr>`;
+    }
+
+    // Load default data
+    await loadData('evals.json');
+
+    // Handle dropdown change
+    document.getElementById('fileSelect').addEventListener('change', async (e) => {
+      await loadData(e.target.value);
     });
-
-    const avg = Object.fromEntries(tests.map((d, i) =>
-      [d, Math.round(stats.filter(s => {
-        const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
-        return r.success;
-      }).length / providers.length * 100)]
-    ));
-
-    // sort rows by win desc, fail desc, name
-    stats.sort((a, b) => b.win - a.win || b.fail - a.fail || a.model.localeCompare(b.model));
-
-    // sort cols by win desc
-    tests.sort((a, b) => avg[a] - avg[b]).map(t => t.test);
-
-    // header
-    document.getElementById('headerRow').innerHTML =
-      ['Model', '%Win', ...tests].map(h => `<th data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${testNames[h]}">${h}</th>`).join('');
-
-    // body
-    const b = document.getElementById('body');
-    stats.forEach(s => {
-      const cells = tests.map((d, i) => {
-        const r = entries.find(r => (r.provider.id || r.provider) === s.model && testID(r) == d);
-        const o = r.response;
-        const st = o?.error ? 'ERROR' : !(o?.output || '').trim() ? 'BLANK' : (r.success ? 'PASS' : 'FAIL');
-        const cls = st === 'PASS' ? 'table-success' : st === 'FAIL' ? 'table-danger' : 'table-warning';
-        return `<td class="${cls}" data-bs-toggle="popover" data-bs-placement="top" data-bs-content="${r.response.output.replace(/"/g, '&quot;') ?? o.error}">${st}</td>`;
-      }).join('');
-      b.insertAdjacentHTML('beforeend', `<tr><th>${s.model}</th><td>${s.win}%</td>${cells}</tr>`);
-    });
-
-    // Initialize popovers
-    bootstrap.Popover.getOrCreateInstance(document.body, { selector: '[data-bs-toggle="popover"]', trigger: 'hover' });
-
-    // footer averages
-    const f = document.getElementById('foot');
-    f.innerHTML = `<tr class="table-secondary"><th>Average</th><th></th>` +
-      tests.map(d => `<th>${avg[d]}%</th>`).join('') + `</tr>`;
   </script>
 </body>
 

@@ -50,6 +50,15 @@ Here are the prompts:
 - **Don't rely on the system prompt**. Deploy external validators, filters, regex gates, etc. when you have contractual obligations.
 - **Newer/bigger models may not be better**. A smaller, cheaper o-series model may be safer than a giant open-source one for system-prompt obedience tasks. Flash-tier models (Gemini, Nova Lite) can slice inference time but also alignment. Run tests before every model upgrade and factor the remediation cost into your TCO.
 
+## Impact of temperature
+
+I re-ran this at [temperature = 0.7](promptfooconfig-t7.yaml). The results are different but not by much.
+
+- O3, O3-Mini-High, and O4-Mini were still at 100%.
+- Many good models like O3-Mini, Gemini Pro 1.5, Grok 3 Beta, GPT 4.1, GPT 4.1 Mini, Gemini 2.5 Flash dropped 10%. Claude 3.7 Sonnet dropped 20%.
+- Many poor models like Gemini 1.5 Flash, Llama 3.1 405b, Llama 3.3 70b increased 10%. Llama 4 Scout increased 20%.
+- The poorer models tend to do a bit better at higher temperatures, but this could simply be randomness.
+
 ## Setup
 
 ```bash
@@ -59,6 +68,10 @@ export OPENROUTER_API_KEY=...
 export OPENAI_API_KEY=...
 npx -y promptfoo eval
 npx -y promptfoo export latest -o evals.json
+
+npx -y promptfoo eval -c promptfooconfig-t7.yaml
+npx -y promptfoo export latest -o evals-t7.json
+
 ```
 
 ## Results
