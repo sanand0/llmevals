@@ -57,7 +57,60 @@ I re-ran this at [temperature = 0.7](promptfooconfig-t7.yaml). The results are d
 - O3, O3-Mini-High, and O4-Mini were still at 100%.
 - Many good models like O3-Mini, Gemini Pro 1.5, Grok 3 Beta, GPT 4.1, GPT 4.1 Mini, Gemini 2.5 Flash dropped 10%. Claude 3.7 Sonnet dropped 20%.
 - Many poor models like Gemini 1.5 Flash, Llama 3.1 405b, Llama 3.3 70b increased 10%. Llama 4 Scout increased 20%.
-- The poorer models tend to do a bit better at higher temperatures, but this could simply be randomness.
+- Good models (60%+ success) did worse, dropping from 85% to 82%.
+- Bad models (50%- success) did better, moving from 34% to 40%, but this could simply be randomness.
+
+## Impact of SHOUTING
+
+I re-ran this with [user responses in CAPS](tests-shouting.yaml) to see if models obey CAPS more. The good models do, a bit.
+
+- O3-Mini-High and O4-Mini were still at 100%.
+- Gemini 1.5 Pro, O3, and O3 Mini each failed 1 test (different tests), dropping from their 100% success rate.
+- Good models (60%+ success) did worse, dropping from 85% to 83%.
+- Bad models (50%- success) did better, moving from 34% to 41%, but this could simply be randomness.
+
+## Results
+
+Here are the number of successful tests for each model for different tests.
+
+| Model                                 | Default | 0.7 Temp | SHOUTING |
+| ------------------------------------- | ------: | -------: | -------: |
+| openai/o3-mini-high                   |      10 |       10 |       10 |
+| openai/o4-mini                        |      10 |       10 |       10 |
+| openai/o3                             |      10 |       10 |        9 |
+| google/gemini-pro-1.5                 |      10 |        9 |        9 |
+| openai/o3-mini                        |      10 |        9 |        9 |
+| x-ai/grok-3-beta                      |      10 |        9 |        8 |
+| anthropic/claude-3.5-sonnet           |       9 |        9 |        9 |
+| openai/gpt-4.5-preview                |       9 |        9 |        9 |
+| openai/gpt-4o-mini                    |       9 |        9 |        9 |
+| openai/o4-mini-high                   |       9 |        9 |        8 |
+| anthropic/claude-3.7-sonnet           |       9 |        7 |        8 |
+| google/gemini-2.0-flash-001           |       8 |        8 |        8 |
+| openai/gpt-4.1                        |       9 |        8 |        6 |
+| anthropic/claude-sonnet-4             |       7 |        7 |        8 |
+| google/gemini-2.0-flash-lite-001      |       7 |        8 |        7 |
+| google/gemini-2.5-flash-preview-05-20 |       7 |        6 |        9 |
+| amazon/nova-lite-v1                   |       7 |        7 |        6 |
+| anthropic/claude-3.5-haiku            |       6 |        7 |        7 |
+| openai/gpt-4.1-nano                   |       5 |        6 |        8 |
+| meta-llama/llama-3-70b-instruct       |       6 |        4 |        7 |
+| anthropic/claude-opus-4               |       4 |        7 |        6 |
+| amazon/nova-micro-v1                  |       5 |        5 |        6 |
+| meta-llama/llama-4-scout              |       5 |        7 |        4 |
+| deepseek/deepseek-chat-v3-0324        |       5 |        6 |        4 |
+| meta-llama/llama-4-maverick           |       4 |        5 |        6 |
+| openai/gpt-4.1-mini                   |       5 |        4 |        5 |
+| google/gemini-flash-1.5               |       4 |        5 |        5 |
+| meta-llama/llama-3.1-405b-instruct    |       4 |        5 |        3 |
+| amazon/nova-pro-v1                    |       4 |        4 |        3 |
+| meta-llama/llama-3-8b-instruct        |       3 |        3 |        5 |
+| anthropic/claude-3-haiku              |       3 |        2 |        3 |
+| meta-llama/llama-3.3-70b-instruct     |       2 |        3 |        3 |
+| anthropic/claude-3-opus               |       2 |        2 |        3 |
+| anthropic/claude-3-sonnet             |       2 |        2 |        2 |
+| meta-llama/llama-3.2-3b-instruct      |       1 |        1 |        1 |
+| meta-llama/llama-3.2-1b-instruct      |       0 |        1 |        2 |
 
 ## Setup
 
@@ -71,6 +124,9 @@ npx -y promptfoo export latest -o evals.json
 
 npx -y promptfoo eval -c promptfooconfig-t7.yaml
 npx -y promptfoo export latest -o evals-t7.json
+
+npx -y promptfoo eval -c promptfooconfig-shouting.yaml
+npx -y promptfoo export latest -o evals-shouting.json
 
 ```
 

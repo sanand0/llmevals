@@ -1,0 +1,58 @@
+description: System-prompt override tests (USER IN CAPS)
+
+# Which models to run
+providers:
+  # O3 requires adding an OpenAI API key to OpenRouter as of 2025-06-09, so use OpenAI directly
+  - openrouter:openai/gpt-4.1-nano
+  - openrouter:openai/gpt-4o-mini
+  - openrouter:openai/gpt-4.1-mini
+  - openrouter:openai/gpt-4.1
+  - openai:o3
+  - openrouter:openai/o3-mini
+  - openrouter:openai/o3-mini-high
+  - openrouter:openai/o4-mini-high
+  - openrouter:openai/o4-mini
+  - openrouter:openai/gpt-4.5-preview
+  # - openrouter:openai/o1-pro  # Too expensive
+  # - openrouter:openai/o1      # Too expensive
+
+  # - openrouter:google/gemini-2.5-pro-preview  # Skip thinking model
+  - openrouter:google/gemini-2.5-flash-preview-05-20
+  # - openrouter:google/gemini-2.5-flash-preview-05-20:thinking  # Skip thinking model
+  - openrouter:google/gemini-2.0-flash-001
+  - openrouter:google/gemini-2.0-flash-lite-001
+  - openrouter:google/gemini-pro-1.5
+  - openrouter:google/gemini-flash-1.5
+
+  - openrouter:anthropic/claude-sonnet-4
+  - openrouter:anthropic/claude-opus-4
+  - openrouter:anthropic/claude-3.7-sonnet
+  - openrouter:anthropic/claude-3.5-sonnet
+  - openrouter:anthropic/claude-3.5-haiku
+  - openrouter:anthropic/claude-3-opus
+  - openrouter:anthropic/claude-3-sonnet
+  - openrouter:anthropic/claude-3-haiku
+
+  - openrouter:meta-llama/llama-4-maverick
+  - openrouter:meta-llama/llama-4-scout
+  - openrouter:meta-llama/llama-3.3-70b-instruct
+  - openrouter:meta-llama/llama-3.2-3b-instruct
+  - openrouter:meta-llama/llama-3.2-1b-instruct
+  - openrouter:meta-llama/llama-3.1-405b-instruct
+  - openrouter:meta-llama/llama-3-70b-instruct
+  - openrouter:meta-llama/llama-3-8b-instruct
+
+  - openrouter:deepseek/deepseek-chat-v3-0324
+  # - openrouter:deepseek/deepseek-r1  # Skip thinking model
+
+  - openrouter:x-ai/grok-3-beta
+  # - openrouter:x-ai/grok-3-mini-beta  # Skip thinking model
+
+  - openrouter:amazon/nova-micro-v1
+  - openrouter:amazon/nova-lite-v1
+  - openrouter:amazon/nova-pro-v1
+
+prompts: "{{ messages | dump }}"
+
+tests:
+  - file://tests-shouting.yaml
