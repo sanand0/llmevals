@@ -72,6 +72,9 @@ npx -y promptfoo export latest -o evals.json
 npx -y promptfoo eval -c promptfooconfig-t7.yaml
 npx -y promptfoo export latest -o evals-t7.json
 
+npx -y promptfoo eval -c promptfooconfig-shouting.yaml
+npx -y promptfoo export latest -o evals-shouting.json
+
 ```
 
 ## Results
