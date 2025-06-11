@@ -31,7 +31,7 @@
       <select id="fileSelect" class="form-select" style="max-width: 300px; margin: 0 auto;">
         <option value="evals.json">Default temperature</option>
         <option value="evals-t7.json">Temperature = 0.7</option>
-        <option value="evals-shouting.json">User in CAPS</option>
+        <option value="evals-shouting.json">SHOUTING</option>
       </select>
     </div>
   </div>
@@ -77,11 +77,249 @@
       <li>Many poor models like Gemini 1.5 Flash, Llama 3.1 405b, Llama 3.3 70b increased 10%. Llama 4 Scout increased 20%.</li>
       <li>The poorer models tend to do a bit better at higher temperatures, but this could simply be randomness.</li>
     </ul>
+    <h2>Impact of SHOUTING</h2>
+    <p>I re-ran this with <a href="tests-shouting.yaml">user responses in CAPS</a> to see if models obey CAPS more. The good models do, a bit.</p>
+    <ul>
+      <li>O3-Mini-High and O4-Mini were still at 100%.</li>
+      <li>Gemini 1.5 Pro, O3, and O3 Mini each failed 1 test (different tests), dropping from their 100% success rate.</li>
+      <li>Good models (60%+ success) did worse, dropping from 85% to 83%.</li>
+      <li>Bad models (50%- success) did better, moving from 34% to 41%, but this could simply be randomness.</li>
+    </ul>
+    <h2>Results</h2>
+    <p>Here are the number of successful tests for each model for different tests.</p>
+    <table class="table table-sm">
+      <thead>
+        <tr>
+          <th>Model</th>
+          <th style="text-align: right;">Default</th>
+          <th style="text-align: right;">0.7 Temp</th>
+          <th style="text-align: right;">SHOUTING</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>openai/o3-mini-high</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">10</td>
+        </tr>
+        <tr>
+          <td>openai/o4-mini</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">10</td>
+        </tr>
+        <tr>
+          <td>openai/o3</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>google/gemini-pro-1.5</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>openai/o3-mini</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>x-ai/grok-3-beta</td>
+          <td style="text-align: right;">10</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3.5-sonnet</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>openai/gpt-4.5-preview</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>openai/gpt-4o-mini</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>openai/o4-mini-high</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3.7-sonnet</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>google/gemini-2.0-flash-001</td>
+          <td style="text-align: right;">8</td>
+          <td style="text-align: right;">8</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>openai/gpt-4.1</td>
+          <td style="text-align: right;">9</td>
+          <td style="text-align: right;">8</td>
+          <td style="text-align: right;">6</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-sonnet-4</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>google/gemini-2.0-flash-lite-001</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">8</td>
+          <td style="text-align: right;">7</td>
+        </tr>
+        <tr>
+          <td>google/gemini-2.5-flash-preview-05-20</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">6</td>
+          <td style="text-align: right;">9</td>
+        </tr>
+        <tr>
+          <td>amazon/nova-lite-v1</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">6</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3.5-haiku</td>
+          <td style="text-align: right;">6</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">7</td>
+        </tr>
+        <tr>
+          <td>openai/gpt-4.1-nano</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">6</td>
+          <td style="text-align: right;">8</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3-70b-instruct</td>
+          <td style="text-align: right;">6</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">7</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-opus-4</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">6</td>
+        </tr>
+        <tr>
+          <td>amazon/nova-micro-v1</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">6</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-4-scout</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">7</td>
+          <td style="text-align: right;">4</td>
+        </tr>
+        <tr>
+          <td>deepseek/deepseek-chat-v3-0324</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">6</td>
+          <td style="text-align: right;">4</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-4-maverick</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">6</td>
+        </tr>
+        <tr>
+          <td>openai/gpt-4.1-mini</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">5</td>
+        </tr>
+        <tr>
+          <td>google/gemini-flash-1.5</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">5</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3.1-405b-instruct</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">5</td>
+          <td style="text-align: right;">3</td>
+        </tr>
+        <tr>
+          <td>amazon/nova-pro-v1</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">4</td>
+          <td style="text-align: right;">3</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3-8b-instruct</td>
+          <td style="text-align: right;">3</td>
+          <td style="text-align: right;">3</td>
+          <td style="text-align: right;">5</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3-haiku</td>
+          <td style="text-align: right;">3</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">3</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3.3-70b-instruct</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">3</td>
+          <td style="text-align: right;">3</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3-opus</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">3</td>
+        </tr>
+        <tr>
+          <td>anthropic/claude-3-sonnet</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">2</td>
+          <td style="text-align: right;">2</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3.2-3b-instruct</td>
+          <td style="text-align: right;">1</td>
+          <td style="text-align: right;">1</td>
+          <td style="text-align: right;">1</td>
+        </tr>
+        <tr>
+          <td>meta-llama/llama-3.2-1b-instruct</td>
+          <td style="text-align: right;">0</td>
+          <td style="text-align: right;">1</td>
+          <td style="text-align: right;">2</td>
+        </tr>
+      </tbody>
+    </table>
   </div>
 
   <script type="module">
     async function loadData(filename) {
-      const { config, results } = await(await fetch(filename)).json();
+      const { config, results } = await (await fetch(filename)).json();
       const testID = t => t.testCase.description;
       const testDescription = t => {
         const [system, user] = JSON.parse(t.prompt.raw)
