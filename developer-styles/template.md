@@ -1,0 +1,42 @@
+Write a single ESM file `checkout.js` that implements a 5-state checkout flow with events:
+`idle -> cart -> address -> payment -> done`
+Events: `NEXT`, `BACK`, `FAIL`.
+
+**API TARGET (TypeScript shape)**
+
+```ts
+// One file, ≤30 non-empty lines, ESM.
+type State = "idle" | "cart" | "address" | "payment" | "done";
+type Event = "NEXT" | "BACK" | "FAIL";
+
+export function createCheckoutMachine(initial: State = "idle"): {
+  state: State; // current state
+  send: (e: Event) => void; // dispatch event
+  allowed: () => Event[]; // events valid from current state
+  subscribe: (fn: (s: State) => void) => () => void; // observe (returns unsubscribe)
+};
+```
+
+**Transition rules (must honor)**
+
+- `NEXT`: advances one step along `idle→cart→address→payment→done`. No effect from `done`.
+- `BACK`: goes one step back (no effect from `idle`).
+- `FAIL`: only valid from `payment`; goes to `address` (no effect elsewhere).
+- Invalid events **must not throw**; they are no-ops.
+
+**Constraints**
+
+- ≤30 **non-empty** lines of code, single ESM file.
+- No external dependencies.
+- Deterministic behavior; no global state.
+- `subscribe` must call all subscribers on every state change and **immediately once** on subscription.
+
+Write in the style of $DEVELOPER ($GITHUB).
+
+**Optional**
+
+- You may add a single `render(el, machine)` helper if the total still fits ≤30 lines.
+
+**Non-goals**
+
+- No CLI, tests, config files, or generated files.
