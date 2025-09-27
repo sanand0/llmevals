@@ -2,13 +2,13 @@
 
 LLMs mimic Studio Ghibli art. What if they mimic-ed developers? And solved a SINGLE problem in their styles? Can we learn from that?
 
-I picked a [five-step checkout state machine problem](template.md):
+I picked a [five-step checkout state machine problem](https://github.com/sanand0/llmevals/blob/main/developer-styles/template.md):
 
 - Create one JavaScript file ≤30 lines (no dependencies) that implements `createCheckoutMachine() → { state, send, allowed, subscribe }.`
 - The checkout state goes from `idle → cart → address → payment → done`.
 - `NEXT` moves the state forward. `BACK` moves backwards. `FAIL` on `payment` goes to `address`.
 
-I had ChatGPT identify [famous JS developers](./developer-styles.tsv) and used [Codex CLI](https://github.com/openai/codex/) to [write code](./run.sh) in each developer's style (_"Write in the style of $DEVELOPER."_)
+I had ChatGPT identify [famous JS developers](https://github.com/sanand0/llmevals/blob/main/developer-styles/developer-styles.tsv) and used [Codex CLI](https://github.com/openai/codex/) to [write code](https://github.com/sanand0/llmevals/blob/main/developer-styles/run.sh) in each developer's style (_"Write in the style of $DEVELOPER."_)
 
 Here is the result:
 
@@ -52,3 +52,11 @@ By studying the masters, we learn a lot about how to approach a problem.
 But with LLM style transfer, we _no longer need masters to learn from their work_. We can apply _all_ their methods to _any_ problem.
 
 To me, that's staggering!
+
+## Addendum
+
+I asked [Codex CLI](https://developers.openai.com/codex/cli/) (`gpt-5-high`) to suggest an expert to refactor my [AIPipe](https://github.com/sanand0/aipipe/tree/074496275e4f39cfd8d9fc1205c1699fe0bc8b47) repo.
+
+[Here is the conversation](expert-review.md)
+
+Why use a generic coding agent when it can write in an expert's style?
