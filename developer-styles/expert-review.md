@@ -23,7 +23,7 @@ Which of these developers would I bring in to rewrite this repo and why them?
 | paulirish     | Paul Irish         | "performance-first, tooling-led frontend". Begin with a best-practice baseline, then _measure_ and iterate; progressive enhancement, diagnostics. |
 | sebmck        | Sebastian McKenzie | "language-aware tooling". Compiler-grade transforms; cohesive DX across parse/lint/format.                                                        |
 | jarred-sumner | Jarred Sumner      | "integrated runtime thinking". Batteries-included; prioritize startup/memory; pragmatic Node compat.                                              |
-| developit     | Matteo Collina     | "measure first; zero-overhead Node". Schema-driven, plugin-centric, perf-budgeted code; tight JSON/HTTP control.                                  |
+| mcollina      | Matteo Collina     | "measure first; zero-overhead Node". Schema-driven, plugin-centric, perf-budgeted code; tight JSON/HTTP control.                                  |
 | developit     | Jason Miller       | "small framework thinking". 3kB-class frameworks, compile-free JSX (`htm`), pragmatic trade-offs.                                                 |
 | ryansolid     | Ryan Carniato      | "fine-grained reactivity". Minimal abstractions around signals; control over reactivity graph; JSX without VDOM.                                  |
 

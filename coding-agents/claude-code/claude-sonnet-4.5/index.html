@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GitHub Profile Viewer</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .loading {
+            text-align: center;
+            color: white;
+            font-size: 24px;
+            padding: 40px;
+        }
+
+        .error {
+            background: #ff4444;
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            margin: 20px 0;
+        }
+
+        .profile-header {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+
+        .profile-avatar {
+            flex-shrink: 0;
+        }
+
+        .profile-avatar img {
+            width: 200px;
+            height: 200px;
+            border-radius: 50%;
+            border: 5px solid #667eea;
+        }
+
+        .profile-info {
+            flex-grow: 1;
+        }
+
+        .profile-name {
+            font-size: 32px;
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+
+        .profile-username {
+            font-size: 20px;
+            color: #666;
+            margin-bottom: 15px;
+        }
+
+        .profile-bio {
+            font-size: 16px;
+            line-height: 1.6;
+            margin-bottom: 15px;
+        }
+
+        .profile-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            margin-bottom: 15px;
+            font-size: 14px;
+            color: #666;
+        }
+
+        .profile-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .profile-stats {
+            display: flex;
+            gap: 30px;
+            margin-top: 20px;
+        }
+
+        .stat {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #667eea;
+        }
+
+        .stat-label {
+            font-size: 14px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .profile-links {
+            display: flex;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-decoration: none;
+            font-weight: 500;
+            transition: transform 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-primary {
+            background: #667eea;
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #333;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+        }
+
+        .card-title {
+            font-size: 20px;
+            font-weight: bold;
+            margin-bottom: 20px;
+            color: #667eea;
+        }
+
+        .repo-item {
+            padding: 15px;
+            border-bottom: 1px solid #f0f0f0;
+            transition: background 0.2s;
+        }
+
+        .repo-item:last-child {
+            border-bottom: none;
+        }
+
+        .repo-item:hover {
+            background: #f8f9ff;
+        }
+
+        .repo-name {
+            font-size: 16px;
+            font-weight: 600;
+            color: #667eea;
+            text-decoration: none;
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .repo-name:hover {
+            text-decoration: underline;
+        }
+
+        .repo-description {
+            font-size: 14px;
+            color: #666;
+            margin-bottom: 10px;
+        }
+
+        .repo-meta {
+            display: flex;
+            gap: 20px;
+            font-size: 13px;
+            color: #888;
+        }
+
+        .repo-meta-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .language-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .activity-item {
+            padding: 15px;
+            border-left: 3px solid #667eea;
+            margin-bottom: 15px;
+            background: #f8f9ff;
+            border-radius: 5px;
+        }
+
+        .activity-type {
+            font-size: 14px;
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 5px;
+        }
+
+        .activity-repo {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 5px;
+        }
+
+        .activity-time {
+            font-size: 12px;
+            color: #999;
+        }
+
+        .activity-details {
+            font-size: 13px;
+            color: #555;
+            margin-top: 8px;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        @media (max-width: 968px) {
+            .content-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .profile-header {
+                flex-direction: column;
+                align-items: center;
+                text-align: center;
+            }
+
+            .profile-stats {
+                justify-content: center;
+            }
+
+            .profile-links {
+                justify-content: center;
+            }
+        }
+
+        .languages-chart {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .language-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .contribution-calendar {
+            font-size: 13px;
+            color: #666;
+        }
+
+        .empty-state {
+            text-align: center;
+            color: #999;
+            padding: 40px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="app"></div>
+    </div>
+
+    <script>
+        const GITHUB_API = 'https://api.github.com';
+
+        // Get username from URL parameter, default to 'torvalds'
+        const urlParams = new URLSearchParams(window.location.search);
+        const username = urlParams.get('id') || 'torvalds';
+
+        const app = document.getElementById('app');
+
+        // Language colors (GitHub's color scheme)
+        const languageColors = {
+            'JavaScript': '#f1e05a',
+            'TypeScript': '#2b7489',
+            'Python': '#3572A5',
+            'Java': '#b07219',
+            'C': '#555555',
+            'C++': '#f34b7d',
+            'C#': '#178600',
+            'Go': '#00ADD8',
+            'Ruby': '#701516',
+            'PHP': '#4F5D95',
+            'Swift': '#ffac45',
+            'Kotlin': '#F18E33',
+            'Rust': '#dea584',
+            'Shell': '#89e051',
+            'HTML': '#e34c26',
+            'CSS': '#563d7c',
+            'Vue': '#41b883',
+            'React': '#61dafb',
+            'Dart': '#00B4AB',
+        };
+
+        function formatDate(dateString) {
+            const date = new Date(dateString);
+            const now = new Date();
+            const diffTime = Math.abs(now - date);
+            const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+
+            if (diffDays === 0) return 'today';
+            if (diffDays === 1) return 'yesterday';
+            if (diffDays < 30) return `${diffDays} days ago`;
+            if (diffDays < 365) return `${Math.floor(diffDays / 30)} months ago`;
+            return `${Math.floor(diffDays / 365)} years ago`;
+        }
+
+        function formatNumber(num) {
+            if (num >= 1000000) return (num / 1000000).toFixed(1) + 'M';
+            if (num >= 1000) return (num / 1000).toFixed(1) + 'K';
+            return num;
+        }
+
+        function getLanguageColor(language) {
+            return languageColors[language] || '#808080';
+        }
+
+        function renderActivityItem(event) {
+            let activityType = '';
+            let activityDetails = '';
+
+            switch(event.type) {
+                case 'PushEvent':
+                    const commitCount = event.payload.commits?.length || 0;
+                    activityType = `Pushed ${commitCount} commit${commitCount !== 1 ? 's' : ''}`;
+                    if (event.payload.commits && event.payload.commits.length > 0) {
+                        activityDetails = event.payload.commits.slice(0, 3).map(c =>
+                            `<div>• ${c.message}</div>`
+                        ).join('');
+                    }
+                    break;
+                case 'CreateEvent':
+                    activityType = `Created ${event.payload.ref_type}`;
+                    if (event.payload.ref) {
+                        activityDetails = `Branch: ${event.payload.ref}`;
+                    }
+                    break;
+                case 'WatchEvent':
+                    activityType = 'Starred repository';
+                    break;
+                case 'ForkEvent':
+                    activityType = 'Forked repository';
+                    break;
+                case 'IssuesEvent':
+                    activityType = `${event.payload.action} issue`;
+                    if (event.payload.issue) {
+                        activityDetails = event.payload.issue.title;
+                    }
+                    break;
+                case 'PullRequestEvent':
+                    activityType = `${event.payload.action} pull request`;
+                    if (event.payload.pull_request) {
+                        activityDetails = event.payload.pull_request.title;
+                    }
+                    break;
+                case 'IssueCommentEvent':
+                    activityType = 'Commented on issue';
+                    break;
+                case 'DeleteEvent':
+                    activityType = `Deleted ${event.payload.ref_type}`;
+                    break;
+                default:
+                    activityType = event.type.replace('Event', '');
+            }
+
+            return `
+                <div class="activity-item">
+                    <div class="activity-type">${activityType}</div>
+                    <div class="activity-repo">${event.repo.name}</div>
+                    ${activityDetails ? `<div class="activity-details">${activityDetails}</div>` : ''}
+                    <div class="activity-time">${formatDate(event.created_at)}</div>
+                </div>
+            `;
+        }
+
+        async function fetchGitHubData() {
+            try {
+                app.innerHTML = '<div class="loading">Loading GitHub profile...</div>';
+
+                // Fetch user data
+                const userResponse = await fetch(`${GITHUB_API}/users/${username}`);
+                if (!userResponse.ok) throw new Error('User not found');
+                const user = await userResponse.json();
+
+                // Fetch repositories
+                const reposResponse = await fetch(`${GITHUB_API}/users/${username}/repos?sort=updated&per_page=10`);
+                const repos = await reposResponse.json();
+
+                // Fetch recent activity
+                const eventsResponse = await fetch(`${GITHUB_API}/users/${username}/events/public?per_page=20`);
+                const events = await eventsResponse.json();
+
+                // Calculate language statistics from repos
+                const languageStats = {};
+                for (const repo of repos.slice(0, 20)) {
+                    if (repo.language) {
+                        languageStats[repo.language] = (languageStats[repo.language] || 0) + 1;
+                    }
+                }
+
+                const sortedLanguages = Object.entries(languageStats)
+                    .sort((a, b) => b[1] - a[1])
+                    .slice(0, 8);
+
+                // Render the profile
+                app.innerHTML = `
+                    <div class="profile-header">
+                        <div class="profile-avatar">
+                            <img src="${user.avatar_url}" alt="${user.name || user.login}">
+                        </div>
+                        <div class="profile-info">
+                            <div class="profile-name">${user.name || user.login}</div>
+                            <div class="profile-username">@${user.login}</div>
+                            ${user.bio ? `<div class="profile-bio">${user.bio}</div>` : ''}
+
+                            <div class="profile-meta">
+                                ${user.company ? `<div class="profile-meta-item">🏢 ${user.company}</div>` : ''}
+                                ${user.location ? `<div class="profile-meta-item">📍 ${user.location}</div>` : ''}
+                                ${user.blog ? `<div class="profile-meta-item">🔗 <a href="${user.blog.startsWith('http') ? user.blog : 'http://' + user.blog}" target="_blank">${user.blog}</a></div>` : ''}
+                                ${user.twitter_username ? `<div class="profile-meta-item">🐦 @${user.twitter_username}</div>` : ''}
+                            </div>
+
+                            <div class="profile-stats">
+                                <div class="stat">
+                                    <div class="stat-value">${formatNumber(user.followers)}</div>
+                                    <div class="stat-label">Followers</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${formatNumber(user.following)}</div>
+                                    <div class="stat-label">Following</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${formatNumber(user.public_repos)}</div>
+                                    <div class="stat-label">Repositories</div>
+                                </div>
+                                <div class="stat">
+                                    <div class="stat-value">${formatNumber(user.public_gists)}</div>
+                                    <div class="stat-label">Gists</div>
+                                </div>
+                            </div>
+
+                            <div class="profile-links">
+                                <a href="${user.html_url}" target="_blank" class="btn btn-primary">View on GitHub</a>
+                                ${user.email ? `<a href="mailto:${user.email}" class="btn btn-secondary">Email</a>` : ''}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="content-grid">
+                        <div class="card">
+                            <div class="card-title">Popular Repositories</div>
+                            ${repos.length > 0 ? repos.slice(0, 6).map(repo => `
+                                <div class="repo-item">
+                                    <a href="${repo.html_url}" target="_blank" class="repo-name">${repo.name}</a>
+                                    ${repo.description ? `<div class="repo-description">${repo.description}</div>` : ''}
+                                    <div class="repo-meta">
+                                        ${repo.language ? `
+                                            <div class="repo-meta-item">
+                                                <span class="language-dot" style="background: ${getLanguageColor(repo.language)}"></span>
+                                                ${repo.language}
+                                            </div>
+                                        ` : ''}
+                                        <div class="repo-meta-item">⭐ ${formatNumber(repo.stargazers_count)}</div>
+                                        <div class="repo-meta-item">🔀 ${formatNumber(repo.forks_count)}</div>
+                                        <div class="repo-meta-item">Updated ${formatDate(repo.updated_at)}</div>
+                                    </div>
+                                </div>
+                            `).join('') : '<div class="empty-state">No repositories found</div>'}
+                        </div>
+
+                        <div class="card">
+                            <div class="card-title">Recent Activity</div>
+                            ${events.length > 0 ? events.slice(0, 10).map(renderActivityItem).join('') : '<div class="empty-state">No recent activity</div>'}
+                        </div>
+
+                        ${sortedLanguages.length > 0 ? `
+                            <div class="card">
+                                <div class="card-title">Top Languages</div>
+                                <div class="languages-chart">
+                                    ${sortedLanguages.map(([lang, count]) => `
+                                        <div class="language-item">
+                                            <span class="language-dot" style="background: ${getLanguageColor(lang)}"></span>
+                                            <span>${lang}</span>
+                                            <span style="color: #999;">(${count})</span>
+                                        </div>
+                                    `).join('')}
+                                </div>
+                            </div>
+                        ` : ''}
+
+                        <div class="card">
+                            <div class="card-title">Profile Details</div>
+                            <div style="line-height: 2;">
+                                <div><strong>Username:</strong> ${user.login}</div>
+                                ${user.name ? `<div><strong>Name:</strong> ${user.name}</div>` : ''}
+                                <div><strong>Member since:</strong> ${new Date(user.created_at).toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' })}</div>
+                                <div><strong>Last updated:</strong> ${formatDate(user.updated_at)}</div>
+                                ${user.hireable ? '<div><strong>Available for hire:</strong> Yes ✓</div>' : ''}
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+            } catch (error) {
+                app.innerHTML = `
+                    <div class="error">
+                        <h2>Error loading profile</h2>
+                        <p>${error.message}</p>
+                        <p>Make sure the username "${username}" exists on GitHub.</p>
+                    </div>
+                `;
+            }
+        }
+
+        // Load the data when page loads
+        fetchGitHubData();
+    </script>
+</body>
+</html>

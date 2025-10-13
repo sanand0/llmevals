@@ -1,0 +1,738 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GitHub Spotlight</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Space+Grotesk:wght@600&display=swap"
+    rel="stylesheet"
+  />
+  <style>
+    :root {
+      color-scheme: light dark;
+      --bg: #0f172a;
+      --bg-card: #1e293b;
+      --bg-light: #f8fafc;
+      --text: #e2e8f0;
+      --text-muted: #cbd5f5cc;
+      --accent: #38bdf8;
+      --accent-soft: rgba(56, 189, 248, 0.12);
+      --border: rgba(148, 163, 184, 0.24);
+      --success: #22c55e;
+      --warning: #facc15;
+      --danger: #f87171;
+      font-family: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    @media (prefers-color-scheme: light) {
+      :root {
+        --bg: #f1f5f9;
+        --bg-card: #ffffff;
+        --text: #0f172a;
+        --text-muted: rgba(15, 23, 42, 0.6);
+        --accent: #0ea5e9;
+        --border: rgba(148, 163, 184, 0.3);
+      }
+    }
+
+    *, *::before, *::after {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 48px 24px 64px;
+      background-image: radial-gradient(circle at 0% 0%, rgba(56, 189, 248, 0.12) 0, rgba(56, 189, 248, 0) 55%),
+        radial-gradient(circle at 100% 100%, rgba(99, 102, 241, 0.16) 0, rgba(99, 102, 241, 0) 45%);
+    }
+
+    main {
+      width: min(1160px, 100%);
+      display: grid;
+      gap: 32px;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 20px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .brand {
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .brand span {
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-weight: 600;
+      font-size: clamp(24px, 2.8vw, 36px);
+      letter-spacing: -0.03em;
+    }
+
+    .brand small {
+      color: var(--text-muted);
+      font-size: 15px;
+    }
+
+    .input-group {
+      position: relative;
+      display: flex;
+      width: min(320px, 100%);
+    }
+
+    .input-group input {
+      flex: 1;
+      padding: 12px 16px 12px 44px;
+      border-radius: 14px;
+      border: 1px solid var(--border);
+      background: var(--bg-card);
+      color: inherit;
+      font-size: 15px;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease;
+      outline: none;
+    }
+
+    .input-group input:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 4px var(--accent-soft);
+    }
+
+    .input-group svg {
+      position: absolute;
+      top: 50%;
+      left: 16px;
+      transform: translateY(-50%);
+      width: 18px;
+      height: 18px;
+      opacity: 0.7;
+    }
+
+    .content {
+      display: grid;
+      grid-template-columns: minmax(0, 320px) minmax(0, 1fr);
+      gap: 32px;
+    }
+
+    .card {
+      background: var(--bg-card);
+      border: 1px solid var(--border);
+      border-radius: 20px;
+      padding: 28px;
+      backdrop-filter: blur(14px);
+      box-shadow: 0 20px 45px -24px rgba(15, 23, 42, 0.65);
+    }
+
+    .profile {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 24px;
+      text-align: center;
+    }
+
+    .avatar {
+      width: 148px;
+      height: 148px;
+      border-radius: 38px;
+      overflow: hidden;
+      border: 3px solid rgba(148, 163, 184, 0.3);
+      outline: 6px solid rgba(148, 163, 184, 0.16);
+      box-shadow: 0 18px 42px -16px rgba(15, 23, 42, 0.6);
+    }
+
+    .avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .name {
+      font-size: 24px;
+      font-weight: 600;
+    }
+
+    .username {
+      font-size: 15px;
+      color: var(--accent);
+      font-weight: 500;
+    }
+
+    .bio {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .meta {
+      display: grid;
+      gap: 16px;
+      width: 100%;
+    }
+
+    .meta-row {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+      gap: 12px;
+      text-align: left;
+    }
+
+    .badge {
+      padding: 12px 16px;
+      border-radius: 14px;
+      border: 1px solid rgba(148, 163, 184, 0.3);
+      background: rgba(148, 163, 184, 0.08);
+      font-size: 14px;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .badge strong {
+      font-size: 16px;
+    }
+
+    .badge span {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+
+    .links {
+      display: grid;
+      gap: 10px;
+      width: 100%;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      border-radius: 14px;
+      background: rgba(148, 163, 184, 0.06);
+      border: 1px solid rgba(148, 163, 184, 0.18);
+      color: inherit;
+      text-decoration: none;
+      font-size: 14px;
+      transition: transform 0.2s ease, border-color 0.2s ease;
+    }
+
+    .link-card:hover {
+      transform: translateY(-1px);
+      border-color: var(--accent);
+    }
+
+    .activity {
+      display: grid;
+      gap: 24px;
+    }
+
+    .activity-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: -8px;
+    }
+
+    .activity-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+      margin: 0;
+    }
+
+    .pill {
+      display: inline-flex;
+      align-items: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(148, 163, 184, 0.12);
+      font-size: 13px;
+      color: var(--text-muted);
+      gap: 6px;
+    }
+
+    .event-list {
+      display: grid;
+      gap: 16px;
+    }
+
+    .event {
+      display: grid;
+      gap: 8px;
+      padding: 16px 18px;
+      border-radius: 16px;
+      background: rgba(148, 163, 184, 0.08);
+      border: 1px solid rgba(148, 163, 184, 0.2);
+    }
+
+    .event-type {
+      font-weight: 600;
+      font-size: 15px;
+    }
+
+    .event-meta {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .repo-link {
+      font-family: "Space Grotesk", "Inter", sans-serif;
+      font-weight: 600;
+      letter-spacing: -0.01em;
+      font-size: 16px;
+      color: inherit;
+      text-decoration: none;
+    }
+
+    .repo-link:hover {
+      color: var(--accent);
+    }
+
+    .event-body {
+      font-size: 14px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    .language-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.08);
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .loading, .error {
+      display: none;
+      justify-content: center;
+      align-items: center;
+      padding: 24px;
+      border-radius: 18px;
+      background: rgba(148, 163, 184, 0.1);
+      font-size: 15px;
+      color: var(--text-muted);
+      border: 1px dashed rgba(148, 163, 184, 0.4);
+    }
+
+    .loading.active, .error.active {
+      display: flex;
+    }
+
+    .skeleton {
+      background: linear-gradient(90deg, rgba(148, 163, 184, 0.16), rgba(148, 163, 184, 0.12), rgba(148, 163, 184, 0.16));
+      background-size: 200% 100%;
+      animation: shimmer 1.4s ease infinite;
+    }
+
+    @keyframes shimmer {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+
+    .footer-note {
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: -12px;
+    }
+
+    @media (max-width: 960px) {
+      .content {
+        grid-template-columns: minmax(0, 1fr);
+      }
+
+      body {
+        padding-top: 32px;
+      }
+
+      header {
+        gap: 16px;
+      }
+
+      .activity {
+        order: -1;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main>
+    <header>
+      <div class="brand">
+        <span>GitHub Spotlight</span>
+        <small>Discover GitHub stories through profiles & activity</small>
+      </div>
+      <form id="search-form" class="input-group" autocomplete="off">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+          <circle cx="11" cy="11" r="7"></circle>
+          <line x1="16.65" y1="16.65" x2="21" y2="21"></line>
+        </svg>
+        <input id="search-input" type="text" placeholder="Search GitHub username…" aria-label="GitHub username" />
+      </form>
+    </header>
+
+    <section class="content">
+      <section class="card profile" id="profile-card" aria-live="polite">
+        <div class="loading" id="profile-loading">Loading profile…</div>
+      </section>
+
+      <section class="card activity" id="activity-card" aria-live="polite">
+        <div class="activity-header">
+          <h2>Recent Activity</h2>
+          <span class="pill" id="activity-count">0 events</span>
+        </div>
+        <div class="loading" id="activity-loading">Loading activity…</div>
+        <div class="event-list" id="event-list"></div>
+      </section>
+    </section>
+
+    <p class="footer-note">Tip: append <code>?id=USERNAME</code> to the URL • Data from GitHub API</p>
+  </main>
+
+  <template id="profile-template">
+    <div class="avatar">
+      <img id="profile-avatar" alt="GitHub avatar" />
+    </div>
+    <div>
+      <div class="name" id="profile-name"></div>
+      <div class="username" id="profile-username"></div>
+    </div>
+    <p class="bio" id="profile-bio"></p>
+    <div class="meta">
+      <div class="meta-row">
+        <div class="badge">
+          <strong id="profile-followers">0</strong>
+          <span>Followers</span>
+        </div>
+        <div class="badge">
+          <strong id="profile-following">0</strong>
+          <span>Following</span>
+        </div>
+        <div class="badge">
+          <strong id="profile-repos">0</strong>
+          <span>Public Repos</span>
+        </div>
+      </div>
+      <div class="meta-row">
+        <div class="badge">
+          <strong id="profile-gists">0</strong>
+          <span>Public Gists</span>
+        </div>
+        <div class="badge">
+          <strong id="profile-created">—</strong>
+          <span>Joined</span>
+        </div>
+        <div class="badge">
+          <strong id="profile-updated">—</strong>
+          <span>Last Active</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="links" id="profile-links"></div>
+  </template>
+
+  <template id="event-template">
+    <article class="event">
+      <div class="event-type"></div>
+      <div class="event-meta"></div>
+      <div class="event-body"></div>
+    </article>
+  </template>
+
+  <script>
+    const $ = (selector, scope = document) => scope.querySelector(selector);
+    const url = new URL(window.location);
+    const username = url.searchParams.get('id') || 'torvalds';
+    const searchInput = $('#search-input');
+    searchInput.value = username;
+
+    const profileCard = $('#profile-card');
+    const activityCard = $('#activity-card');
+    const profileLoading = $('#profile-loading');
+    const activityLoading = $('#activity-loading');
+    const eventList = $('#event-list');
+    const activityCount = $('#activity-count');
+
+    const profileTemplate = $('#profile-template');
+    const eventTemplate = $('#event-template');
+
+    const formatNumber = (n) => new Intl.NumberFormat().format(n);
+    const formatDate = (date) => new Intl.DateTimeFormat(undefined, {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    }).format(new Date(date));
+
+    const formatRelativeTime = (date) => {
+      const delta = (Date.now() - new Date(date).getTime()) / 1000;
+      const intervals = [
+        { label: 'year', seconds: 31536000 },
+        { label: 'month', seconds: 2592000 },
+        { label: 'day', seconds: 86400 },
+        { label: 'hour', seconds: 3600 },
+        { label: 'minute', seconds: 60 },
+      ];
+      for (const { label, seconds } of intervals) {
+        const count = Math.floor(delta / seconds);
+        if (count >= 1) {
+          return `${count} ${label}${count > 1 ? 's' : ''} ago`;
+        }
+      }
+      return 'just now';
+    };
+
+    const fetchJson = async (endpoint) => {
+      const response = await fetch(`https://api.github.com${endpoint}`);
+      if (!response.ok) {
+        const err = await response.json().catch(() => ({}));
+        throw new Error(err.message || response.statusText);
+      }
+      return response.json();
+    };
+
+    const buildProfile = (data) => {
+      profileCard.innerHTML = '';
+      const node = profileTemplate.content.cloneNode(true);
+      $('#profile-avatar', node).src = data.avatar_url;
+      $('#profile-name', node).textContent = data.name || data.login;
+      $('#profile-username', node).textContent = `@${data.login}`;
+      $('#profile-bio', node).textContent = data.bio || '—';
+      $('#profile-followers', node).textContent = formatNumber(data.followers);
+      $('#profile-following', node).textContent = formatNumber(data.following);
+      $('#profile-repos', node).textContent = formatNumber(data.public_repos);
+      $('#profile-gists', node).textContent = formatNumber(data.public_gists);
+      $('#profile-created', node).textContent = formatDate(data.created_at);
+      $('#profile-updated', node).textContent = formatRelativeTime(data.updated_at);
+
+      const links = $('#profile-links', node);
+      const makeLink = (text, href, label) => {
+        const link = document.createElement('a');
+        link.className = 'link-card';
+        link.href = href;
+        link.target = '_blank';
+        link.rel = 'noopener noreferrer';
+        link.innerHTML = `<span>${text}</span><span>${label}</span>`;
+        return link;
+      };
+
+      links.appendChild(makeLink('View on GitHub', data.html_url, '↗'));
+      if (data.blog) {
+        const url = data.blog.startsWith('http') ? data.blog : `https://${data.blog}`;
+        links.appendChild(makeLink('Website', url, '↗'));
+      }
+      if (data.company) {
+        links.appendChild(makeLink('Company', `https://www.github.com/${data.company.replace(/[@ ]/g, '')}`,'↗'));
+      }
+      if (data.location) {
+        const mapLink = `https://www.google.com/maps/search/${encodeURIComponent(data.location)}`;
+        links.appendChild(makeLink('Location', mapLink, '↗'));
+      }
+
+      profileCard.appendChild(node);
+    };
+
+    const describeEvent = (event) => {
+      const { type, repo, payload, created_at } = event;
+      const repoLink = `<a class="repo-link" href="https://github.com/${repo.name}" target="_blank" rel="noopener noreferrer">${repo.name}</a>`;
+
+      switch (type) {
+        case 'PushEvent': {
+          const commits = payload.commits?.map((c) => `<code>${c.message.split('\n')[0]}</code>`).join('<br/>');
+          return {
+            title: 'Pushed commits',
+            body: `Pushed ${payload.commits.length} commit${payload.commits.length > 1 ? 's' : ''} to ${repoLink}<div class="event-body">${commits}</div>`,
+            meta: [`${payload.commits.length} commit${payload.commits.length > 1 ? 's' : ''}`, formatRelativeTime(created_at)],
+          };
+        }
+        case 'PullRequestEvent': {
+          const pr = payload.pull_request;
+          return {
+            title: `${payload.action} pull request`,
+            body: `<div class="event-body">${pr.title}</div>`,
+            meta: [repoLink, `#${pr.number}`, formatRelativeTime(created_at)],
+          };
+        }
+        case 'IssuesEvent': {
+          const issue = payload.issue;
+          return {
+            title: `${payload.action} issue`,
+            body: `<div class="event-body">${issue.title}</div>`,
+            meta: [repoLink, `#${issue.number}`, formatRelativeTime(created_at)],
+          };
+        }
+        case 'WatchEvent':
+          return {
+            title: 'Starred repository',
+            body: repoLink,
+            meta: [formatRelativeTime(created_at)],
+          };
+        case 'CreateEvent':
+          return {
+            title: `Created ${payload.ref_type}`,
+            body: repoLink,
+            meta: [payload.ref || repo.name.split('/')[1], formatRelativeTime(created_at)],
+          };
+        case 'ForkEvent':
+          return {
+            title: 'Forked repository',
+            body: repoLink,
+            meta: [formatRelativeTime(created_at)],
+          };
+        case 'ReleaseEvent': {
+          const release = payload.release;
+          return {
+            title: `${payload.action} release`,
+            body: `<div class="event-body">${release.name || release.tag_name}</div>` + repoLink,
+            meta: [release.prerelease ? 'Pre-release' : 'Stable', formatRelativeTime(created_at)],
+          };
+        }
+        default:
+          return {
+            title: type,
+            body: repoLink,
+            meta: [formatRelativeTime(created_at)],
+          };
+      }
+    };
+
+    const buildEvents = (events) => {
+      eventList.innerHTML = '';
+      if (!events.length) {
+        const empty = document.createElement('div');
+        empty.className = 'error active';
+        empty.textContent = 'No recent public events found.';
+        eventList.appendChild(empty);
+        activityCount.textContent = '0 events';
+        return;
+      }
+      activityCount.textContent = `${events.length} event${events.length !== 1 ? 's' : ''}`;
+      const fragment = document.createDocumentFragment();
+      events.forEach((event) => {
+        const desc = describeEvent(event);
+        const node = eventTemplate.content.cloneNode(true);
+        $('.event-type', node).textContent = desc.title;
+
+        const meta = $('.event-meta', node);
+        meta.innerHTML = desc.meta
+          .filter(Boolean)
+          .map((m) => `<span>${m}</span>`)
+          .join('·');
+
+        const body = $('.event-body', node);
+        body.innerHTML = desc.body;
+        fragment.appendChild(node);
+      });
+      eventList.appendChild(fragment);
+    };
+
+    const toggleState = (element, active) => {
+      element.classList.toggle('active', active);
+    };
+
+    const showError = (card, message) => {
+      card.innerHTML = `<div class="error active">${message}</div>`;
+    };
+
+    const loadProfile = async () => {
+      toggleState(profileLoading, true);
+      try {
+        const data = await fetchJson(`/users/${username}`);
+        buildProfile(data);
+      } catch (error) {
+        showError(profileCard, error.message || 'Failed to load profile.');
+      } finally {
+        toggleState(profileLoading, false);
+      }
+    };
+
+    const loadActivity = async () => {
+      toggleState(activityLoading, true);
+      try {
+        const events = await fetchJson(`/users/${username}/events/public`);
+        const filtered = events.slice(0, 15);
+        buildEvents(filtered);
+      } catch (error) {
+        eventList.innerHTML = '';
+        const message = document.createElement('div');
+        message.className = 'error active';
+        message.textContent = error.message || 'Failed to load activity.';
+        eventList.appendChild(message);
+        activityCount.textContent = '0 events';
+      } finally {
+        toggleState(activityLoading, false);
+      }
+    };
+
+    const onSearch = (event) => {
+      event.preventDefault();
+      const value = searchInput.value.trim();
+      if (!value) return;
+      url.searchParams.set('id', value);
+      window.history.replaceState({}, '', url);
+      loadAll(value);
+    };
+
+    const loadAll = (user) => {
+      toggleState(profileLoading, true);
+      toggleState(activityLoading, true);
+      profileCard.innerHTML = '<div class="loading active">Loading profile…</div>';
+      eventList.innerHTML = '';
+      activityCount.textContent = '…';
+      fetchProfileAndEvents(user);
+    };
+
+    const fetchProfileAndEvents = async (user) => {
+      try {
+        const [profile, events] = await Promise.all([
+          fetchJson(`/users/${user}`),
+          fetchJson(`/users/${user}/events/public`),
+        ]);
+        usernameCache = user;
+        buildProfile(profile);
+        buildEvents(events.slice(0, 15));
+      } catch (error) {
+        showError(profileCard, error.message || 'Failed to load profile.');
+        eventList.innerHTML = '';
+        const message = document.createElement('div');
+        message.className = 'error active';
+        message.textContent = error.message || 'Failed to load activity.';
+        eventList.appendChild(message);
+        activityCount.textContent = '0 events';
+      } finally {
+        toggleState(profileLoading, false);
+        toggleState(activityLoading, false);
+      }
+    };
+
+    let usernameCache = username;
+
+    $('#search-form').addEventListener('submit', onSearch);
+
+    const init = () => {
+      fetchProfileAndEvents(username);
+    };
+
+    init();
+  </script>
+</body>
+</html>
