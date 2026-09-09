@@ -2,6 +2,7 @@
 
 Explorations in LLM evaluations.
 
+- 9 Sep 2026: [Calibrating LLM confidence scores](confidence-calibration/)
 - 13 Oct 2025: [Comparing AI coding agents on quality, cost, speed](coding-agents/)
 - 27 Sep 2025: [Bring a panel of experts to review code](developer-styles/expert-review.md)
 - 26 Sep 2025: [Mimicking Developer Styles with Coding Agents](developer-styles/)

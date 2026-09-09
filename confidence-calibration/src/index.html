@@ -1,0 +1,416 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light dark">
+<title>Does 95% confidence really mean 95% correct?</title>
+<meta name="description" content="An experiment measuring whether LLM confidence scores match actual correctness on 770 BANKING77 support requests—and whether better prompting improves calibration.">
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%239c3f18'/%3E%3Ctext x='32' y='35' text-anchor='middle' dominant-baseline='middle' font-size='28' fill='white'%3E95%25%3C/text%3E%3C/svg%3E">
+<style>
+:root {
+  --bg:#f5f2ea; --surface:#fffdf8; --ink:#171714; --muted:#615c53; --line:#c8c0b2;
+  --soft:#ebe4d8; --accent:#9c3f18; --good:#287054; --danger:#a13b32; --shadow:0 14px 38px rgb(43 36 24 / .08);
+  --model-0:#286f9b; --model-1:#b35c1e; --model-2:#6a5aa6; --model-3:#2f7b6d; --model-4:#a13b65; --model-5:#7a6a31;
+  --wide:1040px; --reading:760px;
+}
+[data-theme="dark"] {
+  --bg:#121210; --surface:#1d1d1a; --ink:#faf6ec; --muted:#c4bdb1; --line:#514b42;
+  --soft:#302c26; --accent:#ffad66; --good:#77c49e; --danger:#f18b7e; --shadow:0 16px 42px rgb(0 0 0 / .26);
+  --model-0:#74b9e6; --model-1:#ffad66; --model-2:#b4a5ed; --model-3:#78cbb9; --model-4:#ef90b5; --model-5:#d3c27a;
+}
+*{box-sizing:border-box} html{scroll-behavior:smooth} body{margin:0;background:var(--bg);color:var(--ink);font-family:"IBM Plex Sans","Aptos","Segoe UI",sans-serif;line-height:1.55}
+a{color:inherit;text-decoration-color:color-mix(in srgb,var(--accent) 65%,transparent);text-underline-offset:.17em} a:hover{color:var(--accent)}
+header{max-width:var(--wide);margin:auto;padding:18px 24px;border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center;gap:18px}
+.brand{font:650 1rem/1.2 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:.01em}.header-actions{display:flex;align-items:center;gap:14px;font-size:.78rem;color:var(--muted)}
+.icon-btn{width:34px;height:34px;border:0;border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--muted);cursor:pointer}.icon-btn:hover,.icon-btn:focus-visible{background:var(--soft);color:var(--accent)}
+main{overflow:hidden}.hero,.section{max-width:var(--wide);margin:auto;padding-left:24px;padding-right:24px}.hero{padding-top:68px;padding-bottom:46px}.eyebrow{margin:0 0 9px;color:var(--accent);font-size:.69rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase}.hero h1{max-width:900px;margin:0;font:560 clamp(2.7rem,7vw,5.8rem)/.94 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.045em}.hero .deck{max-width:760px;margin:25px 0 0;color:var(--muted);font:400 clamp(1.06rem,2.2vw,1.28rem)/1.5 "Iowan Old Style","Palatino Linotype",serif}.hero .deck strong{color:var(--ink);font-weight:650}
+.fact-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:38px}.fact{background:var(--surface);padding:18px 20px}.fact strong{display:block;font:650 clamp(1.45rem,4vw,2.4rem)/1 "Iowan Old Style","Palatino Linotype",serif}.fact span{display:block;margin-top:6px;color:var(--muted);font-size:.76rem}
+.section{padding-top:44px;padding-bottom:50px}.section + .section{border-top:1px solid var(--line)}.section-head{max-width:760px;margin-bottom:24px}.kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}.section h2{margin:.25rem 0 .45rem;font:600 clamp(1.8rem,4vw,2.8rem)/1.06 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.025em}.section-head p{margin:0;color:var(--muted);font-size:.94rem;max-width:700px}
+.model-picker{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 14px}.model-toggle{border:1px solid var(--line);border-radius:999px;padding:7px 11px;background:var(--surface);color:var(--muted);font-size:.75rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.model-toggle[aria-pressed="true"]{color:var(--ink);border-color:currentColor}.model-dot{width:9px;height:9px;background:currentColor;display:inline-block}.model-toggle:nth-child(odd) .model-dot{border-radius:50%}
+.model-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:18px 0 26px}.model-card{border:1px solid var(--line);background:var(--surface);padding:18px;box-shadow:var(--shadow)}.model-card h3{margin:0 0 12px;font-size:.85rem}.score-line{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.77rem;color:var(--muted)}.score-line strong{color:var(--ink);font:650 1.35rem/1 "Iowan Old Style","Palatino Linotype",serif}.gap-over{color:var(--danger)!important}.mini-note{margin:10px 0 0;color:var(--muted);font-size:.72rem}
+.prompt-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0 26px}.prompt-card{border-top:3px solid currentColor;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow)}.prompt-card h3{margin:0 0 4px;color:var(--ink);font-size:.84rem}.prompt-card p{margin:0 0 10px;color:var(--muted);font-size:.7rem}.prompt-card .score-line{padding:6px 0}.prompt-fragment{margin:12px 0 14px;padding:11px 12px;border-left:3px solid currentColor;background:var(--soft);color:var(--ink);font:400 .75rem/1.45 "IBM Plex Sans","Aptos","Segoe UI",sans-serif}.prompt-fragment::before{content:"PROMPT FRAGMENT";display:block;margin-bottom:5px;color:var(--muted);font-size:.58rem;font-weight:700;letter-spacing:.08em}.prompt-fragment code{font:inherit;white-space:normal}.prompt-extra{margin-top:16px}.prompt-extra .prompt-fragment{max-width:760px}.screen-wrap{overflow-x:auto;margin-top:18px}.screen-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:.73rem}.screen-table th,.screen-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.screen-table th:first-child,.screen-table td:first-child{text-align:left;white-space:normal}.screen-table thead th{color:var(--muted);font-weight:650}.best-row{background:color-mix(in srgb,var(--good) 8%,var(--surface))}
+.length-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:18px 0 26px}.length-card{border:1px solid var(--line);background:var(--surface);padding:18px;box-shadow:var(--shadow)}.length-card h3{margin:0 0 5px;font-size:.85rem}.length-card>.mini-note{min-height:2.2em}.length-legend{display:flex;gap:18px;flex-wrap:wrap;padding:2px 8px 8px;color:var(--muted);font-size:.68rem}.legend-line{display:inline-block;width:22px;border-top:2px solid currentColor;vertical-align:middle;margin-right:6px}.legend-line.dashed{border-top-style:dashed}.length-panel-title{fill:var(--ink);font-family:"IBM Plex Sans","Segoe UI",sans-serif;font-size:12px;font-weight:700}.length-confidence{fill:none;stroke-width:2.5}.length-accuracy{fill:none;stroke-width:2.5;stroke-dasharray:6 5}.length-point{stroke:var(--surface);stroke-width:2}.length-natural{margin-top:18px;padding:14px 16px;background:var(--soft);font-size:.76rem;color:var(--muted)}.length-natural strong{color:var(--ink)}
+.chart-shell{position:relative;border:1px solid var(--line);background:var(--surface);padding:16px 14px 8px;box-shadow:var(--shadow)}.chart-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 8px 6px}.chart-title strong{font:600 1rem "Iowan Old Style","Palatino Linotype",serif}.chart-title span{font-size:.68rem;color:var(--muted)}#calibration-chart,#prompt-chart,#length-chart{display:block;width:100%;height:auto;min-height:340px}.axis{stroke:var(--line);stroke-width:1}.grid{stroke:var(--line);stroke-width:1;opacity:.45}.perfect{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 6;opacity:.8}.axis-label,.tick-label,.chart-note{fill:var(--muted);font-family:"IBM Plex Sans","Segoe UI",sans-serif}.tick-label{font-size:11px}.axis-label{font-size:12px;font-weight:600}.chart-note{font-size:11px}.series-line{fill:none;stroke-width:2.25}.point{stroke:var(--surface);stroke-width:2;cursor:pointer;outline:none}.point:focus{stroke:var(--ink);stroke-width:3}.model-0{color:var(--model-0)}.model-1{color:var(--model-1)}.model-2{color:var(--model-2)}.model-3{color:var(--model-3)}.model-4{color:var(--model-4)}.model-5{color:var(--model-5)}.model-stroke{stroke:currentColor}.model-fill{fill:currentColor}
+.tooltip{position:fixed;z-index:20;pointer-events:none;max-width:260px;padding:9px 11px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-size:.72rem;line-height:1.45;opacity:0;transform:translateY(4px);transition:opacity .08s,transform .08s}.tooltip.show{opacity:1;transform:none}.tooltip strong{display:block;margin-bottom:2px}.tooltip .muted{color:var(--muted)}
+.threshold-box{border:1px solid var(--line);background:var(--surface);padding:22px;box-shadow:var(--shadow)}.threshold-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}.threshold-copy strong{font:650 1.15rem "Iowan Old Style","Palatino Linotype",serif}.threshold-copy p{margin:3px 0 0;color:var(--muted);font-size:.76rem}.threshold-number{font:650 2.3rem/1 "Iowan Old Style","Palatino Linotype",serif;color:var(--accent)}input[type="range"]{width:100%;margin:20px 0 8px;accent-color:var(--accent)}.range-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.66rem}.threshold-results{margin-top:22px;border-top:1px solid var(--line)}.threshold-row{display:grid;grid-template-columns:minmax(140px,.8fr) minmax(240px,1.5fr) minmax(110px,.7fr);gap:18px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}.threshold-row h3{margin:0;font-size:.8rem}.coverage-track{height:12px;background:var(--soft);position:relative;overflow:hidden}.coverage-pass{height:100%;background:currentColor;transition:width .18s ease}.coverage-caption{display:flex;justify-content:space-between;margin-top:5px;color:var(--muted);font-size:.66rem}.risk{text-align:right}.risk strong{display:block;font:650 1.35rem/1 "Iowan Old Style","Palatino Linotype",serif}.risk span{font-size:.67rem;color:var(--muted)}
+.reveal{margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.reveal summary{cursor:pointer;padding:12px 0;font-size:.78rem;font-weight:650}.mistakes{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;padding:0 0 18px}.mistake{padding:14px;border:1px solid var(--line);background:var(--surface)}.mistake .confidence{font:650 1.4rem/1 "Iowan Old Style","Palatino Linotype",serif;color:var(--danger)}.mistake blockquote{margin:9px 0;color:var(--ink);font:400 .92rem/1.4 "Iowan Old Style","Palatino Linotype",serif}.mistake dl{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;margin:0;font-size:.68rem}.mistake dt{color:var(--muted)}.mistake dd{margin:0;overflow-wrap:anywhere}
+.steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}.step{border-top:2px solid var(--ink);padding-top:12px}.step b{display:block;color:var(--accent);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}.step strong{display:block;margin:6px 0;font:600 1.1rem "Iowan Old Style","Palatino Linotype",serif}.step p{margin:0;color:var(--muted);font-size:.77rem}.caveat{max-width:760px;margin-top:28px;padding:16px 18px;border-left:3px solid var(--accent);background:var(--soft);font-size:.78rem}.caveat strong{display:block;margin-bottom:3px}.method{display:grid;grid-template-columns:1.2fr .8fr;gap:38px;align-items:start}.method p{max-width:680px;margin-top:0;color:var(--muted);font-size:.86rem}.method-links{display:grid;gap:8px;font-size:.76rem}.method-links a{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none}.method-links a::after{content:"↗";color:var(--muted)}
+footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px solid var(--line);color:var(--muted);font-size:.68rem;display:flex;justify-content:space-between;gap:20px}
+.error{max-width:760px;margin:60px auto;padding:24px;border:1px solid var(--danger);background:var(--surface)}
+@media(max-width:720px){header,.hero,.section,footer{padding-left:18px;padding-right:18px}.hero{padding-top:44px}.fact-strip{grid-template-columns:1fr}.threshold-row{grid-template-columns:1fr;gap:9px}.risk{text-align:left}.steps,.method{grid-template-columns:1fr}.chart-shell{margin-left:-8px;margin-right:-8px;padding-left:4px;padding-right:4px}.chart-title{padding-left:12px}.header-actions>a{display:none}}
+@media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="brand">Confidence calibration</div>
+  <div class="header-actions"><a href="#method">Method &amp; data</a><button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 1 1 8.8 4a6.6 6.6 0 0 0 11.2 11.2Z"/></svg></button></div>
+</header>
+<main id="app" hidden>
+  <section class="hero">
+    <p class="eyebrow">A small experiment with real support requests</p>
+    <h1>95% confident<br>doesn’t mean 95% correct.</h1>
+    <p class="deck">We gave LLMs <strong id="case-count">770</strong> customer-support requests from <strong>BANKING77</strong>. For each one, the model chose an intent label and reported the probability that its answer was exactly right. Then we checked against the benchmark’s gold label.</p>
+    <div class="fact-strip" aria-label="Benchmark summary">
+      <div class="fact"><strong id="fact-cases">770</strong><span>real support requests tested</span></div>
+      <div class="fact"><strong id="fact-labels">77</strong><span>possible intent labels</span></div>
+      <div class="fact"><strong id="fact-per-label">10</strong><span>requests sampled per intent</span></div>
+    </div>
+  </section>
+
+  <section class="section" id="results">
+    <div class="section-head">
+      <span class="kicker">Result</span>
+      <h2>The models were more certain than they were right.</h2>
+      <p>Overall accuracy and average stated confidence should be close if confidence is well calibrated. Here they are not.</p>
+    </div>
+    <div class="model-picker" id="model-picker" aria-label="Models shown"></div>
+    <div class="model-cards" id="model-cards"></div>
+
+    <div class="chart-shell">
+      <div class="chart-title"><strong>What stated confidence actually meant</strong><span>Perfect calibration sits on the diagonal</span></div>
+      <svg id="calibration-chart" viewBox="0 0 760 470" role="img" aria-labelledby="chart-label chart-desc">
+        <title id="chart-label">Calibration curve comparing stated model confidence with actual accuracy</title>
+        <desc id="chart-desc">Points below the diagonal indicate overconfidence. Each point groups requests with similar reported confidence.</desc>
+      </svg>
+    </div>
+    <p class="mini-note">Each point is a confidence band; its size reflects how many requests fell in that band. Hover, tap, or keyboard-focus a point for the exact numbers. Points below the diagonal mean the model was overconfident.</p>
+
+    <details class="reveal">
+      <summary>Show a few high-confidence mistakes</summary>
+      <div class="mistakes" id="mistakes"></div>
+    </details>
+  </section>
+
+  <section class="section" id="prompting">
+    <div class="section-head">
+      <span class="kicker">Prompting helps</span>
+      <h2>How you ask for confidence changes the curve.</h2>
+      <p>We held everything else fixed: same GPT-5.6 Luna, same 770 requests, same labels. Only the confidence instruction changed. <strong>The quoted text below is the exact fragment appended to the prompt</strong>—copy it directly if you want to try the same technique.</p>
+    </div>
+    <div class="prompt-cards" id="prompt-cards"></div>
+    <div class="chart-shell">
+      <div class="chart-title"><strong>Same model, different confidence instructions</strong><span>Closer to the diagonal is better</span></div>
+      <svg id="prompt-chart" viewBox="0 0 760 470" role="img" aria-labelledby="prompt-chart-label prompt-chart-desc">
+        <title id="prompt-chart-label">Calibration curves for different confidence prompt instructions</title>
+        <desc id="prompt-chart-desc">The same GPT-5.6 Luna model becomes better calibrated when explicitly allowed to be uncertain or asked to distribute probability over competing labels.</desc>
+      </svg>
+    </div>
+    <p class="mini-note"><strong>Best practical result:</strong> prompting the model to keep uncertainty across competing labels reduced the overconfidence gap without changing the task. A literal “X% should mean X out of 100” instruction was also tested on all 770 cases, but barely improved calibration, so it is omitted from this chart.</p>
+    <details class="reveal prompt-extra"><summary>Also tested: long-run frequency wording (little benefit)</summary><blockquote class="prompt-fragment" id="frequency-fragment"></blockquote></details>
+
+    <div class="section-head" style="margin-top:34px">
+      <span class="kicker">How we found the new prompt</span>
+      <h2 style="font-size:1.65rem">Screen cheaply, then promote.</h2>
+      <p>We tried five additional mechanisms on a balanced 154-case screen (2 per intent). The most promising new one—allocating probability across the top competing labels—was then run on all 770 cases.</p>
+    </div>
+    <div class="screen-wrap"><table class="screen-table" id="screen-table"><thead><tr><th>Screened instruction</th><th>Accuracy</th><th>Mean confidence</th><th>Brier ↓</th><th>Error when ≥95%</th></tr></thead><tbody></tbody></table></div>
+    <p class="mini-note">Brier score measures probabilistic accuracy: lower is better. Screening is only for choosing what to test fully; the headline conclusions use all 770 cases.</p>
+  </section>
+
+  <section class="section" id="input-length">
+    <div class="section-head">
+      <span class="kicker">Context length</span>
+      <h2>More context can make a model more confident—not more right.</h2>
+      <p>We replayed the same 770 requests with 0, 500, or 2,000 words of deliberately irrelevant neutral metadata. The extra text was explicitly marked incidental. If confidence is robust, irrelevant context should not systematically move it.</p>
+    </div>
+    <div class="length-cards" id="length-cards"></div>
+    <div class="chart-shell">
+      <div class="chart-title"><strong>Accuracy vs. stated confidence as irrelevant context grows</strong><span>Same 770 requests in every condition</span></div>
+      <div class="length-legend"><span><i class="legend-line"></i>Stated confidence</span><span><i class="legend-line dashed"></i>Actually correct</span></div>
+      <svg id="length-chart" viewBox="0 0 760 500" role="img" aria-labelledby="length-chart-label length-chart-desc">
+        <title id="length-chart-label">Effect of irrelevant input length on confidence and accuracy</title>
+        <desc id="length-chart-desc">GPT-4.1 Nano becomes more confident as irrelevant context is added without becoming more accurate. GPT-5.6 Luna remains comparatively stable.</desc>
+      </svg>
+    </div>
+    <p class="mini-note"><strong>Paired stress test:</strong> every condition uses exactly the same cases. For Nano, the worsening Brier score is statistically clear under a paired bootstrap; for Luna, the confidence intervals include no change.</p>
+    <div class="length-natural" id="length-natural"></div>
+    <div class="caveat"><strong>What this does—and does not—show.</strong> The padding is neutral, repetitive metadata, so this isolates sensitivity to extra irrelevant context better than comparing naturally short and long tickets. It does not tell us how either model behaves on genuinely information-rich 2,000-word documents.</div>
+  </section>
+
+  <section class="section" id="thresholds">
+    <div class="section-head">
+      <span class="kicker">The operational question</span>
+      <h2>So what should we auto-pass?</h2>
+      <p>A confidence threshold is useful only if it tells us how much review we can skip—and what error rate remains among the cases we skip.</p>
+    </div>
+    <div class="threshold-box">
+      <div class="threshold-top">
+        <div class="threshold-copy"><strong>Auto-pass when confidence is at least…</strong><p>Everything below this score goes to a human reviewer.</p></div>
+        <output class="threshold-number" id="threshold-number" for="threshold">95%</output>
+      </div>
+      <input id="threshold" type="range" min="50" max="100" value="95" step="1" aria-label="Auto-pass confidence threshold">
+      <div class="range-labels"><span>50%</span><span>75%</span><span>100%</span></div>
+      <div class="threshold-results" id="threshold-results"></div>
+    </div>
+  </section>
+
+  <section class="section" id="meaning">
+    <div class="section-head">
+      <span class="kicker">The point</span>
+      <h2>Don’t choose 95 because it sounds safe.</h2>
+      <p>The right threshold is empirical. The same loop works for classification, extraction, RAG answers, matching, OCR, or any workflow where humans already approve or correct AI output.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><b>1 · Replay</b><strong>Use historical cases.</strong><p>Run the AI on examples where the final human-approved answer is already known.</p></div>
+      <div class="step"><b>2 · Measure</b><strong>Plot score vs. reality.</strong><p>For every confidence band and threshold, measure actual correctness—not how certain the model sounds.</p></div>
+      <div class="step"><b>3 · Decide</b><strong>Pick risk, then coverage.</strong><p>Choose the threshold that meets your error SLA while removing the most human review. Confirm it on held-out cases.</p></div>
+    </div>
+    <div class="caveat"><strong>This benchmark does not give your project its threshold.</strong>Calibration depends on the task, prompt, model, score construction, and gold labels. It demonstrates the method—and why an untested “95% confidence” cutoff is not evidence of 95% correctness.</div>
+  </section>
+
+  <section class="section" id="next">
+    <div class="section-head">
+      <span class="kicker">What next?</span>
+      <h2>Calibrate the prompt before calibrating the threshold.</h2>
+      <p>The 770-case run shows that confidence is not a fixed property of the model. The way you elicit the score changes which cases rise above a review threshold.</p>
+    </div>
+    <div class="steps">
+      <div class="step"><b>First · prompt</b><strong>Make uncertainty legitimate.</strong><p>Test two or three confidence instructions on historical gold cases. Keep the one that best separates safe cases from risky ones.</p></div>
+      <div class="step"><b>Then · threshold</b><strong>Choose error, then coverage.</strong><p>Measure the actual error rate above each threshold and pick the amount of human review your SLA can safely remove.</p></div>
+      <div class="step"><b>If certifying low risk</b><strong>Use more held-out data.</strong><p>The full BANKING77 test split has 3,080 cases. Larger samples matter when you need credible estimates around 1–2% residual error.</p></div>
+    </div>
+  </section>
+
+  <section class="section" id="method">
+    <div class="section-head"><span class="kicker">Method &amp; data</span><h2>Simple enough to audit.</h2></div>
+    <div class="method">
+      <div>
+        <p>BANKING77 contains fine-grained online-banking support intents. This run uses 770 requests: a balanced sample of 10 from each of all 77 intents. Both models saw the same request and the same list of allowed labels. Correctness is exact label match against the dataset—no LLM judge. Confidence is the model’s own 0–100 estimate of the probability that its chosen label exactly matches the gold label.</p>
+        <p id="completion-note"></p>
+      </div>
+      <div class="method-links"><a href="results.csv">Baseline model results CSV</a><a href="prompt-variant-results.csv">Full prompt-variant results CSV</a><a href="prompt-screen-results.csv">Prompt screening results CSV</a><a href="prompt-calibration-summary.csv">Prompt calibration summary CSV</a><a href="input-length-results.csv">Input-length raw results CSV</a><a href="input-length-summary.csv">Input-length summary CSV</a><a href="banking77-sample.csv">Support-request sample CSV</a><a href="data.json">Page data JSON</a></div>
+    </div>
+  </section>
+</main>
+<div class="error" id="error" hidden><strong>Couldn’t load the benchmark data.</strong><br><span id="error-message"></span></div>
+<div class="tooltip" id="tooltip" role="status"></div>
+<footer><span>Confidence calibration · BANKING77</span><span>Numbers are recomputed from the deployed benchmark results.</span></footer>
+<script>
+'use strict';
+const NS='http://www.w3.org/2000/svg';
+const $=s=>document.querySelector(s);
+const state={data:null,active:new Set(),threshold:95};
+const BINS=[
+  {lo:0,hi:50,label:'0–49%'},{lo:50,hi:70,label:'50–69%'},{lo:70,hi:80,label:'70–79%'},{lo:80,hi:90,label:'80–89%'},
+  {lo:90,hi:95,label:'90–94%'},{lo:95,hi:98,label:'95–97%'},{lo:98,hi:99,label:'98%'},{lo:99,hi:100,label:'99%'},{lo:100,hi:101,label:'100%'}
+];
+const prettyModel=s=>s.replace(/^gpt-/i,'GPT-').replace(/-([a-z])/g,(_,c)=>' '+c.toUpperCase());
+const pct=(v,d=1)=>`${(100*v).toFixed(d)}%`;
+const mean=a=>a.length?a.reduce((x,y)=>x+y,0)/a.length:NaN;
+const rowsFor=model=>state.data.results.filter(r=>r.model===model);
+const modelIndex=model=>state.data.models.indexOf(model)%6;
+const PROMPT_ORDER=['baseline','uncertainty_ok','strongest_alternative','top_two_mass'];
+const promptRows=variant=>variant==='baseline'?rowsFor(state.data.prompt_experiment.model):state.data.prompt_experiment.results.filter(r=>r.variant===variant);
+const promptMeta=variant=>variant==='baseline'?state.data.prompt_experiment.baseline:state.data.prompt_experiment.variants[variant];
+
+function readHash(){
+  const p=new URLSearchParams(location.hash.replace(/^#\??/,''));
+  const threshold=Number(p.get('threshold'));
+  if(Number.isFinite(threshold)&&threshold>=50&&threshold<=100) state.threshold=threshold;
+  const requested=(p.get('models')||'').split(',').filter(Boolean);
+  if(requested.length) state.active=new Set(requested.filter(m=>state.data.models.includes(m)));
+}
+function writeHash(){
+  const p=new URLSearchParams();
+  p.set('threshold',state.threshold);
+  p.set('models',[...state.active].join(','));
+  history.replaceState(null,'',`#?${p}`);
+}
+function stats(rows){
+  return {n:rows.length,accuracy:mean(rows.map(r=>r.correct?1:0)),confidence:mean(rows.map(r=>r.confidence/100))};
+}
+function calibration(rows){
+  return BINS.map(bin=>{
+    const r=rows.filter(x=>x.confidence>=bin.lo&&x.confidence<bin.hi);
+    if(!r.length)return null;
+    return {label:bin.label,n:r.length,confidence:mean(r.map(x=>x.confidence/100)),accuracy:mean(r.map(x=>x.correct?1:0))};
+  }).filter(Boolean);
+}
+function el(tag,attrs={},text=''){
+  const node=document.createElement(tag);
+  for(const [k,v] of Object.entries(attrs)){
+    if(k==='class')node.className=v; else if(k.startsWith('aria-'))node.setAttribute(k,v); else node[k]=v;
+  }
+  if(text)node.textContent=text;
+  return node;
+}
+function svg(tag,attrs={}){const node=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(attrs))node.setAttribute(k,v);return node}
+
+function renderFacts(){
+  const s=state.data.source;
+  $('#case-count').textContent=s.case_count; $('#fact-cases').textContent=s.case_count; $('#fact-labels').textContent=s.label_count;
+  $('#fact-per-label').textContent=s.min_per_label===s.max_per_label?s.min_per_label:`${s.min_per_label}–${s.max_per_label}`;
+}
+function renderPicker(){
+  const root=$('#model-picker'); root.replaceChildren();
+  state.data.models.forEach((model,i)=>{
+    const b=el('button',{class:`model-toggle model-${i%6}`,type:'button','aria-pressed':String(state.active.has(model))});
+    b.append(el('span',{class:'model-dot','aria-hidden':'true'}),document.createTextNode(prettyModel(model)));
+    b.addEventListener('click',()=>{state.active.has(model)?state.active.delete(model):state.active.add(model);if(!state.active.size)state.active.add(model);writeHash();renderAll()});root.append(b);
+  });
+}
+function renderCards(){
+  const root=$('#model-cards');root.replaceChildren();
+  [...state.active].forEach(model=>{
+    const s=stats(rowsFor(model)),gap=s.confidence-s.accuracy,card=el('article',{class:'model-card'}),h=el('h3',{},prettyModel(model));
+    card.append(h);
+    [['Actually correct',pct(s.accuracy)],['Average stated confidence',pct(s.confidence)],['Overconfidence',`${(100*gap).toFixed(1)} points`]].forEach(([label,value],i)=>{
+      const row=el('div',{class:'score-line'});row.append(el('span',{},label),el('strong',{class:i===2&&gap>.02?'gap-over':''},value));card.append(row);
+    });
+    card.append(el('p',{class:'mini-note'},`${s.n} completed support requests.`));root.append(card);
+  });
+}
+function addText(g,x,y,text,cls='tick-label',anchor='middle'){const t=svg('text',{x,y,class:cls,'text-anchor':anchor});t.textContent=text;g.append(t);return t}
+function marker(g,x,y,size,idx,cls){
+  let shape;
+  if(idx%3===1)shape=svg('rect',{x:x-size,y:y-size,width:size*2,height:size*2,rx:1,class:cls,transform:`rotate(45 ${x} ${y})`});
+  else if(idx%3===2)shape=svg('polygon',{points:`${x},${y-size*1.25} ${x+size*1.15},${y+size} ${x-size*1.15},${y+size}`,class:cls});
+  else shape=svg('circle',{cx:x,cy:y,r:size,class:cls});
+  g.append(shape);return shape;
+}
+function renderChart(){
+  const root=$('#calibration-chart');root.replaceChildren();
+  const W=760,H=470,m={l:72,r:28,t:28,b:64},w=W-m.l-m.r,h=H-m.t-m.b,x=v=>m.l+v*w,y=v=>m.t+(1-v)*h;
+  const grid=svg('g');root.append(grid);
+  [0,.25,.5,.75,1].forEach(v=>{grid.append(svg('line',{x1:x(v),x2:x(v),y1:y(0),y2:y(1),class:'grid'}),svg('line',{x1:x(0),x2:x(1),y1:y(v),y2:y(v),class:'grid'}));addText(grid,x(v),H-m.b+23,`${v*100}%`);addText(grid,m.l-12,y(v)+4,`${v*100}%`,'tick-label','end')});
+  root.append(svg('line',{x1:x(0),y1:y(0),x2:x(1),y2:y(1),class:'perfect'}));
+  addText(root,x(.77),y(.82),'perfect calibration','chart-note','start');addText(root,m.l+w/2,H-16,'Stated confidence','axis-label');
+  const yl=addText(root,18,m.t+h/2,'Actually correct','axis-label');yl.setAttribute('transform',`rotate(-90 18 ${m.t+h/2})`);
+  [...state.active].forEach(model=>{
+    const idx=modelIndex(model),points=calibration(rowsFor(model)),g=svg('g',{'data-model':model,class:`model-${idx}`});root.append(g);
+    const path=points.map((p,i)=>`${i?'L':'M'}${x(p.confidence)},${y(p.accuracy)}`).join(' ');g.append(svg('path',{d:path,class:'series-line model-stroke'}));
+    points.forEach(p=>{
+      const size=Math.max(5,Math.min(11,4+Math.sqrt(p.n)/2)),wrap=svg('g',{tabindex:'0',role:'button','aria-label':`${prettyModel(model)}, stated ${p.label}, ${pct(p.accuracy)} actually correct, ${p.n} requests`});
+      const point=marker(wrap,x(p.confidence),y(p.accuracy),size,idx,'point model-fill');point.dataset.model=model;g.append(wrap);
+      const show=e=>showTooltip(e,`<strong>${escapeHTML(prettyModel(model))} · ${p.label} stated</strong><span class="muted">${p.n} requests · mean stated ${pct(p.confidence)}<br>actually correct ${pct(p.accuracy)} · gap ${(100*(p.confidence-p.accuracy)).toFixed(1)} points</span>`);
+      wrap.addEventListener('pointerenter',show);wrap.addEventListener('pointermove',moveTooltip);wrap.addEventListener('pointerleave',hideTooltip);wrap.addEventListener('focus',show);wrap.addEventListener('blur',hideTooltip);wrap.addEventListener('click',show);
+    });
+  });
+}
+function promptStats(rows){
+  const s=stats(rows),passed=rows.filter(r=>r.confidence>=95),errors=passed.filter(r=>!r.correct).length;
+  return {...s,brier:mean(rows.map(r=>(r.confidence/100-(r.correct?1:0))**2)),coverage95:passed.length/rows.length,error95:passed.length?errors/passed.length:NaN};
+}
+function renderPromptCards(){
+  const root=$('#prompt-cards');root.replaceChildren();
+  PROMPT_ORDER.forEach((variant,i)=>{
+    const rows=promptRows(variant),s=promptStats(rows),meta=promptMeta(variant),card=el('article',{class:`prompt-card model-${i}`});
+    card.append(el('h3',{},meta.label),el('p',{},meta.short));
+    const quote=el('blockquote',{class:'prompt-fragment'});quote.append(el('code',{},meta.fragment));card.append(quote);
+    [['Actually correct',pct(s.accuracy)],['Average confidence',pct(s.confidence)],['Error when ≥95%',pct(s.error95)]].forEach(([label,value])=>{const row=el('div',{class:'score-line'});row.append(el('span',{},label),el('strong',{},value));card.append(row)});
+    root.append(card);
+  });
+}
+function renderPromptChart(){
+  const root=$('#prompt-chart');root.replaceChildren();
+  const W=760,H=470,m={l:72,r:28,t:28,b:64},w=W-m.l-m.r,h=H-m.t-m.b,x=v=>m.l+v*w,y=v=>m.t+(1-v)*h;
+  const grid=svg('g');root.append(grid);
+  [0,.25,.5,.75,1].forEach(v=>{grid.append(svg('line',{x1:x(v),x2:x(v),y1:y(0),y2:y(1),class:'grid'}),svg('line',{x1:x(0),x2:x(1),y1:y(v),y2:y(v),class:'grid'}));addText(grid,x(v),H-m.b+23,`${v*100}%`);addText(grid,m.l-12,y(v)+4,`${v*100}%`,'tick-label','end')});
+  root.append(svg('line',{x1:x(0),y1:y(0),x2:x(1),y2:y(1),class:'perfect'}));
+  addText(root,x(.77),y(.82),'perfect calibration','chart-note','start');addText(root,m.l+w/2,H-16,'Stated confidence','axis-label');
+  const yl=addText(root,18,m.t+h/2,'Actually correct','axis-label');yl.setAttribute('transform',`rotate(-90 18 ${m.t+h/2})`);
+  PROMPT_ORDER.forEach((variant,idx)=>{
+    const points=calibration(promptRows(variant)),meta=promptMeta(variant),g=svg('g',{class:`model-${idx}`});root.append(g);
+    g.append(svg('path',{d:points.map((p,i)=>`${i?'L':'M'}${x(p.confidence)},${y(p.accuracy)}`).join(' '),class:'series-line model-stroke'}));
+    points.forEach(p=>{
+      const size=Math.max(5,Math.min(11,4+Math.sqrt(p.n)/2)),wrap=svg('g',{tabindex:'0',role:'button','aria-label':`${meta.label}, stated ${p.label}, ${pct(p.accuracy)} actually correct, ${p.n} requests`});
+      marker(wrap,x(p.confidence),y(p.accuracy),size,idx,'point model-fill');g.append(wrap);
+      const show=e=>showTooltip(e,`<strong>${escapeHTML(meta.label)} · ${p.label} stated</strong><span class="muted">${p.n} requests · mean stated ${pct(p.confidence)}<br>actually correct ${pct(p.accuracy)} · gap ${(100*(p.confidence-p.accuracy)).toFixed(1)} points</span>`);
+      wrap.addEventListener('pointerenter',show);wrap.addEventListener('pointermove',moveTooltip);wrap.addEventListener('pointerleave',hideTooltip);wrap.addEventListener('focus',show);wrap.addEventListener('blur',hideTooltip);wrap.addEventListener('click',show);
+    });
+  });
+}
+function renderFrequencyFragment(){
+  const meta=state.data.prompt_experiment.variants.frequency_calibrated,root=$('#frequency-fragment');
+  root.replaceChildren(el('code',{},meta.fragment));
+}
+function renderScreenTable(){
+  const body=$('#screen-table tbody');body.replaceChildren();
+  const screen=state.data.prompt_experiment.screen.variants;
+  const order=['baseline','anchored_scale','evidence_balance','independent_recheck','proper_score','top_two_mass'];
+  order.forEach(key=>{
+    const s=screen[key];if(!s)return;
+    const tr=el('tr',{class:key==='top_two_mass'?'best-row':''});
+    const first=el('td');first.append(el('strong',{},s.label),el('div',{class:'mini-note'},s.short));tr.append(first);
+    [pct(s.accuracy),pct(s.mean_confidence),s.brier.toFixed(3),pct(s.error_95)].forEach(v=>tr.append(el('td',{},v)));body.append(tr);
+  });
+}
+function renderLengthCards(){
+  const root=$('#length-cards');root.replaceChildren();const d=state.data.input_length_experiment;
+  d.models.forEach((model,i)=>{
+    const a=d.summary[model].short,b=d.summary[model].long,p=d.paired_vs_short[model].long.brier;
+    const card=el('article',{class:`length-card model-${i}`});
+    card.append(el('h3',{},prettyModel(model)),el('p',{class:'mini-note'},`With 2,000 irrelevant words: confidence ${ppts(b.mean_confidence-a.mean_confidence)}, accuracy ${ppts(b.accuracy-a.accuracy)}.`));
+    const brierText=`${p.delta>=0?'+':''}${p.delta.toFixed(3)} (${p.ci95_low>0?'clearly worse':'CI includes no change'})`;
+    [['Stated confidence',`${pct(a.mean_confidence)} → ${pct(b.mean_confidence)}`],['Actually correct',`${pct(a.accuracy)} → ${pct(b.accuracy)}`],['Overconfidence gap',`${(100*a.gap).toFixed(1)} → ${(100*b.gap).toFixed(1)} pts`],['Brier change vs 0 words',brierText],['Error among ≥95%',`${pct(a.error_95)} → ${pct(b.error_95)}`]].forEach(([label,value],j)=>{const row=el('div',{class:'score-line'});row.append(el('span',{},label),el('strong',{class:j===3&&p.ci95_low>0?'gap-over':''},value));card.append(row)});
+    root.append(card);
+  });
+}
+function ppts(v){return `${v>=0?'+':''}${(100*v).toFixed(1)} pts`}
+function renderLengthChart(){
+  const root=$('#length-chart');root.replaceChildren();const d=state.data.input_length_experiment,W=760,H=500;
+  const xs=[150,380,610], labels=['0 words','+500','+2,000'];
+  d.models.forEach((model,idx)=>{
+    const top=idx===0?42:280,bottom=idx===0?218:456,y=v=>bottom-(v-.5)/.5*(bottom-top),g=svg('g',{class:`model-${idx}`});root.append(g);
+    addText(g,76,top-14,prettyModel(model),'length-panel-title','start');
+    [.5,.6,.7,.8,.9,1].forEach(v=>{g.append(svg('line',{x1:100,x2:680,y1:y(v),y2:y(v),class:'grid'}));addText(g,88,y(v)+4,`${Math.round(v*100)}%`,'tick-label','end')});
+    labels.forEach((label,i)=>addText(g,xs[i],bottom+25,label,'tick-label'));
+    const vals=['short','medium','long'].map(c=>d.summary[model][c]);
+    const conf=vals.map((z,i)=>[xs[i],y(z.mean_confidence)]),acc=vals.map((z,i)=>[xs[i],y(z.accuracy)]);
+    const path=pts=>pts.map((q,i)=>`${i?'L':'M'}${q[0]},${q[1]}`).join(' ');
+    g.append(svg('path',{d:path(conf),class:'length-confidence model-stroke'}),svg('path',{d:path(acc),class:'length-accuracy model-stroke'}));
+    conf.forEach((q,i)=>{g.append(svg('circle',{cx:q[0],cy:q[1],r:5,class:'length-point model-fill'}));addText(g,q[0],q[1]-10,pct(vals[i].mean_confidence,0),'chart-note')});
+    acc.forEach((q,i)=>{g.append(svg('circle',{cx:q[0],cy:q[1],r:5,class:'length-point model-fill'}));addText(g,q[0],q[1]+17,pct(vals[i].accuracy,0),'chart-note')});
+  });
+}
+function renderLengthNatural(){
+  const d=state.data.input_length_experiment.natural_request_length,n=d['gpt-4.1-nano']?.quartiles,l=d['gpt-5.6-luna']?.quartiles,root=$('#length-natural');
+  if(!n||!l){root.textContent='';return}
+  root.innerHTML=`<strong>Natural ticket length points the same way for Nano, but is not causal.</strong> On the unpadded requests, Nano accuracy falls from ${pct(n[0].accuracy)} for ${n[0].label} to ${pct(n[3].accuracy)} for ${n[3].label}, while confidence barely moves (${pct(n[0].mean_confidence)} → ${pct(n[3].mean_confidence)}). Luna changes much less (${pct(l[0].accuracy)} → ${pct(l[3].accuracy)} accuracy). Longer real tickets may simply be harder, so the padded experiment above is the cleaner test.`;
+}
+function escapeHTML(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
+function showTooltip(e,html){const t=$('#tooltip');t.innerHTML=html;t.classList.add('show');moveTooltip(e)}
+function moveTooltip(e){const t=$('#tooltip'),r=t.getBoundingClientRect(),px=e.clientX??innerWidth/2,py=e.clientY??innerHeight/2;t.style.left=`${Math.min(innerWidth-r.width-10,Math.max(10,px+14))}px`;t.style.top=`${Math.min(innerHeight-r.height-10,Math.max(10,py+14))}px`}
+function hideTooltip(){$('#tooltip').classList.remove('show')}
+function wilson(successes,n){if(!n)return[NaN,NaN];const z=1.95996398454,p=successes/n,d=1+z*z/n,c=(p+z*z/(2*n))/d,h=z*Math.sqrt(p*(1-p)/n+z*z/(4*n*n))/d;return[Math.max(0,c-h),Math.min(1,c+h)]}
+function renderThreshold(){
+  $('#threshold').value=state.threshold;$('#threshold-number').textContent=`${state.threshold}%`;const root=$('#threshold-results');root.replaceChildren();
+  [...state.active].forEach(model=>{
+    const all=rowsFor(model),passed=all.filter(r=>r.confidence>=state.threshold),errors=passed.filter(r=>!r.correct).length,coverage=passed.length/all.length,risk=passed.length?errors/passed.length:NaN,ci=wilson(errors,passed.length),idx=modelIndex(model);
+    const row=el('div',{class:`threshold-row model-${idx}`}),name=el('h3',{},prettyModel(model)),mid=el('div'),track=el('div',{class:'coverage-track'}),fill=el('div',{class:'coverage-pass'});fill.style.width=`${100*coverage}%`;track.append(fill);mid.append(track,el('div',{class:'coverage-caption'},''));mid.lastChild.append(el('span',{},`${pct(coverage)} auto-passed`),el('span',{},`${passed.length}/${all.length} cases`));
+    const riskBox=el('div',{class:'risk'});riskBox.append(el('strong',{},passed.length?pct(risk):'—'),el('span',{},passed.length?`wrong among auto-passed · 95% CI ${pct(ci[0])}–${pct(ci[1])}`:'no cases auto-passed'));
+    row.append(name,mid,riskBox);root.append(row);
+  });
+}
+function renderMistakes(){
+  const root=$('#mistakes');root.replaceChildren();const cases=new Map(state.data.cases.map(c=>[c.id,c]));
+  [...state.active].forEach(model=>{
+    rowsFor(model).filter(r=>!r.correct).sort((a,b)=>b.confidence-a.confidence).slice(0,2).forEach(r=>{
+      const c=cases.get(r.id),card=el('article',{class:'mistake'});card.append(el('div',{class:'confidence'},`${r.confidence}% confident`),el('blockquote',{},`“${c.text}”`));
+      const dl=el('dl');[['Gold label',c.gold],['Model chose',r.prediction],['Model',prettyModel(model)]].forEach(([k,v])=>dl.append(el('dt',{},k),el('dd',{},v)));card.append(dl);root.append(card);
+    });
+  });
+}
+function renderCompletion(){
+  const s=state.data.source,parts=state.data.models.map(m=>`${prettyModel(m)}: ${rowsFor(m).length}/${s.case_count} completed`);
+  $('#completion-note').textContent=`Current run — ${parts.join(' · ')}. The page automatically picks up additional completed models or cases when rebuilt.`;
+}
+function renderAll(){renderPicker();renderCards();renderChart();renderPromptCards();renderPromptChart();renderFrequencyFragment();renderScreenTable();renderLengthCards();renderLengthChart();renderLengthNatural();renderThreshold();renderMistakes();renderCompletion()}
+function setupTheme(){
+  const saved=localStorage.getItem('theme');const dark=saved?saved==='dark':matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=dark?'dark':'light';
+  $('#theme-toggle').addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)});
+}
+async function init(){
+  setupTheme();
+  try{
+    const res=await fetch('data.json');if(!res.ok)throw new Error(`${res.status} ${res.statusText}`);state.data=await res.json();state.active=new Set(state.data.models);readHash();if(!state.active.size)state.active=new Set(state.data.models);renderFacts();renderAll();
+    $('#threshold').addEventListener('input',e=>{state.threshold=Number(e.target.value);writeHash();renderThreshold()});
+    window.addEventListener('hashchange',()=>{readHash();renderAll()});$('#app').hidden=false;
+  }catch(err){$('#error-message').textContent=` ${err.message}. Serve this directory over HTTP (for example, “just serve”) rather than opening index.html directly.`;$('#error').hidden=false}
+}
+init();
+</script>
+</body>
+</html>

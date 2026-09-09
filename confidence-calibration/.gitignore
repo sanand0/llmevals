@@ -1,0 +1,31 @@
+# This directory is both an experiment and a GitHub Pages target.
+# Ignore everything by default; explicitly keep only reproducible source,
+# cached experiment data, and generated files required by GitHub Pages.
+/*
+
+!/.gitignore
+!/README.md
+!/REPORT.md
+!/justfile
+
+!/src/
+!/src/**
+!/scripts/
+!/scripts/**
+!/data/
+!/data/**
+
+# Generated GitHub Pages assets. These are committed so the page works directly.
+!/index.html
+!/data.json
+!/results.csv
+!/banking77-sample.csv
+!/prompt-variant-results.csv
+!/prompt-screen-results.csv
+!/prompt-calibration-summary.csv
+!/input-length-results.csv
+!/input-length-summary.csv
+
+# Never keep Python/runtime debris even inside allowed source directories.
+**/__pycache__/
+*.py[cod]

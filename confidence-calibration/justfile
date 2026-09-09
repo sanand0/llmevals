@@ -1,0 +1,41 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+# Recreate all cached experiments, derived analyses, and GitHub Pages assets.
+# API runners write each completed row immediately and skip it on later runs.
+build:
+    uv run --no-project scripts/prepare.py --per-label 10
+    uv run --no-project scripts/run_benchmark.py --model gpt-4.1-nano --task banking77 --concurrency 20
+    uv run --no-project scripts/run_benchmark.py --model gpt-5.6-luna --task banking77 --concurrency 20
+    uv run --no-project scripts/screen_prompt_variants.py
+    uv run --no-project scripts/prompt_calibration_experiment.py
+    uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition short --concurrency 30
+    uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition medium --concurrency 30
+    uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition long --concurrency 30
+    uv run --no-project scripts/input_length_experiment.py --model gpt-5.6-luna --condition short --concurrency 30
+    uv run --no-project scripts/input_length_experiment.py --model gpt-5.6-luna --condition medium --concurrency 30
+    uv run --no-project scripts/input_length_experiment.py --model gpt-5.6-luna --condition long --concurrency 30
+    uv run --no-project scripts/analyze_prompt_variants.py
+    uv run --no-project scripts/analyze_input_length.py
+    uv run --no-project scripts/build_site.py
+
+# Rebuild only derived analyses and Pages assets; makes no API calls.
+site:
+    uv run --no-project scripts/analyze_prompt_variants.py
+    uv run --no-project scripts/analyze_input_length.py
+    uv run --no-project scripts/build_site.py
+
+# Grow the BANKING77 sample without replacing existing case IDs.
+prepare per_label="10":
+    uv run --no-project scripts/prepare.py --per-label {{per_label}}
+
+# Fill only missing baseline rows for one model.
+benchmark model="gpt-5.6-luna" concurrency="20":
+    uv run --no-project scripts/run_benchmark.py --model {{model}} --task banking77 --concurrency {{concurrency}}
+
+# Fill only missing rows for one input-length condition.
+length model="gpt-5.6-luna" condition="long" concurrency="30":
+    uv run --no-project scripts/input_length_experiment.py --model {{model}} --condition {{condition}} --concurrency {{concurrency}}
+
+# Build and serve this directory exactly as GitHub Pages will see it.
+serve: site
+    uv run --no-project python -m http.server 8000 --bind 127.0.0.1
