@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light dark">
 <title>Does 95% confidence really mean 95% correct?</title>
-<meta name="description" content="An experiment measuring whether LLM confidence scores match actual correctness on 770 BANKING77 support requests—and whether better prompting improves calibration.">
+<meta name="description" content="Four BANKING77 experiments on LLM confidence: raw calibration, prompt wording, irrelevant context, and whether token logprobs beat stated confidence.">
 <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%239c3f18'/%3E%3Ctext x='32' y='35' text-anchor='middle' dominant-baseline='middle' font-size='28' fill='white'%3E95%25%3C/text%3E%3C/svg%3E">
 <style>
 :root {
@@ -26,26 +26,29 @@ header{max-width:var(--wide);margin:auto;padding:18px 24px;border-bottom:1px sol
 .icon-btn{width:34px;height:34px;border:0;border-radius:50%;display:grid;place-items:center;background:transparent;color:var(--muted);cursor:pointer}.icon-btn:hover,.icon-btn:focus-visible{background:var(--soft);color:var(--accent)}
 main{overflow:hidden}.hero,.section{max-width:var(--wide);margin:auto;padding-left:24px;padding-right:24px}.hero{padding-top:68px;padding-bottom:46px}.eyebrow{margin:0 0 9px;color:var(--accent);font-size:.69rem;font-weight:700;letter-spacing:.11em;text-transform:uppercase}.hero h1{max-width:900px;margin:0;font:560 clamp(2.7rem,7vw,5.8rem)/.94 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.045em}.hero .deck{max-width:760px;margin:25px 0 0;color:var(--muted);font:400 clamp(1.06rem,2.2vw,1.28rem)/1.5 "Iowan Old Style","Palatino Linotype",serif}.hero .deck strong{color:var(--ink);font-weight:650}
 .fact-strip{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:1px;background:var(--line);border:1px solid var(--line);margin-top:38px}.fact{background:var(--surface);padding:18px 20px}.fact strong{display:block;font:650 clamp(1.45rem,4vw,2.4rem)/1 "Iowan Old Style","Palatino Linotype",serif}.fact span{display:block;margin-top:6px;color:var(--muted);font-size:.76rem}
-.section{padding-top:44px;padding-bottom:50px}.section + .section{border-top:1px solid var(--line)}.section-head{max-width:760px;margin-bottom:24px}.kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}.section h2{margin:.25rem 0 .45rem;font:600 clamp(1.8rem,4vw,2.8rem)/1.06 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.025em}.section-head p{margin:0;color:var(--muted);font-size:.94rem;max-width:700px}
+.section{padding-top:44px;padding-bottom:50px;scroll-margin-top:24px}.section + .section{border-top:1px solid var(--line)}.section-head{max-width:760px;margin-bottom:24px}.kicker{font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--accent);font-weight:700}.section h2{margin:.25rem 0 .45rem;font:600 clamp(1.8rem,4vw,2.8rem)/1.06 "Iowan Old Style","Palatino Linotype",serif;letter-spacing:-.025em}.heading-anchor{display:inline-block;margin-left:.28em;color:var(--muted);font:500 .52em/1 "IBM Plex Sans","Aptos","Segoe UI",sans-serif;text-decoration:none;vertical-align:.18em;opacity:.42}.heading-anchor:hover,.heading-anchor:focus-visible{color:var(--accent);opacity:1}.section-head p{margin:0;color:var(--muted);font-size:.94rem;max-width:700px}
+.experiment-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:22px}.experiment-card{display:block;border:1px solid var(--line);background:var(--surface);padding:16px 17px;text-decoration:none;box-shadow:var(--shadow)}.experiment-card:hover{color:inherit;border-color:var(--accent)}.experiment-card b{display:block;color:var(--accent);font-size:.62rem;letter-spacing:.08em;text-transform:uppercase}.experiment-card strong{display:block;margin:5px 0 6px;font:600 1rem/1.2 "Iowan Old Style","Palatino Linotype",serif}.experiment-card span{display:block;color:var(--muted);font-size:.72rem;line-height:1.45}.experiment-card::after{content:"↓";display:block;margin-top:10px;color:var(--accent);font-size:.82rem}
+.practical-summary{background:color-mix(in srgb,var(--accent) 6%,var(--surface));border:1px solid color-mix(in srgb,var(--accent) 35%,var(--line));padding:28px;box-shadow:var(--shadow)}.practical-summary .summary-lead{max-width:830px;margin:0;font:500 clamp(1.18rem,2.8vw,1.55rem)/1.42 "Iowan Old Style","Palatino Linotype",serif}.practical-summary .summary-lead strong{color:var(--accent)}.practical-steps{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-top:26px}.practical-step{border-top:2px solid var(--ink);padding-top:12px}.practical-step b{display:block;color:var(--accent);font-size:.64rem;letter-spacing:.08em;text-transform:uppercase}.practical-step strong{display:block;margin:6px 0 5px;font:600 1.08rem/1.2 "Iowan Old Style","Palatino Linotype",serif}.practical-step p{margin:0;color:var(--muted);font-size:.78rem;line-height:1.5}.practical-example{margin-top:22px;padding:14px 16px;background:var(--surface);border-left:3px solid var(--good);font-size:.82rem}.practical-example strong{color:var(--ink)}.summary-formula{margin-top:16px;color:var(--muted);font-size:.75rem}.summary-formula b{color:var(--ink)}.internal-prob-summary{margin:18px 0 28px}
+.signal-cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:18px 0 26px}.signal-card{border-top:3px solid currentColor;background:var(--surface);padding:17px 18px;box-shadow:var(--shadow)}.signal-card h3{margin:0 0 4px;color:var(--ink);font-size:.86rem}.signal-card>p{margin:0 0 11px;color:var(--muted);font-size:.72rem}.signal-logprob{color:var(--model-0)}.signal-stated{color:var(--model-1)}.logprob-legend{display:flex;flex-wrap:wrap;gap:9px 18px;padding:3px 8px 10px;color:var(--muted);font-size:.68rem}.legend-swatch{display:inline-block;width:22px;border-top:2.5px solid currentColor;vertical-align:middle;margin-right:6px}.legend-swatch.dashed{border-top-style:dashed}.logprob-table td:first-child strong{display:block}.logprob-line{fill:none;stroke-width:2.5}.logprob-line.calibrated{stroke-dasharray:7 5;stroke-width:1.8}.risk-target{stroke:var(--good);stroke-width:1.5;stroke-dasharray:4 5}.risk-label{fill:var(--good);font-family:"IBM Plex Sans","Segoe UI",sans-serif;font-size:11px;font-weight:650}
 .model-picker{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 14px}.model-toggle{border:1px solid var(--line);border-radius:999px;padding:7px 11px;background:var(--surface);color:var(--muted);font-size:.75rem;cursor:pointer;display:inline-flex;align-items:center;gap:7px}.model-toggle[aria-pressed="true"]{color:var(--ink);border-color:currentColor}.model-dot{width:9px;height:9px;background:currentColor;display:inline-block}.model-toggle:nth-child(odd) .model-dot{border-radius:50%}
 .model-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px;margin:18px 0 26px}.model-card{border:1px solid var(--line);background:var(--surface);padding:18px;box-shadow:var(--shadow)}.model-card h3{margin:0 0 12px;font-size:.85rem}.score-line{display:grid;grid-template-columns:1fr auto;gap:8px;align-items:baseline;padding:7px 0;border-top:1px solid var(--line);font-size:.77rem;color:var(--muted)}.score-line strong{color:var(--ink);font:650 1.35rem/1 "Iowan Old Style","Palatino Linotype",serif}.gap-over{color:var(--danger)!important}.mini-note{margin:10px 0 0;color:var(--muted);font-size:.72rem}
 .prompt-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px;margin:18px 0 26px}.prompt-card{border-top:3px solid currentColor;background:var(--surface);padding:16px 18px;box-shadow:var(--shadow)}.prompt-card h3{margin:0 0 4px;color:var(--ink);font-size:.84rem}.prompt-card p{margin:0 0 10px;color:var(--muted);font-size:.7rem}.prompt-card .score-line{padding:6px 0}.prompt-fragment{margin:12px 0 14px;padding:11px 12px;border-left:3px solid currentColor;background:var(--soft);color:var(--ink);font:400 .75rem/1.45 "IBM Plex Sans","Aptos","Segoe UI",sans-serif}.prompt-fragment::before{content:"PROMPT FRAGMENT";display:block;margin-bottom:5px;color:var(--muted);font-size:.58rem;font-weight:700;letter-spacing:.08em}.prompt-fragment code{font:inherit;white-space:normal}.prompt-extra{margin-top:16px}.prompt-extra .prompt-fragment{max-width:760px}.screen-wrap{overflow-x:auto;margin-top:18px}.screen-table{width:100%;border-collapse:collapse;background:var(--surface);font-size:.73rem}.screen-table th,.screen-table td{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}.screen-table th:first-child,.screen-table td:first-child{text-align:left;white-space:normal}.screen-table thead th{color:var(--muted);font-weight:650}.best-row{background:color-mix(in srgb,var(--good) 8%,var(--surface))}
 .length-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:12px;margin:18px 0 26px}.length-card{border:1px solid var(--line);background:var(--surface);padding:18px;box-shadow:var(--shadow)}.length-card h3{margin:0 0 5px;font-size:.85rem}.length-card>.mini-note{min-height:2.2em}.length-legend{display:flex;gap:18px;flex-wrap:wrap;padding:2px 8px 8px;color:var(--muted);font-size:.68rem}.legend-line{display:inline-block;width:22px;border-top:2px solid currentColor;vertical-align:middle;margin-right:6px}.legend-line.dashed{border-top-style:dashed}.length-panel-title{fill:var(--ink);font-family:"IBM Plex Sans","Segoe UI",sans-serif;font-size:12px;font-weight:700}.length-confidence{fill:none;stroke-width:2.5}.length-accuracy{fill:none;stroke-width:2.5;stroke-dasharray:6 5}.length-point{stroke:var(--surface);stroke-width:2}.length-natural{margin-top:18px;padding:14px 16px;background:var(--soft);font-size:.76rem;color:var(--muted)}.length-natural strong{color:var(--ink)}
-.chart-shell{position:relative;border:1px solid var(--line);background:var(--surface);padding:16px 14px 8px;box-shadow:var(--shadow)}.chart-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 8px 6px}.chart-title strong{font:600 1rem "Iowan Old Style","Palatino Linotype",serif}.chart-title span{font-size:.68rem;color:var(--muted)}#calibration-chart,#prompt-chart,#length-chart{display:block;width:100%;height:auto;min-height:340px}.axis{stroke:var(--line);stroke-width:1}.grid{stroke:var(--line);stroke-width:1;opacity:.45}.perfect{stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 6;opacity:.8}.axis-label,.tick-label,.chart-note{fill:var(--muted);font-family:"IBM Plex Sans","Segoe UI",sans-serif}.tick-label{font-size:11px}.axis-label{font-size:12px;font-weight:600}.chart-note{font-size:11px}.series-line{fill:none;stroke-width:2.25}.point{stroke:var(--surface);stroke-width:2;cursor:pointer;outline:none}.point:focus{stroke:var(--ink);stroke-width:3}.model-0{color:var(--model-0)}.model-1{color:var(--model-1)}.model-2{color:var(--model-2)}.model-3{color:var(--model-3)}.model-4{color:var(--model-4)}.model-5{color:var(--model-5)}.model-stroke{stroke:currentColor}.model-fill{fill:currentColor}
+.chart-shell{position:relative;border:1px solid var(--line);background:var(--surface);padding:16px 14px 8px;box-shadow:var(--shadow)}.chart-title{display:flex;justify-content:space-between;align-items:baseline;gap:12px;padding:0 8px 6px}.chart-title strong{font:600 1rem "Iowan Old Style","Palatino Linotype",serif}.chart-title span{font-size:.68rem;color:var(--muted)}.axis-controls{display:flex;flex-wrap:wrap;gap:8px 14px;padding:2px 8px 9px;align-items:center}.axis-control{display:flex;align-items:center;gap:6px;color:var(--muted);font-size:.68rem}.axis-control>span{font-weight:650;color:var(--ink)}.scale-toggle{display:inline-flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--surface)}.scale-toggle button{min-height:30px;padding:4px 9px;border:0;border-right:1px solid var(--line);background:transparent;color:var(--muted);font:inherit;cursor:pointer}.scale-toggle button:last-child{border-right:0}.scale-toggle button[aria-pressed="true"]{background:var(--soft);color:var(--ink);font-weight:700}.scale-toggle button:focus-visible{outline:2px solid var(--accent);outline-offset:-2px}#calibration-chart,#prompt-chart,#length-chart,#logprob-calibration-chart,#logprob-chart{display:block;width:100%;height:auto;min-height:340px}.axis{stroke:var(--line);stroke-width:1}.grid{stroke:var(--line);stroke-width:1;opacity:.45}.perfect{fill:none;stroke:var(--muted);stroke-width:1.5;stroke-dasharray:6 6;opacity:.8}.axis-label,.tick-label,.chart-note{fill:var(--muted);font-family:"IBM Plex Sans","Segoe UI",sans-serif}.tick-label{font-size:11px}.axis-label{font-size:12px;font-weight:600}.chart-note{font-size:11px}.series-line{fill:none;stroke-width:2.25}.series-line.calibrated{stroke-dasharray:7 5;stroke-width:1.8}.point{stroke:var(--surface);stroke-width:2;cursor:pointer;outline:none}.point:focus{stroke:var(--ink);stroke-width:3}.model-0{color:var(--model-0)}.model-1{color:var(--model-1)}.model-2{color:var(--model-2)}.model-3{color:var(--model-3)}.model-4{color:var(--model-4)}.model-5{color:var(--model-5)}.model-stroke{stroke:currentColor}.model-fill{fill:currentColor}
 .tooltip{position:fixed;z-index:20;pointer-events:none;max-width:260px;padding:9px 11px;border:1px solid var(--line);background:var(--surface);color:var(--ink);box-shadow:var(--shadow);font-size:.72rem;line-height:1.45;opacity:0;transform:translateY(4px);transition:opacity .08s,transform .08s}.tooltip.show{opacity:1;transform:none}.tooltip strong{display:block;margin-bottom:2px}.tooltip .muted{color:var(--muted)}
 .threshold-box{border:1px solid var(--line);background:var(--surface);padding:22px;box-shadow:var(--shadow)}.threshold-top{display:grid;grid-template-columns:1fr auto;gap:20px;align-items:center}.threshold-copy strong{font:650 1.15rem "Iowan Old Style","Palatino Linotype",serif}.threshold-copy p{margin:3px 0 0;color:var(--muted);font-size:.76rem}.threshold-number{font:650 2.3rem/1 "Iowan Old Style","Palatino Linotype",serif;color:var(--accent)}input[type="range"]{width:100%;margin:20px 0 8px;accent-color:var(--accent)}.range-labels{display:flex;justify-content:space-between;color:var(--muted);font-size:.66rem}.threshold-results{margin-top:22px;border-top:1px solid var(--line)}.threshold-row{display:grid;grid-template-columns:minmax(140px,.8fr) minmax(240px,1.5fr) minmax(110px,.7fr);gap:18px;align-items:center;padding:16px 0;border-bottom:1px solid var(--line)}.threshold-row h3{margin:0;font-size:.8rem}.coverage-track{height:12px;background:var(--soft);position:relative;overflow:hidden}.coverage-pass{height:100%;background:currentColor;transition:width .18s ease}.coverage-caption{display:flex;justify-content:space-between;margin-top:5px;color:var(--muted);font-size:.66rem}.risk{text-align:right}.risk strong{display:block;font:650 1.35rem/1 "Iowan Old Style","Palatino Linotype",serif}.risk span{font-size:.67rem;color:var(--muted)}
 .reveal{margin-top:20px;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}.reveal summary{cursor:pointer;padding:12px 0;font-size:.78rem;font-weight:650}.mistakes{display:grid;grid-template-columns:repeat(auto-fit,minmax(270px,1fr));gap:12px;padding:0 0 18px}.mistake{padding:14px;border:1px solid var(--line);background:var(--surface)}.mistake .confidence{font:650 1.4rem/1 "Iowan Old Style","Palatino Linotype",serif;color:var(--danger)}.mistake blockquote{margin:9px 0;color:var(--ink);font:400 .92rem/1.4 "Iowan Old Style","Palatino Linotype",serif}.mistake dl{display:grid;grid-template-columns:auto 1fr;gap:4px 8px;margin:0;font-size:.68rem}.mistake dt{color:var(--muted)}.mistake dd{margin:0;overflow-wrap:anywhere}
 .steps{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin-top:24px}.step{border-top:2px solid var(--ink);padding-top:12px}.step b{display:block;color:var(--accent);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase}.step strong{display:block;margin:6px 0;font:600 1.1rem "Iowan Old Style","Palatino Linotype",serif}.step p{margin:0;color:var(--muted);font-size:.77rem}.caveat{max-width:760px;margin-top:28px;padding:16px 18px;border-left:3px solid var(--accent);background:var(--soft);font-size:.78rem}.caveat strong{display:block;margin-bottom:3px}.method{display:grid;grid-template-columns:1.2fr .8fr;gap:38px;align-items:start}.method p{max-width:680px;margin-top:0;color:var(--muted);font-size:.86rem}.method-links{display:grid;gap:8px;font-size:.76rem}.method-links a{display:flex;justify-content:space-between;padding:9px 0;border-bottom:1px solid var(--line);text-decoration:none}.method-links a::after{content:"↗";color:var(--muted)}
 footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px solid var(--line);color:var(--muted);font-size:.68rem;display:flex;justify-content:space-between;gap:20px}
 .error{max-width:760px;margin:60px auto;padding:24px;border:1px solid var(--danger);background:var(--surface)}
-@media(max-width:720px){header,.hero,.section,footer{padding-left:18px;padding-right:18px}.hero{padding-top:44px}.fact-strip{grid-template-columns:1fr}.threshold-row{grid-template-columns:1fr;gap:9px}.risk{text-align:left}.steps,.method{grid-template-columns:1fr}.chart-shell{margin-left:-8px;margin-right:-8px;padding-left:4px;padding-right:4px}.chart-title{padding-left:12px}.header-actions>a{display:none}}
+@media(max-width:720px){.experiment-grid{grid-template-columns:1fr 1fr}.practical-steps{grid-template-columns:1fr}.practical-summary{padding:21px}.signal-cards{grid-template-columns:1fr}header,.hero,.section,footer{padding-left:18px;padding-right:18px}.hero{padding-top:44px}.fact-strip{grid-template-columns:1fr}.threshold-row{grid-template-columns:1fr;gap:9px}.risk{text-align:left}.steps,.method{grid-template-columns:1fr}.chart-shell{margin-left:-8px;margin-right:-8px;padding-left:4px;padding-right:4px}.chart-title{padding-left:12px}.header-actions>a{display:none}}
 @media(prefers-reduced-motion:reduce){*{scroll-behavior:auto!important;transition:none!important}}
 </style>
 </head>
 <body>
 <header>
   <div class="brand">Confidence calibration</div>
-  <div class="header-actions"><a href="#method">Method &amp; data</a><button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 1 1 8.8 4a6.6 6.6 0 0 0 11.2 11.2Z"/></svg></button></div>
+  <div class="header-actions"><a href="#takeaways">What to do</a><a href="#experiments">Experiments</a><a href="#method">Method &amp; data</a><button class="icon-btn" id="theme-toggle" aria-label="Toggle dark mode" title="Toggle dark mode"><svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" aria-hidden="true"><path d="M20 15.2A8.5 8.5 0 1 1 8.8 4a6.6 6.6 0 0 0 11.2 11.2Z"/></svg></button></div>
 </header>
 <main id="app" hidden>
   <section class="hero">
@@ -59,10 +62,39 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
     </div>
   </section>
 
+  <section class="section" id="takeaways">
+    <div class="practical-summary">
+      <span class="kicker">What should you actually do?</span>
+      <h2>Don’t trust the number. Test what the number means.<a class="heading-anchor" href="#takeaways" aria-label="Link to this section">#</a></h2>
+      <p class="summary-lead">Treat an AI confidence score as a <strong>signal to test</strong>, not a guarantee. Ask the model to express uncertainty, replay it on past cases where you already know the right answer, then choose the score and cutoff that remove the most human review while staying inside your acceptable error rate.</p>
+      <div class="practical-steps">
+        <div class="practical-step"><b>1 · Ask better</b><strong>Make uncertainty acceptable.</strong><p>Don’t force the model to sound certain. Ask it to consider competing answers and report the winning probability. In this experiment, that simple prompt change made “95% confident” much safer.</p></div>
+        <div class="practical-step"><b>2 · Measure reality</b><strong>Replay reviewed cases.</strong><p>Take examples whose correct outcome is already known. For each score, measure how often the AI was actually wrong. Never choose “95%” just because it sounds reassuring.</p></div>
+        <div class="practical-step"><b>3 · Route by risk</b><strong>Pick the threshold from your SLA.</strong><p>If you can access logprobs, test them as a ranking signal too. Choose a cutoff on historical cases, freeze it, and confirm that exact rule on untouched cases before removing review.</p></div>
+      </div>
+      <div class="practical-example" id="practical-example"><strong>Example from these 770 cases:</strong> loading current results…</div>
+      <p class="summary-formula"><b>The practical recipe:</b> better confidence prompt → historical gold cases → compare risk signals → choose a cutoff → confirm it on untouched cases → auto-pass only after it survives.</p>
+    </div>
+  </section>
+
+  <section class="section" id="experiments">
+    <div class="section-head">
+      <span class="kicker">Four experiments</span>
+      <h2>What changes a confidence score?<a class="heading-anchor" href="#experiments" aria-label="Link to this section">#</a></h2>
+      <p>Each experiment isolates a different source of confidence. Jump directly to the result you care about.</p>
+    </div>
+    <nav class="experiment-grid" aria-label="Experiment index">
+      <a class="experiment-card" href="#results"><b>1 · Baseline</b><strong>Does 95 mean 95?</strong><span>Both models report probabilities higher than their actual correctness.</span></a>
+      <a class="experiment-card" href="#prompting"><b>2 · Prompt wording</b><strong>Can asking better help?</strong><span>Explicit uncertainty and competing-label prompts make Luna substantially better calibrated.</span></a>
+      <a class="experiment-card" href="#input-length"><b>3 · Context length</b><strong>Does irrelevant text matter?</strong><span>Nano becomes about six points more confident when 2,000 irrelevant words are added.</span></a>
+      <a class="experiment-card" href="#logprobs"><b>4 · Internal probability</b><strong>Do logprobs know better?</strong><span>Raw logprobs are worse probabilities, but better at ranking which answers are risky.</span></a>
+    </nav>
+  </section>
+
   <section class="section" id="results">
     <div class="section-head">
       <span class="kicker">Result</span>
-      <h2>The models were more certain than they were right.</h2>
+      <h2>The models were more certain than they were right.<a class="heading-anchor" href="#results" aria-label="Link to this section">#</a></h2>
       <p>Overall accuracy and average stated confidence should be close if confidence is well calibrated. Here they are not.</p>
     </div>
     <div class="model-picker" id="model-picker" aria-label="Models shown"></div>
@@ -86,7 +118,7 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
   <section class="section" id="prompting">
     <div class="section-head">
       <span class="kicker">Prompting helps</span>
-      <h2>How you ask for confidence changes the curve.</h2>
+      <h2>How you ask for confidence changes the curve.<a class="heading-anchor" href="#prompting" aria-label="Link to this section">#</a></h2>
       <p>We held everything else fixed: same GPT-5.6 Luna, same 770 requests, same labels. Only the confidence instruction changed. <strong>The quoted text below is the exact fragment appended to the prompt</strong>—copy it directly if you want to try the same technique.</p>
     </div>
     <div class="prompt-cards" id="prompt-cards"></div>
@@ -112,7 +144,7 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
   <section class="section" id="input-length">
     <div class="section-head">
       <span class="kicker">Context length</span>
-      <h2>More context can make a model more confident—not more right.</h2>
+      <h2>More context can make a model more confident—not more right.<a class="heading-anchor" href="#input-length" aria-label="Link to this section">#</a></h2>
       <p>We replayed the same 770 requests with 0, 500, or 2,000 words of deliberately irrelevant neutral metadata. The extra text was explicitly marked incidental. If confidence is robust, irrelevant context should not systematically move it.</p>
     </div>
     <div class="length-cards" id="length-cards"></div>
@@ -129,10 +161,63 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
     <div class="caveat"><strong>What this does—and does not—show.</strong> The padding is neutral, repetitive metadata, so this isolates sensitivity to extra irrelevant context better than comparing naturally short and long tickets. It does not tell us how either model behaves on genuinely information-rich 2,000-word documents.</div>
   </section>
 
+  <section class="section" id="logprobs">
+    <div class="section-head">
+      <span class="kicker">Internal probability</span>
+      <h2>Use logprobs to rank risk—not as probabilities.<a class="heading-anchor" href="#logprobs" aria-label="Link to this section">#</a></h2>
+      <p>On the same 770 requests, GPT-5.6 Luna produced both a token logprob and a prompted confidence score for the <em>same answer</em>. We asked two different questions: does the number itself mean what it says, and does it at least tell us which answers are safer?</p>
+    </div>
+    <div class="practical-summary internal-prob-summary" aria-label="Practical comparison of logprobs and stated confidence">
+      <p class="summary-lead"><strong>Which should you use?</strong> If you need a number that roughly means “chance this answer is right,” the prompted confidence score is easier to interpret. If you need to decide <em>which answers can skip human review</em>, logprobs were more useful here—but only after choosing and validating a cutoff on historical cases.</p>
+      <div class="practical-steps">
+        <div class="practical-step"><b>Do not read literally</b><strong>99% logprob does not mean 99% correct.</strong><p>Raw token probabilities were badly overconfident. Treat them as scores, not probabilities.</p></div>
+        <div class="practical-step"><b>Use the ordering</b><strong>Higher logprobs still tended to mean safer answers.</strong><p>That ordering was better than stated confidence at separating correct from incorrect answers, even though the logprob values themselves were misleading.</p></div>
+        <div class="practical-step"><b>Deploy by cutoff</b><strong>Learn a threshold, then test that exact threshold.</strong><p>Use reviewed historical cases to find a cutoff for your error budget. Freeze it and test it on new cases before removing human review.</p></div>
+      </div>
+      <div class="practical-example" id="logprob-practical-example"></div>
+      <p class="summary-formula"><b>Practical rule:</b> confidence score for an interpretable probability; logprob for ranking risk. Never assume either is safe enough for automation until the exact cutoff has been tested on your own held-out cases.</p>
+    </div>
+    <div class="chart-shell">
+      <div class="chart-title"><strong>How accurate are logprobs vs confidence scores?</strong><span>All 3,080 cases · same “number of nines” scale on both axes</span></div>
+      <div class="logprob-legend"><span class="signal-logprob"><i class="legend-swatch"></i>Raw token logprob</span><span class="signal-stated"><i class="legend-swatch"></i>Prompted confidence</span></div>
+      <div class="axis-controls" aria-label="Chart axis scales">
+        <label class="axis-control"><span>X axis</span><span class="scale-toggle" role="group" aria-label="X axis scale"><button type="button" data-chart-axis="x" data-chart-scale="linear" aria-pressed="false">Linear</button><button type="button" data-chart-axis="x" data-chart-scale="nines" aria-pressed="true">Nines</button></span></label>
+        <label class="axis-control"><span>Y axis</span><span class="scale-toggle" role="group" aria-label="Y axis scale"><button type="button" data-chart-axis="y" data-chart-scale="linear" aria-pressed="false">Linear</button><button type="button" data-chart-axis="y" data-chart-scale="nines" aria-pressed="true">Nines</button></span></label>
+      </div>
+      <svg id="logprob-calibration-chart" viewBox="0 0 760 470" role="img" aria-labelledby="logprob-calibration-label logprob-calibration-desc">
+        <title id="logprob-calibration-label">Accuracy of raw token logprob versus prompted confidence across all 3,080 paired cases</title>
+        <desc id="logprob-calibration-desc">Both axes use minus log base 10 of one minus probability, so 90, 99, 99.9 percent and successive nines are equally spaced. The diagonal is perfect calibration.</desc>
+      </svg>
+    </div>
+    <p class="mini-note" id="logprob-calibration-note"></p>
+    <p class="mini-note"><strong>Why this scale?</strong> Both axes plot <code>−log10(1 − p)</code>, the “number of nines” of certainty: 90% = 1, 99% = 2, 99.9% = 3, and so on. Applying the same monotonic transform to reported certainty and actual accuracy makes the perfect-calibration reference a true diagonal again. Tick labels remain ordinary percentages. This chart pools the 770 development cases and 2,310 holdout cases <em>after</em> the prospective test; the frozen holdout result below remains separate and was not retuned.</p>
+    <div class="signal-cards" id="logprob-cards"></div>
+    <div class="chart-shell">
+      <div class="chart-title"><strong>If we trust the highest-scored answers first, how quickly does error rise?</strong><span>Actual deployable cutoffs only · equal scores stay together</span></div>
+      <div class="logprob-legend"><span class="signal-logprob"><i class="legend-swatch"></i>Token logprob</span><span class="signal-stated"><i class="legend-swatch"></i>Prompted confidence</span></div>
+      <svg id="logprob-chart" viewBox="0 0 760 470" role="img" aria-labelledby="logprob-chart-label logprob-chart-desc">
+        <title id="logprob-chart-label">Observed error versus auto-pass coverage at attainable score thresholds</title>
+        <desc id="logprob-chart-desc">Each point is a score cutoff that can actually be deployed. Cases with equal scores always enter together. The curve shows how error grows as lower-scored cases are automatically accepted.</desc>
+      </svg>
+    </div>
+    <p class="mini-note"><strong>This is the ranking chart.</strong> Every point is an actual score threshold you could deploy; ties are never split. That is more faithful than equal-count deciles for these data. Probability calibration is omitted because a monotonic rescaling cannot improve the ordering.</p>
+    <div class="screen-wrap"><table class="screen-table logprob-table" id="logprob-table"><thead><tr><th>Signal</th><th>Raw Brier ↓</th><th>Ranks correctness · AUROC ↑</th><th>Development coverage at ≤5% error ↑</th></tr></thead><tbody></tbody></table></div>
+    <div class="caveat" id="logprob-takeaway"></div>
+
+    <div class="section-head" id="logprobs-holdout" style="margin-top:34px">
+      <span class="kicker">Prospective holdout</span>
+      <h2 style="font-size:1.65rem">Did the frozen rule survive new cases?<a class="heading-anchor" href="#logprobs-holdout" aria-label="Link to this subsection">#</a></h2>
+      <p>Before running the remaining 2,310 BANKING77 test requests, we froze the raw-score cutoffs that had kept observed training error at or below 5%. We then applied those exact cutoffs unchanged—no retuning on the holdout.</p>
+    </div>
+    <div class="signal-cards" id="logprob-holdout-cards"></div>
+    <div class="caveat" id="logprob-holdout-takeaway"></div>
+    <details class="reveal"><summary>How the one-token logprob experiment works</summary><div style="padding-bottom:16px;max-width:760px;color:var(--muted);font-size:.78rem"><p>Each request gets a deterministic random mapping from the 77 intents to 77 one-character codes that are single tokens in both modern OpenAI tokenizers. Randomizing the mapping per case prevents one intent from always benefiting from an intrinsically easier code token. The response begins with that code, followed by the model's stated confidence.</p><p>Raw first-token probability is <code>exp(logprob)</code>. The routing result above does <strong>not</strong> depend on probability calibration; it uses raw-score ordering and frozen raw-score cutoffs. We separately tried Platt scaling to translate both scores into approximate probabilities. Cross-fitted calibration looked promising on the 770 development cases, but on the 2,310 holdout calibrated logprob and calibrated stated confidence had very similar Brier scores (0.111 vs 0.113), so we do not treat calibration as the main result.</p></div></details>
+  </section>
+
   <section class="section" id="thresholds">
     <div class="section-head">
       <span class="kicker">The operational question</span>
-      <h2>So what should we auto-pass?</h2>
+      <h2>So what should we auto-pass?<a class="heading-anchor" href="#thresholds" aria-label="Link to this section">#</a></h2>
       <p>A confidence threshold is useful only if it tells us how much review we can skip—and what error rate remains among the cases we skip.</p>
     </div>
     <div class="threshold-box">
@@ -149,7 +234,7 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
   <section class="section" id="meaning">
     <div class="section-head">
       <span class="kicker">The point</span>
-      <h2>Don’t choose 95 because it sounds safe.</h2>
+      <h2>Don’t choose 95 because it sounds safe.<a class="heading-anchor" href="#meaning" aria-label="Link to this section">#</a></h2>
       <p>The right threshold is empirical. The same loop works for classification, extraction, RAG answers, matching, OCR, or any workflow where humans already approve or correct AI output.</p>
     </div>
     <div class="steps">
@@ -163,7 +248,7 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
   <section class="section" id="next">
     <div class="section-head">
       <span class="kicker">What next?</span>
-      <h2>Calibrate the prompt before calibrating the threshold.</h2>
+      <h2>Calibrate the prompt before calibrating the threshold.<a class="heading-anchor" href="#next" aria-label="Link to this section">#</a></h2>
       <p>The 770-case run shows that confidence is not a fixed property of the model. The way you elicit the score changes which cases rise above a review threshold.</p>
     </div>
     <div class="steps">
@@ -174,13 +259,14 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
   </section>
 
   <section class="section" id="method">
-    <div class="section-head"><span class="kicker">Method &amp; data</span><h2>Simple enough to audit.</h2></div>
+    <div class="section-head"><span class="kicker">Method &amp; data</span><h2>Simple enough to audit.<a class="heading-anchor" href="#method" aria-label="Link to this section">#</a></h2></div>
     <div class="method">
       <div>
         <p>BANKING77 contains fine-grained online-banking support intents. This run uses 770 requests: a balanced sample of 10 from each of all 77 intents. Both models saw the same request and the same list of allowed labels. Correctness is exact label match against the dataset—no LLM judge. Confidence is the model’s own 0–100 estimate of the probability that its chosen label exactly matches the gold label.</p>
+        <p>The logprob experiment uses a separate paired Chat Completions protocol: Luna emits a one-token class code followed by Top-two stated confidence, letting both signals refer to the same prediction. Probability calibration is evaluated out-of-fold; risk–coverage evaluates ranking.</p>
         <p id="completion-note"></p>
       </div>
-      <div class="method-links"><a href="results.csv">Baseline model results CSV</a><a href="prompt-variant-results.csv">Full prompt-variant results CSV</a><a href="prompt-screen-results.csv">Prompt screening results CSV</a><a href="prompt-calibration-summary.csv">Prompt calibration summary CSV</a><a href="input-length-results.csv">Input-length raw results CSV</a><a href="input-length-summary.csv">Input-length summary CSV</a><a href="banking77-sample.csv">Support-request sample CSV</a><a href="data.json">Page data JSON</a></div>
+      <div class="method-links"><a href="results.csv">Baseline model results CSV</a><a href="prompt-variant-results.csv">Full prompt-variant results CSV</a><a href="prompt-screen-results.csv">Prompt screening results CSV</a><a href="prompt-calibration-summary.csv">Prompt calibration summary CSV</a><a href="input-length-results.csv">Input-length raw results CSV</a><a href="input-length-summary.csv">Input-length summary CSV</a><a href="logprob-results.csv">Logprob paired results CSV</a><a href="logprob-summary.csv">Logprob summary CSV</a><a href="logprob-holdout-results.csv">Prospective holdout results CSV</a><a href="logprob-holdout-summary.csv">Prospective holdout summary CSV</a><a href="data/logprob-holdout-plan.json">Frozen holdout plan JSON</a><a href="banking77-sample.csv">Support-request sample CSV</a><a href="data.json">Page data JSON</a></div>
     </div>
   </section>
 </main>
@@ -191,7 +277,7 @@ footer{max-width:var(--wide);margin:auto;padding:26px 24px 36px;border-top:1px s
 'use strict';
 const NS='http://www.w3.org/2000/svg';
 const $=s=>document.querySelector(s);
-const state={data:null,active:new Set(),threshold:95};
+const state={data:null,active:new Set(),threshold:95,logprobAxes:{x:'nines',y:'nines'}};
 const BINS=[
   {lo:0,hi:50,label:'0–49%'},{lo:50,hi:70,label:'50–69%'},{lo:70,hi:80,label:'70–79%'},{lo:80,hi:90,label:'80–89%'},
   {lo:90,hi:95,label:'90–94%'},{lo:95,hi:98,label:'95–97%'},{lo:98,hi:99,label:'98%'},{lo:99,hi:100,label:'99%'},{lo:100,hi:101,label:'100%'}
@@ -205,8 +291,10 @@ const PROMPT_ORDER=['baseline','uncertainty_ok','strongest_alternative','top_two
 const promptRows=variant=>variant==='baseline'?rowsFor(state.data.prompt_experiment.model):state.data.prompt_experiment.results.filter(r=>r.variant===variant);
 const promptMeta=variant=>variant==='baseline'?state.data.prompt_experiment.baseline:state.data.prompt_experiment.variants[variant];
 
+function anchorId(){const h=location.hash.slice(1);return h&&!h.startsWith('?')?decodeURIComponent(h):null}
 function readHash(){
-  const p=new URLSearchParams(location.hash.replace(/^#\??/,''));
+  if(!location.hash.startsWith('#?'))return;
+  const p=new URLSearchParams(location.hash.slice(2));
   const threshold=Number(p.get('threshold'));
   if(Number.isFinite(threshold)&&threshold>=50&&threshold<=100) state.threshold=threshold;
   const requested=(p.get('models')||'').split(',').filter(Boolean);
@@ -370,6 +458,141 @@ function renderLengthNatural(){
   if(!n||!l){root.textContent='';return}
   root.innerHTML=`<strong>Natural ticket length points the same way for Nano, but is not causal.</strong> On the unpadded requests, Nano accuracy falls from ${pct(n[0].accuracy)} for ${n[0].label} to ${pct(n[3].accuracy)} for ${n[3].label}, while confidence barely moves (${pct(n[0].mean_confidence)} → ${pct(n[3].mean_confidence)}). Luna changes much less (${pct(l[0].accuracy)} → ${pct(l[3].accuracy)} accuracy). Longer real tickets may simply be harder, so the padded experiment above is the cleaner test.`;
 }
+function renderLogprobPractical(){
+  const d=state.data.logprob_experiment,l=d.summary.logprob_raw,s=d.summary.stated_raw,sat=d.saturation,root=$('#logprob-practical-example');
+  const nearErr=sat.near_one_errors/sat.near_one_n;
+  root.innerHTML=`<strong>The comparison in numbers.</strong> Raw stated confidence was closer to a real probability (Brier <strong>${s.brier.toFixed(3)}</strong> vs <strong>${l.brier.toFixed(3)}</strong> for logprob). Raw logprobs were extremely overconfident: ${sat.near_one_n} answers had effectively 100% token probability, yet ${sat.near_one_errors} were wrong (${pct(nearErr)} error). But logprobs ranked correct versus incorrect answers better (AUROC <strong>${l.auroc_correct.toFixed(3)}</strong> vs <strong>${s.auroc_correct.toFixed(3)}</strong>). That ranking—not probability calibration—is the reason to test logprobs for routing.`;
+}
+function ninesValue(p){return Math.min(6,-Math.log10(Math.max(1e-6,1-Math.max(0,Math.min(1,p)))))}
+function logprobChartGeom(){
+  const W=760,H=470,m={l:72,r:28,t:28,b:72},w=W-m.l-m.r,h=H-m.t-m.b;
+  const pos=(p,scale)=>scale==='nines'?ninesValue(p)/6:Math.max(0,Math.min(1,p));
+  const x=p=>m.l+pos(p,state.logprobAxes.x)*w,y=p=>m.t+(1-pos(p,state.logprobAxes.y))*h;
+  return {W,H,m,w,h,x,y};
+}
+function logprobPerfectPoints(){
+  const vals=new Set();for(let i=0;i<=100;i++)vals.add(i/100);for(let z=1;z<=6;z+=.05)vals.add(1-Math.pow(10,-z));
+  return [...vals].sort((a,b)=>a-b);
+}
+function updateLogprobAxisControls(){
+  document.querySelectorAll('[data-chart-axis]').forEach(b=>b.setAttribute('aria-pressed',String(state.logprobAxes[b.dataset.chartAxis]===b.dataset.chartScale)));
+}
+function renderLogprobCalibrationChart(){
+  const root=$('#logprob-calibration-chart');root.replaceChildren();const d=state.data.logprob_experiment.combined_reliability,{H,m,x,y}=logprobChartGeom();
+  const grid=svg('g',{class:'logprob-axis-grid'});root.append(grid);
+  const perfect=svg('path',{class:'perfect logprob-perfect'});root.append(perfect);
+  const perfectLabel=addText(root,0,0,'perfect calibration','chart-note','start');perfectLabel.classList.add('logprob-perfect-label');
+  addText(root,m.l+(760-m.l-m.r)/2,H-18,'Reported certainty','axis-label');const yl=addText(root,18,m.t+(470-m.t-m.b)/2,'Actually correct','axis-label');yl.setAttribute('transform',`rotate(-90 18 ${m.t+(470-m.t-m.b)/2})`);
+  [['logprob','model-0','Raw token logprob',0],['stated','model-1','Prompted confidence',1]].forEach(([key,cls,label,idx])=>{
+    const points=d[key],g=svg('g',{class:cls,'data-logprob-series':key}),path=svg('path',{class:'series-line model-stroke','data-logprob-path':key});g.append(path);root.append(g);
+    points.forEach((q,i)=>{
+      const size=Math.max(5,Math.min(12,4+Math.sqrt(q.n)/3)),wrap=svg('g',{tabindex:'0',role:'button','data-logprob-point':key,'data-index':i,'aria-label':`${label}: ${q.n} cases, mean score ${pct(q.mean_score)}, ${pct(q.accuracy)} actually correct`});
+      marker(wrap,0,0,size,idx,'point model-fill');wrap.setAttribute('transform',`translate(${x(q.mean_score)} ${y(q.accuracy)})`);g.append(wrap);
+      const show=e=>showTooltip(e,`<strong>${escapeHTML(label)}</strong><span class="muted">${q.label} · ${q.n} cases<br>mean reported certainty ${pct(q.mean_score)} · actually correct ${pct(q.accuracy)}</span>`);
+      wrap.addEventListener('pointerenter',show);wrap.addEventListener('pointermove',moveTooltip);wrap.addEventListener('pointerleave',hideTooltip);wrap.addEventListener('focus',show);wrap.addEventListener('blur',hideTooltip);wrap.addEventListener('click',show);
+    });
+  });
+  updateLogprobCalibrationGeometry(false);updateLogprobAxisControls();
+  const lp=d.logprob,sp=d.stated,note=$('#logprob-calibration-note');
+  note.innerHTML=`<strong>All ${d.n.toLocaleString()} paired cases are shown.</strong> Logprob uses one-“nine” bands (${lp.map(q=>q.n).join(', ')} cases); prompted confidence uses familiar score bands (${sp.map(q=>q.n).join(', ')} cases). Points on the perfect-calibration reference mean reported certainty matches observed accuracy. Use the axis toggles to inspect the same data on ordinary percentage or “number of nines” scales.`;
+}
+function logprobTargetGeometry(){
+  const d=state.data.logprob_experiment.combined_reliability,{H,m,x,y}=logprobChartGeom(),targets={points:{},series:{},perfect:[]};
+  for(const key of ['logprob','stated']){
+    targets.series[key]=d[key].map(q=>[x(q.mean_score),y(q.accuracy)]);
+    d[key].forEach((q,i)=>targets.points[`${key}:${i}`]=targets.series[key][i]);
+  }
+  targets.perfect=logprobPerfectPoints().map(p=>[x(p),y(p)]);
+  targets.label=[x(.995),y(.995)-8];targets.H=H;targets.m=m;return targets;
+}
+function drawLogprobAxes(){
+  const root=$('#logprob-calibration-chart'),grid=root.querySelector('.logprob-axis-grid'),{H,m,x,y}=logprobChartGeom();grid.replaceChildren();
+  const ticks=scale=>scale==='nines'?[[0,'0%'],[.9,'90%'],[.99,'99%'],[.999,'99.9%'],[.9999,'99.99%'],[.99999,'99.999%'],[1,'≥99.9999%']]:[[0,'0%'],[.25,'25%'],[.5,'50%'],[.75,'75%'],[1,'100%']];
+  ticks(state.logprobAxes.x).forEach(([p,label])=>{grid.append(svg('line',{x1:x(p),x2:x(p),y1:m.t,y2:H-m.b,class:'grid'}));addText(grid,x(p),H-m.b+23,label,'tick-label')});
+  ticks(state.logprobAxes.y).forEach(([p,label])=>{grid.append(svg('line',{x1:m.l,x2:760-m.r,y1:y(p),y2:y(p),class:'grid'}));addText(grid,m.l-12,y(p)+4,label,'tick-label','end')});
+}
+function seriesPath(points,meta){return points.map((q,i)=>`${!i||meta[i].gap_before?'M':'L'}${q[0]},${q[1]}`).join(' ')}
+function pointTranslate(g){const m=(g.getAttribute('transform')||'').match(/translate\(([-+.\deE]+)[ ,]([-+.\deE]+)\)/);return m?[+m[1],+m[2]]:[0,0]}
+function pathPoints(path){return [...(path.getAttribute('d')||'').matchAll(/[ML]([-+.\deE]+)[ ,]([-+.\deE]+)/g)].map(m=>[+m[1],+m[2]])}
+function updateLogprobCalibrationGeometry(animate=true){
+  const root=$('#logprob-calibration-chart');if(!root||!state.data)return;const target=logprobTargetGeometry(),d=state.data.logprob_experiment.combined_reliability;
+  drawLogprobAxes();updateLogprobAxisControls();
+  const reduced=matchMedia('(prefers-reduced-motion: reduce)').matches;if(!animate||reduced){
+    for(const [k,[cx,cy]] of Object.entries(target.points)){const [key,i]=k.split(':'),g=root.querySelector(`[data-logprob-point="${key}"][data-index="${i}"]`);if(g)g.setAttribute('transform',`translate(${cx} ${cy})`)}
+    for(const key of ['logprob','stated'])root.querySelector(`[data-logprob-path="${key}"]`).setAttribute('d',seriesPath(target.series[key],d[key]));
+    root.querySelector('.logprob-perfect').setAttribute('d',target.perfect.map((q,i)=>`${i?'L':'M'}${q[0]},${q[1]}`).join(' '));const lab=root.querySelector('.logprob-perfect-label');lab.setAttribute('x',target.label[0]);lab.setAttribute('y',target.label[1]);return;
+  }
+  if(root._morphTimer)clearInterval(root._morphTimer);
+  const starts={};for(const k of Object.keys(target.points)){const [key,i]=k.split(':'),g=root.querySelector(`[data-logprob-point="${key}"][data-index="${i}"]`);starts[k]=pointTranslate(g)}
+  let oldPerfect=pathPoints(root.querySelector('.logprob-perfect'));if(oldPerfect.length!==target.perfect.length)oldPerfect=target.perfect;
+  const oldLabel=root.querySelector('.logprob-perfect-label'),oldLabelPos=[+oldLabel.getAttribute('x')||target.label[0],+oldLabel.getAttribute('y')||target.label[1]];
+  const start=performance.now(),duration=420,ease=t=>1-Math.pow(1-t,3);
+  const step=now=>{const t=ease(Math.min(1,(now-start)/duration)),lerp=(a,b)=>a+(b-a)*t,current={};
+    for(const [k,to] of Object.entries(target.points)){const from=starts[k],v=[lerp(from[0],to[0]),lerp(from[1],to[1])];current[k]=v;const [key,i]=k.split(':'),g=root.querySelector(`[data-logprob-point="${key}"][data-index="${i}"]`);g.setAttribute('transform',`translate(${v[0]} ${v[1]})`)}
+    for(const key of ['logprob','stated']){const pts=d[key].map((_,i)=>current[`${key}:${i}`]);root.querySelector(`[data-logprob-path="${key}"]`).setAttribute('d',seriesPath(pts,d[key]))}
+    const pp=target.perfect.map((to,i)=>[lerp(oldPerfect[i][0],to[0]),lerp(oldPerfect[i][1],to[1])]);root.querySelector('.logprob-perfect').setAttribute('d',pp.map((q,i)=>`${i?'L':'M'}${q[0]},${q[1]}`).join(' '));
+    oldLabel.setAttribute('x',lerp(oldLabelPos[0],target.label[0]));oldLabel.setAttribute('y',lerp(oldLabelPos[1],target.label[1]));if(t>=1){clearInterval(root._morphTimer);root._morphTimer=null}
+  };step(start);root._morphTimer=setInterval(()=>step(performance.now()),16);
+}
+
+function setLogprobAxisScale(axis,scale){
+  if(!['x','y'].includes(axis)||!['linear','nines'].includes(scale)||state.logprobAxes[axis]===scale)return;const root=$('#logprob-calibration-chart');if(root)root._previousAxes={...state.logprobAxes};state.logprobAxes[axis]=scale;updateLogprobCalibrationGeometry(true);
+}
+
+function renderLogprobCards(){
+  const d=state.data.logprob_experiment,root=$('#logprob-cards');root.replaceChildren();
+  const defs=[
+    ['logprob','Token logprob','Internal probability of the first one-token class decision.','signal-logprob'],
+    ['stated','Stated confidence','The Top-two confidence number emitted immediately after that same decision.','signal-stated']
+  ];
+  defs.forEach(([family,title,desc,cls])=>{
+    const raw=d.summary[`${family}_raw`],card=el('article',{class:`signal-card ${cls}`});
+    card.append(el('h3',{},title),el('p',{},desc));
+    [['Raw mean score',pct(raw.mean_score)],['Raw Brier',raw.brier.toFixed(3)],['Ranks correctness · AUROC',raw.auroc_correct.toFixed(3)],['Development coverage at ≤5% error',pct(raw.coverage_at_risk['5'].coverage)]].forEach(([label,value],i)=>{
+      const row=el('div',{class:'score-line'});row.append(el('span',{},label),el('strong',{class:i===1&&family==='logprob'?'gap-over':''},value));card.append(row);
+    });
+    root.append(card);
+  });
+}
+function renderLogprobTable(){
+  const d=state.data.logprob_experiment,body=$('#logprob-table tbody');body.replaceChildren();
+  [['logprob','Token logprob'],['stated','Stated confidence']].forEach(([family,label])=>{
+    const raw=d.summary[`${family}_raw`],tr=el('tr');
+    const name=el('td');name.append(el('strong',{},label),el('div',{class:'mini-note'},family==='logprob'?'First decision token':'Top-two prompt'));tr.append(name);
+    [raw.brier.toFixed(3),raw.auroc_correct.toFixed(3),pct(raw.coverage_at_risk['5'].coverage)].forEach(v=>tr.append(el('td',{},v)));body.append(tr);
+  });
+}
+function renderLogprobChart(){
+  const root=$('#logprob-chart');root.replaceChildren();const d=state.data.logprob_experiment,W=760,H=470,m={l:72,r:28,t:28,b:64},w=W-m.l-m.r,h=H-m.t-m.b;
+  const yMax=.25,x=v=>m.l+v*w,y=v=>m.t+(1-Math.min(v,yMax)/yMax)*h;
+  const grid=svg('g');root.append(grid);
+  [0,.25,.5,.75,1].forEach(v=>{grid.append(svg('line',{x1:x(v),x2:x(v),y1:y(0),y2:y(yMax),class:'grid'}));addText(grid,x(v),H-m.b+23,`${Math.round(v*100)}%`)});
+  [0,.05,.10,.15,.20,.25].forEach(v=>{grid.append(svg('line',{x1:x(0),x2:x(1),y1:y(v),y2:y(v),class:'grid'}));addText(grid,m.l-12,y(v)+4,`${Math.round(v*100)}%`,'tick-label','end')});
+  root.append(svg('line',{x1:x(0),x2:x(1),y1:y(.05),y2:y(.05),class:'risk-target'}));addText(root,x(.98),y(.05)-7,'5% error budget','risk-label','end');
+  addText(root,m.l+w/2,H-16,'Auto-pass coverage · human review removed','axis-label');const yl=addText(root,18,m.t+h/2,'Observed error among auto-passed','axis-label');yl.setAttribute('transform',`rotate(-90 18 ${m.t+h/2})`);
+  const families=[['logprob','model-0'],['stated','model-1']];
+  families.forEach(([family,cls])=>{
+    const pts=d.risk_curves[family].filter(q=>q.coverage>=.02),path=pts.map((q,i)=>`${i?'L':'M'}${x(q.coverage)},${y(q.risk)}`).join(' '),g=svg('g',{class:cls});root.append(g);
+    g.append(svg('path',{d:path,class:'logprob-line model-stroke'}));
+    const q=d.summary[`${family}_raw`].coverage_at_risk['5'];
+    g.append(svg('circle',{cx:x(q.coverage),cy:y(q.risk),r:5,class:'length-point model-fill'}));addText(g,x(q.coverage),y(q.risk)-10,pct(q.coverage,0),'chart-note');
+  });
+}
+function renderLogprobTakeaway(){
+  const d=state.data.logprob_experiment,l=d.summary.logprob_raw,s=d.summary.stated_raw,sat=d.saturation,root=$('#logprob-takeaway');
+  root.innerHTML=`<strong>Do not use raw logprob as a probability.</strong> Luna was ${pct(d.accuracy)} correct, but raw token probability averaged ${pct(l.mean_score)}, and ${sat.near_one_n}/${d.n} token probabilities were effectively 100% despite ${sat.near_one_errors} mistakes. Prompted confidence was much closer to reality (Brier ${s.brier.toFixed(3)} vs ${l.brier.toFixed(3)}). The useful part of logprob is the ordering: it ranked mistakes better (AUROC ${l.auroc_correct.toFixed(3)} vs ${s.auroc_correct.toFixed(3)}), which is what the routing experiment below tests prospectively.`;
+}
+function renderLogprobHoldout(){
+  const h=state.data.logprob_experiment.holdout,root=$('#logprob-holdout-cards');root.replaceChildren();
+  [['logprob','Token logprob','signal-logprob'],['stated','Stated confidence','signal-stated']].forEach(([family,title,cls])=>{
+    const r=h.frozen_routing[family]['5'],card=el('article',{class:`signal-card ${cls}`});
+    card.append(el('h3',{},title),el('p',{},'Frozen on 770 cases; evaluated once on 2,310 untouched requests.'));
+    [['Training coverage at ≤5% error',pct(r.training_coverage)],['Holdout coverage',pct(r.coverage)],['Holdout observed error',pct(r.risk)],['95% CI for holdout error',`${pct(r.risk_ci95[0])}–${pct(r.risk_ci95[1])}`],['Auto-passed',`${r.n} / ${h.n}`]].forEach(([label,value])=>{const row=el('div',{class:'score-line'});row.append(el('span',{},label),el('strong',{},value));card.append(row)});
+    root.append(card);
+  });
+  const l=h.frozen_routing.logprob['5'],s=h.frozen_routing.stated['5'],l10=h.frozen_routing.logprob['10'],s10=h.frozen_routing.stated['10'],one=h.diagnostic_exact_one,extra=l.n-s.n;
+  $('#logprob-holdout-takeaway').innerHTML=`<strong>The 5% routing advantage survived; do not assume every cutoff will.</strong> The frozen logprob rule auto-passed <strong>${l.n}/${h.n} (${pct(l.coverage)})</strong> with ${l.errors} errors (${pct(l.risk)} observed error). The frozen stated-confidence rule auto-passed <strong>${s.n}/${h.n} (${pct(s.coverage)})</strong> with ${s.errors} errors (${pct(s.risk)}). That is ${extra} additional requests auto-passed by logprob while remaining below the predeclared 5% observed-error budget. But at the separately frozen 10% target, logprob missed the budget: ${pct(l10.risk)} error at ${pct(l10.coverage)} coverage, versus ${pct(s10.risk)} for stated confidence. <strong>Post-hoc sanity check:</strong> if we deliberately throw away the tiny near-1 differences and accept only clipped logprobs exactly equal to 1.0, that still covers ${pct(one.coverage)} of the holdout at ${pct(one.risk)} error. This was examined after seeing the results, so it is diagnostic rather than prospective evidence. We also tried turning both scores into calibrated probabilities; neither clearly won on the holdout.`;
+}
 function escapeHTML(s){return String(s).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]))}
 function showTooltip(e,html){const t=$('#tooltip');t.innerHTML=html;t.classList.add('show');moveTooltip(e)}
 function moveTooltip(e){const t=$('#tooltip'),r=t.getBoundingClientRect(),px=e.clientX??innerWidth/2,py=e.clientY??innerHeight/2;t.style.left=`${Math.min(innerWidth-r.width-10,Math.max(10,px+14))}px`;t.style.top=`${Math.min(innerHeight-r.height-10,Math.max(10,py+14))}px`}
@@ -393,11 +616,23 @@ function renderMistakes(){
     });
   });
 }
+function renderPracticalSummary(){
+  const root=$('#practical-example');
+  const topTwo=promptStats(promptRows('top_two_mass'));
+  const baseline=promptStats(promptRows('baseline'));
+  const lp=state.data.logprob_experiment;
+  const logRaw=lp.summary.logprob_raw,h=lp.holdout,lr=h.frozen_routing.logprob['5'],sr=h.frozen_routing.stated['5'];
+  const parts=[];
+  parts.push(`With Luna's original confidence wording, cases scored at least 95% were still wrong ${pct(baseline.error95)} of the time. Asking it to distribute probability across competing labels cut that to ${pct(topTwo.error95)}.`);
+  parts.push(`Raw token logprobs looked even more certain—${pct(logRaw.mean_score)} on average for a model that was only ${pct(lp.accuracy)} correct—so a raw logprob is not a trustworthy probability either.`);
+  parts.push(`But as a ranking signal, a logprob cutoff chosen on 770 historical cases auto-passed ${pct(lr.coverage)} of 2,310 untouched cases at ${pct(lr.risk)} observed error, versus ${pct(sr.coverage)} at ${pct(sr.risk)} for the frozen stated-confidence rule.`);
+  root.replaceChildren(el('strong',{},'Example from these 770 cases: '),document.createTextNode(parts.join(' ')));
+}
 function renderCompletion(){
   const s=state.data.source,parts=state.data.models.map(m=>`${prettyModel(m)}: ${rowsFor(m).length}/${s.case_count} completed`);
   $('#completion-note').textContent=`Current run — ${parts.join(' · ')}. The page automatically picks up additional completed models or cases when rebuilt.`;
 }
-function renderAll(){renderPicker();renderCards();renderChart();renderPromptCards();renderPromptChart();renderFrequencyFragment();renderScreenTable();renderLengthCards();renderLengthChart();renderLengthNatural();renderThreshold();renderMistakes();renderCompletion()}
+function renderAll(){renderPracticalSummary();renderPicker();renderCards();renderChart();renderPromptCards();renderPromptChart();renderFrequencyFragment();renderScreenTable();renderLengthCards();renderLengthChart();renderLengthNatural();renderLogprobPractical();renderLogprobCalibrationChart();renderLogprobCards();renderLogprobTable();renderLogprobChart();renderLogprobTakeaway();renderLogprobHoldout();renderThreshold();renderMistakes();renderCompletion()}
 function setupTheme(){
   const saved=localStorage.getItem('theme');const dark=saved?saved==='dark':matchMedia('(prefers-color-scheme:dark)').matches;document.documentElement.dataset.theme=dark?'dark':'light';
   $('#theme-toggle').addEventListener('click',()=>{const next=document.documentElement.dataset.theme==='dark'?'light':'dark';document.documentElement.dataset.theme=next;localStorage.setItem('theme',next)});
@@ -407,7 +642,10 @@ async function init(){
   try{
     const res=await fetch('data.json');if(!res.ok)throw new Error(`${res.status} ${res.statusText}`);state.data=await res.json();state.active=new Set(state.data.models);readHash();if(!state.active.size)state.active=new Set(state.data.models);renderFacts();renderAll();
     $('#threshold').addEventListener('input',e=>{state.threshold=Number(e.target.value);writeHash();renderThreshold()});
-    window.addEventListener('hashchange',()=>{readHash();renderAll()});$('#app').hidden=false;
+    document.querySelector('.axis-controls').addEventListener('click',e=>{const b=e.target.closest('[data-chart-axis]');if(b)setLogprobAxisScale(b.dataset.chartAxis,b.dataset.chartScale)});
+    const scrollToAnchor=()=>{const id=anchorId(),target=id&&document.getElementById(id);if(!target)return;const html=document.documentElement,old=html.style.scrollBehavior;html.style.scrollBehavior='auto';target.scrollIntoView({block:'start'});requestAnimationFrame(()=>{html.style.scrollBehavior=old})};
+    window.addEventListener('hashchange',()=>{const id=anchorId();if(id){requestAnimationFrame(scrollToAnchor)}else{readHash();renderAll()}});
+    $('#app').hidden=false;requestAnimationFrame(()=>requestAnimationFrame(scrollToAnchor));setTimeout(scrollToAnchor,100);
   }catch(err){$('#error-message').textContent=` ${err.message}. Serve this directory over HTTP (for example, “just serve”) rather than opening index.html directly.`;$('#error').hidden=false}
 }
 init();

@@ -1,0 +1,65 @@
+{
+  "train_n": 770,
+  "holdout_n": 2310,
+  "model": "gpt-5.6-luna",
+  "mapping_version": "v1",
+  "calibrator": "Platt scaling fit on all 770 training cases; same transform as existing analysis",
+  "platt": {
+    "logprob": [
+      0.3003649639135761,
+      -1.3401101067866157
+    ],
+    "stated": [
+      0.6997846998720022,
+      0.001984371975858438
+    ]
+  },
+  "routing_rules": {
+    "logprob": {
+      "2": {
+        "threshold": 1.000007629423635,
+        "coverage": 0.0012987012987012987,
+        "risk": 0.0,
+        "n": 1,
+        "errors": 0
+      },
+      "5": {
+        "threshold": 0.9999961853100103,
+        "coverage": 0.6519480519480519,
+        "risk": 0.045816733067729085,
+        "n": 502,
+        "errors": 23
+      },
+      "10": {
+        "threshold": 0.9965270408159373,
+        "coverage": 0.8662337662337662,
+        "risk": 0.09895052473763119,
+        "n": 667,
+        "errors": 66
+      }
+    },
+    "stated": {
+      "2": {
+        "threshold": 1.0,
+        "coverage": 0.005194805194805195,
+        "risk": 0.0,
+        "n": 4,
+        "errors": 0
+      },
+      "5": {
+        "threshold": 0.97,
+        "coverage": 0.43116883116883115,
+        "risk": 0.04216867469879518,
+        "n": 332,
+        "errors": 14
+      },
+      "10": {
+        "threshold": 0.88,
+        "coverage": 0.6818181818181818,
+        "risk": 0.07809523809523809,
+        "n": 525,
+        "errors": 41
+      }
+    }
+  }
+}

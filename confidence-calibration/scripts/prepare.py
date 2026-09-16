@@ -51,6 +51,14 @@ def prepare_banking77(per_label: int = 10) -> None:
     counts = Counter(r["category"] for r in sample)
     print(f"banking77-sample.csv: {len(sample)} rows, {len(counts)} labels, {min(counts.values())}-{max(counts.values())} per label; added {len(added)}")
 
+    # Everything not in the balanced development sample is the prospective holdout.
+    selected = {(r["category"], r["text"]) for r in sample}
+    holdout = [{"id": f"banking-test-{i:04d}", **row} for i, row in enumerate(source) if (row["category"], row["text"]) not in selected]
+    with (DATA / "banking77-holdout.csv").open("w", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=["id", "text", "category"])
+        writer.writeheader(); writer.writerows(holdout)
+    print(f"banking77-holdout.csv: {len(holdout)} untouched rows")
+
 
 def main() -> None:
     p = argparse.ArgumentParser()

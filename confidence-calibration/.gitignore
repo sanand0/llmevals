@@ -1,8 +1,9 @@
-# This directory is both an experiment and a GitHub Pages target.
-# Ignore everything by default; explicitly keep only reproducible source,
-# cached experiment data, and generated files required by GitHub Pages.
+# This directory is both a reproducible experiment and a GitHub Pages target.
+# Ignore everything by default, then explicitly keep only source, canonical
+# experiment data, and generated files that are intentionally published.
 /*
 
+# Project metadata and source.
 !/.gitignore
 !/README.md
 !/REPORT.md
@@ -12,8 +13,21 @@
 !/src/**
 !/scripts/
 !/scripts/**
+
+# Canonical experiment inputs/results required to reproduce the current work.
 !/data/
-!/data/**
+/data/*
+!/data/banking77-test.csv
+!/data/banking77-sample.csv
+!/data/banking77-holdout.csv
+!/data/results.csv
+!/data/prompt-variant-results.csv
+!/data/prompt-screen-results.csv
+!/data/input-length-results.csv
+!/data/logprob-results.csv
+!/data/logprob-remap-v2.csv
+!/data/logprob-holdout-results.csv
+!/data/logprob-holdout-plan.json
 
 # Generated GitHub Pages assets. These are committed so the page works directly.
 !/index.html
@@ -25,7 +39,16 @@
 !/prompt-calibration-summary.csv
 !/input-length-results.csv
 !/input-length-summary.csv
+!/logprob-results.csv
+!/logprob-summary.csv
+!/logprob-holdout-results.csv
+!/logprob-holdout-summary.csv
 
-# Never keep Python/runtime debris even inside allowed source directories.
+# Never keep local/runtime debris, even inside allowed source directories.
 **/__pycache__/
 *.py[cod]
+**/.venv/
+**/.env
+**/.env.*
+*.log
+.DS_Store

@@ -1,12 +1,14 @@
-# Confidence calibration experiment — 2026-09-09
+# Confidence calibration experiments — updated 2026-09-16
 
 ## Bottom line
 
-Three findings survive the expanded 770-case BANKING77 benchmark:
+Four findings survive the expanded 770-case BANKING77 benchmark:
 
 1. **Raw LLM confidence is materially overconfident.** Nano is 61.0% accurate while averaging 87.1% confidence; Luna is 84.0% accurate while averaging 95.7% confidence.
 2. **Prompting can make confidence much more useful without making the classifier materially more accurate.** On Luna, “okay to be uncertain” and “top-two probability” reduce Brier score from 0.1231 to 0.0968; ≥95% error drops from 10.3% to about 4%.
 3. **Confidence robustness is model-dependent.** Adding 2,000 words of irrelevant neutral metadata raises Nano confidence by about 6.1 points without improving accuracy and significantly worsens Brier score. Luna is essentially stable under the same manipulation.
+4. **Raw logprobs are worse probabilities but useful risk-ranking signals.** On a paired Luna run, first-token logprob has worse raw Brier than Top-two stated confidence (0.148 vs 0.119), but better correctness ranking (AUROC 0.830 vs 0.783). Using only actually deployable score cutoffs and never splitting equal-score ties, the development-set 5% rule covers 65.2% of cases versus 43.1% for stated confidence.
+5. **That routing advantage survived a prospective holdout at the 5% target.** A rule frozen on 770 cases auto-passed 65.2% of 2,310 untouched requests at 4.38% observed error, versus 41.2% coverage at 2.63% error for the frozen stated-confidence rule. But the frozen 10% logprob rule missed its target at 12.0%, so risk control must be validated at the actual operating cutoff.
 
 The practical lesson is not “trust confidence after prompt engineering.” It is: **design the score, stress-test it, then empirically learn the review threshold from historical gold data.**
 
@@ -52,12 +54,38 @@ Paired bootstrap change in Brier versus unpadded:
 
 Therefore the clean claim is: **irrelevant context makes Nano more overconfident in this task; the same effect is not established for Luna.** Do not generalize this to information-rich long documents.
 
+## Logprobs vs stated confidence: same Luna call, same 770 cases
+
+The new protocol maps each of the 77 intents to a random one-character code per case. Luna emits the code first, then its Top-two stated confidence. The first-token logprob and stated score therefore describe the same prediction.
+
+| Signal | Raw mean | Raw Brier ↓ | Calibrated Brier ↓ | AUROC correctness ↑ | Coverage at ≤5% error ↑ |
+|---|---:|---:|---:|---:|---:|
+| First-token logprob | 98.4% | 0.148 | **0.102** | **0.830** | **65.2%** |
+| Stated confidence | 88.2% | **0.119** | 0.116 | 0.783 | 43.1% |
+
+Luna is 83.6% accurate in this protocol. Yet 435/770 first-token probabilities are effectively 100%; 18 of those predictions are wrong. Raw token probability is therefore emphatically **not** a trustworthy literal probability.
+
+The useful information is primarily in the ranking, not the literal probability. The development set made calibrated logprob look better on Brier, but the prospective holdout did not confirm a clear calibration advantage. For routing, curves now use only attainable score thresholds and never split equal-score ties; at the 5% development target, logprob covers 65.2% versus 43.1% for stated confidence. Raw-score Spearman correlation is 0.57.
+
+The logprob runner uses Chat Completions because that surface returned token logprobs in direct probes. The earlier benchmark used Responses, so old and new absolute accuracies should not be treated as an endpoint-controlled comparison.
+
+## Prospective logprob holdout: 2,310 untouched requests
+
+The original 770 cases were used to fit one final Platt calibrator per signal and freeze score cutoffs for 2%, 5%, and 10% observed training error. The remaining BANKING77 test cases were then run once without retuning.
+
+| Frozen signal | Holdout coverage at 5% rule | Holdout error | Errors / auto-passed | Calibrated Brier |
+|---|---:|---:|---:|---:|
+| Token logprob | **65.2%** | 4.38% | 66 / 1,506 | 0.1105 |
+| Stated confidence | 41.2% | **2.63%** | 25 / 951 | 0.1130 |
+
+The calibrated-Brier difference is small and its paired 95% bootstrap interval crosses zero, so the holdout does **not** establish that calibrated logprobs are universally better probabilities. It does support the narrower operational result: at the predeclared 5% cutoff, the frozen logprob rule removed substantially more review while remaining inside the observed error budget. The separately frozen 10% logprob rule produced 12.0% error, showing that this result should not be extrapolated across thresholds.
+
 ## Operational use
 
 For a production project with historical review outcomes:
 
 1. replay gold cases through the production prompt/model;
-2. experiment with confidence elicitation or richer risk signals;
+2. experiment with confidence elicitation and richer risk signals such as logprobs;
 3. stress-test the score against nuisance factors such as input length;
 4. plot risk versus auto-pass coverage;
 5. choose the threshold that meets the error SLA;

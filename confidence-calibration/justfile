@@ -8,6 +8,8 @@ build:
     uv run --no-project scripts/run_benchmark.py --model gpt-5.6-luna --task banking77 --concurrency 20
     uv run --no-project scripts/screen_prompt_variants.py
     uv run --no-project scripts/prompt_calibration_experiment.py
+    uv run --no-project scripts/logprob_experiment.py --model gpt-5.6-luna --concurrency 16
+    uv run --no-project scripts/logprob_experiment.py --model gpt-5.6-luna --mapping-version v1 --input data/banking77-holdout.csv --output data/logprob-holdout-results.csv --concurrency 16
     uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition short --concurrency 30
     uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition medium --concurrency 30
     uv run --no-project scripts/input_length_experiment.py --model gpt-4.1-nano --condition long --concurrency 30
@@ -16,12 +18,16 @@ build:
     uv run --no-project scripts/input_length_experiment.py --model gpt-5.6-luna --condition long --concurrency 30
     uv run --no-project scripts/analyze_prompt_variants.py
     uv run --no-project scripts/analyze_input_length.py
+    uv run --no-project scripts/analyze_logprobs.py
+    uv run --no-project scripts/analyze_logprob_holdout.py
     uv run --no-project scripts/build_site.py
 
 # Rebuild only derived analyses and Pages assets; makes no API calls.
 site:
     uv run --no-project scripts/analyze_prompt_variants.py
     uv run --no-project scripts/analyze_input_length.py
+    uv run --no-project scripts/analyze_logprobs.py
+    uv run --no-project scripts/analyze_logprob_holdout.py
     uv run --no-project scripts/build_site.py
 
 # Grow the BANKING77 sample without replacing existing case IDs.
@@ -31,6 +37,14 @@ prepare per_label="10":
 # Fill only missing baseline rows for one model.
 benchmark model="gpt-5.6-luna" concurrency="20":
     uv run --no-project scripts/run_benchmark.py --model {{model}} --task banking77 --concurrency {{concurrency}}
+
+# Fill only missing paired logprob/stated-confidence rows for Luna.
+logprobs concurrency="16":
+    uv run --no-project scripts/logprob_experiment.py --model gpt-5.6-luna --concurrency {{concurrency}}
+
+# Fill only missing prospective holdout rows using the frozen v1 protocol.
+holdout concurrency="16":
+    uv run --no-project scripts/logprob_experiment.py --model gpt-5.6-luna --mapping-version v1 --input data/banking77-holdout.csv --output data/logprob-holdout-results.csv --concurrency {{concurrency}}
 
 # Fill only missing rows for one input-length condition.
 length model="gpt-5.6-luna" condition="long" concurrency="30":

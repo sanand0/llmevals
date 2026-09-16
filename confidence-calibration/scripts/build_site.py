@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import csv
 import json
+import math
 import shutil
 from collections import Counter
 
@@ -63,6 +64,44 @@ def main() -> None:
         screen_summary[variant]={**SCREEN_META[variant],**metrics([r for r in screen_rows if r["variant"]==variant])}
 
     length_summary=json.loads((BUILD/"input-length-summary.json").read_text())
+    logprob_full=json.loads((BUILD/"logprob-summary.json").read_text())
+    logprob_holdout=json.loads((BUILD/"logprob-holdout-summary.json").read_text())
+
+    # Descriptive accuracy-vs-score chart: pool development + prospective holdout only
+    # after the frozen holdout evaluation. This pooled view never feeds threshold selection.
+    combined_logprob_rows=read_csv("logprob-results.csv") + read_csv("logprob-holdout-results.csv")
+    if len(combined_logprob_rows) != 3080:
+        raise SystemExit(f"Expected 3080 combined logprob rows, found {len(combined_logprob_rows)}")
+    def nines(p: float) -> float:
+        p=min(1.0,max(0.0,p))
+        return -math.log10(max(1-p,1e-6))
+    def chart_reliability(family: str):
+        if family == "logprob":
+            vals=[(min(1.0,max(0.0,math.exp(float(r["token_logprob"])))),int(r["correct"])) for r in combined_logprob_rows]
+            bands=[("<90%",0,.9,False),("90–99%",.9,.99,False),("99–99.9%",.99,.999,False),("99.9–99.99%",.999,.9999,False),("99.99–99.999%",.9999,.99999,False),("99.999–99.9999%",.99999,.999999,False),("≥99.9999%",.999999,1.0000001,False)]
+        else:
+            vals=[(float(r["stated_confidence"])/100,int(r["correct"])) for r in combined_logprob_rows]
+            bands=[("<70%",0,.70,False),("70–90%",.70,.90,False),("90–95%",.90,.95,False),("95–98%",.95,.98,False),("98–99%",.98,.99,False),("99–<100%",.99,1.0,False),("100%",1.0,1.0000001,True)]
+        out=[]
+        for label,lo,hi,gap_before in bands:
+            bucket=[(score,correct) for score,correct in vals if lo <= score < hi]
+            if not bucket: continue
+            scores=[q[0] for q in bucket]; correct=[q[1] for q in bucket]; accuracy=sum(correct)/len(correct)
+            out.append({"label":label,"n":len(bucket),"mean_score":sum(scores)/len(scores),"mean_nines":sum(nines(q) for q in scores)/len(scores),"accuracy":accuracy,"accuracy_nines":nines(accuracy),"gap_before":gap_before})
+        return out
+    combined_reliability={"n":len(combined_logprob_rows),"logprob":chart_reliability("logprob"),"stated":chart_reliability("stated")}
+    # Page needs derived metrics and attainable-threshold curves, not all 770 per-row records.
+    # There are only ~200 unique logprob thresholds, so keep every point; thinning could hide a cutoff.
+    logprob_summary={
+        "model":logprob_full["model"], "n":logprob_full["n"], "accuracy":logprob_full["accuracy"],
+        "correlation":logprob_full["correlation"], "saturation":logprob_full["saturation"],
+        "summary":logprob_full["summary"], "bootstrap":logprob_full["bootstrap"], "holdout":logprob_holdout,
+        "combined_reliability":combined_reliability,
+        "risk_curves":{
+            "logprob":logprob_full["risk_curves"]["logprob_raw"],
+            "stated":logprob_full["risk_curves"]["stated_raw"],
+        },
+    }
     models=sorted({r["model"] for r in results}); label_counts=Counter(r["category"] for r in cases); variants=sorted({r["variant"] for r in prompt_rows})
     payload={
         "source":{"name":"BANKING77","case_count":len(cases),"label_count":len(label_counts),"min_per_label":min(label_counts.values()),"max_per_label":max(label_counts.values())},
@@ -77,6 +116,7 @@ def main() -> None:
             "screen":{"case_count":len(screen_ids),"variants":screen_summary},
         },
         "input_length_experiment":length_summary,
+        "logprob_experiment":logprob_summary,
     }
 
     shutil.copy2(SRC/"index.html", ROOT/"index.html")
@@ -85,10 +125,12 @@ def main() -> None:
     with (ROOT/"results.csv").open("w",newline="") as f:
         fields=["task","model","id","gold","prediction","confidence","correct"]
         w=csv.DictWriter(f,fieldnames=fields); w.writeheader(); w.writerows({k:r[k] for k in fields} for r in results)
-    for name in ["banking77-sample.csv","prompt-variant-results.csv","prompt-screen-results.csv","input-length-results.csv"]:
+    for name in ["banking77-sample.csv","prompt-variant-results.csv","prompt-screen-results.csv","input-length-results.csv","logprob-results.csv","logprob-holdout-results.csv"]:
         shutil.copy2(DATA/name,ROOT/name)
     shutil.copy2(BUILD/"prompt-calibration-summary.csv",ROOT/"prompt-calibration-summary.csv")
     shutil.copy2(BUILD/"input-length-summary.csv",ROOT/"input-length-summary.csv")
+    shutil.copy2(BUILD/"logprob-summary.csv",ROOT/"logprob-summary.csv")
+    shutil.copy2(BUILD/"logprob-holdout-summary.csv",ROOT/"logprob-holdout-summary.csv")
 
     counts=Counter(r["model"] for r in results); prompt_counts=Counter(r["variant"] for r in prompt_rows)
     print(f"Built Pages assets in {ROOT} with {len(cases)} BANKING77 cases and {len(results)} base results")
@@ -97,5 +139,6 @@ def main() -> None:
     for variant in variants: print(f"  {variant}: {prompt_counts[variant]} results")
     print(f"Prompt screen: {len(screen_ids)} cases × {len(SCREEN_META)} new variants")
     print(f"Input length: {length_summary['case_count']} cases × {len(length_summary['models'])} models × {len(length_summary['conditions'])} conditions")
+    print(f"Logprobs: {logprob_summary['n']} paired {logprob_summary['model']} cases + {logprob_holdout['n']} prospective holdout cases")
 
 if __name__=="__main__": main()
