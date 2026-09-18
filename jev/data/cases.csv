@@ -1,0 +1,79 @@
+id,text,category
+banking-233,I requested a refund from a store but it hasn't arrived.,Refund_not_showing_up
+banking-006,I would like to get help from someone with activating my card.,activate_my_card
+banking-252,How old do you have to be to be able to open an account?,age_limit
+banking-010,Why isn't my top up working using my saved American Express in ApplePay?,apple_pay_or_google_pay
+banking-266,"
+Which ATMs accept this card?",atm_support
+banking-270,What's the limit on automatic top-up?,automatic_top_up
+banking-276,I just completed a bank transfer and the balance didn't update,balance_not_updated_after_bank_transfer
+banking-283,My cash deposit from a week ago hasn't shown up. I need the money - how quickly can you sort this out?,balance_not_updated_after_cheque_or_cash_deposit
+banking-027,Can I transfer money to a beneficiery?,beneficiary_not_allowed
+banking-297,I want to reverse my transaction from earlier,cancel_transfer
+banking-032,"I need a new card, my current card is nearly expired.",card_about_to_expire
+banking-314,What places can I use my card?,card_acceptance
+banking-322,Is there a way to know when my card will arrive?,card_arrival
+banking-325,Can I have my card delivered on a specific day?,card_delivery_estimate
+banking-044,Can I put my old card back into the system? I just found it/,card_linking
+banking-047,Can someone assist me by explaining why my card is not working?,card_not_working
+banking-344,I would appreciate that someone let me know when there is an extra charge for payments. I was checking the app earlier and saying a charge on one of my payments that was additional that no one made me aware of before.,card_payment_fee_charged
+banking-351,I'm not familiar with a card payment.,card_payment_not_recognised
+banking-055,I believe my card payment exchange rate is incorrect.,card_payment_wrong_exchange_rate
+banking-367,I was at an ATM and it swallowed my card.,card_swallowed
+banking-063,"Hi, I am calling about a recent transaction that has happened on my account.  I recently went to the ATM, and tried to make a withdrawal on my account.  I just happened to check my transaction slip and noticed a fee for my withdrawal.  How can I resolve this, I didn't know fees were charged for this type of action.",cash_withdrawal_charge
+banking-385,"I didn't get cash from an ATM, but according to the app a transaction was made when i didn't make it.",cash_withdrawal_not_recognised
+banking-387,How do I update my PIN to a new number?,change_pin
+banking-393,"If I feel someone has my card information, can I get a new card?",compromised_card
+banking-406,"When I tried to pay for my bus ride, the contactless payment wouldn't work. How can I prevent this in the future?",contactless_not_working
+banking-411,Where can I find your locations?,country_support
+banking-415,"My latest payment was declined, I was told everything was back to working order. What happened?",declined_card_payment
+banking-426,The ATM is declining my card. I tried at two different ATMs. Can you tell me if there's anything wrong with my account?,declined_cash_withdrawal
+banking-428,Good morning. I tried to make a purchase with my credit card last night and again this morning. Both times it was declined. Can you investigate?,declined_transfer
+banking-440,"I am seeing a weird payment showing up that I know I did not make, how can I get it cancelled?",direct_debit_payment_not_recognised
+banking-446,How can i get multiple disposble cards.,disposable_card_limits
+banking-454,Can I change my information?,edit_personal_details
+banking-098,"I will need to exchange currencies frequently, will I be able to get a discount?",exchange_charge
+banking-468,From where are you getting your exchange rates?,exchange_rate
+banking-105,"I think I want AUD and not GBP, can you help?",exchange_via_app
+banking-477,Why does my statement have these extra charges?,extra_charge_on_statement
+banking-111,"I am trying to make a transfer and am unsuccessful, can you please tell me why?",failed_transfer
+banking-491,Do you accept exchanges to EUR?,fiat_currency_support
+banking-504,Where's the best place to get a disposable virtual card?,get_disposable_virtual_card
+banking-120,I cannot locate the card PIN.,get_physical_card
+banking-122,Am I able to get a second card?,getting_spare_card
+banking-522,what is the virtual card,getting_virtual_card
+banking-527,Somehow I am missing my card.  What should I do?,lost_or_stolen_card
+banking-536,I believe I left my smartphone at the hotel I was staying at.,lost_or_stolen_phone
+banking-541,Please tell me how to get a physical card.,order_physical_card
+banking-136,I need to reset my passcode. How do I do it?,passcode_forgotten
+banking-555,I bought some things this morning but the payment shows that it is pending,pending_card_payment
+banking-566,Cash withdrawal still pending?,pending_cash_withdrawal
+banking-573,Is there a reason my top up hasn't gone through,pending_top_up
+banking-575,Why hasn't my transfer gone through yet?,pending_transfer
+banking-153,Will you reinstate my PIN?,pin_blocked
+banking-590,Do you know if I can use this for my salary?,receiving_money
+banking-157,I want to reverse a purchase. Can I cancel it?,request_refund
+banking-608,I think my card payment has been stopped,reverted_card_payment?
+banking-616,can you tell me what cards and currencies you take?,supported_cards_and_currencies
+banking-622,"Please delete my account, this company is not working for me!",terminate_account
+banking-171,What'll it charge me for a SEPA transfer?,top_up_by_bank_transfer_charge
+banking-172,What are the fees for top ups?,top_up_by_card_charge
+banking-177,Will you accept a cheque to top up my account?,top_up_by_cash_or_cheque
+banking-178,I'm not sure why my top up request was denied,top_up_failed
+banking-181,Tell me if there are any top-up limits?,top_up_limits
+banking-186,has my top-up has been cancelled,top_up_reverted
+banking-671,How can I top up my account with a card?,topping_up_by_card
+banking-190,I think something may have happened that caused a charge to show up twice.,transaction_charged_twice
+banking-193,Why am I seeing a transfer fee?,transfer_fee_charged
+banking-690,I would like to transfer some money from my other bank account into this one.,transfer_into_account
+banking-200,Is there a reason why my transaction is taking so long?,transfer_not_received_by_recipient
+banking-707,Do transfers from Europe take longer?,transfer_timing
+banking-710,How do I show this stupid system that this is really my identity?,unable_to_verify_identity
+banking-716,Let me know the steps for the identity checks,verify_my_identity
+banking-726,I have to verify the source of my funds,verify_source_of_funds
+banking-729,Why does the top-up need verification?,verify_top_up
+banking-218,virtual card is not working for me,virtual_card_not_working
+banking-746,Am I allowed to use any card to make a payment?,visa_or_mastercard
+banking-752,Why do you require so many identity details?,why_verify_identity
+banking-761,The amount of cash I received was incorrect,wrong_amount_of_cash_received
+banking-229,"In receiving cash, the wrong exchange rate was used for my transaction.",wrong_exchange_rate_for_cash_withdrawal

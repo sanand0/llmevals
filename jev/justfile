@@ -1,0 +1,11 @@
+# Re-run only missing model/case pairs.
+run:
+    uv run run.py
+
+# Show what would be called without spending anything.
+dry-run:
+    uv run run.py --dry-run
+
+# Recompute metrics and rebuild the executive page.
+analyze:
+    uv run analyze.py

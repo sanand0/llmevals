@@ -1,0 +1,62 @@
+{
+  "jev": {
+    "name": "Jev",
+    "model": "~typesafe/jev-latest",
+    "kind": "decision"
+  },
+  "luna": {
+    "name": "GPT-5.6 Luna",
+    "model": "openai/gpt-5.6-luna",
+    "reasoning": "none",
+    "max_tokens": 256,
+    "temperature": 0
+  },
+  "sol": {
+    "name": "GPT-5.6 Sol",
+    "model": "openai/gpt-5.6-sol",
+    "reasoning": "none",
+    "max_tokens": 256,
+    "temperature": 0
+  },
+  "astra": {
+    "name": "GPT-6 Astra",
+    "model": "openai/gpt-6-astra",
+    "reasoning": "low",
+    "max_tokens": 256
+  },
+  "opus": {
+    "name": "Claude Opus 5",
+    "model": "anthropic/claude-opus-5",
+    "reasoning": "low",
+    "max_tokens": 256,
+    "temperature": 0
+  },
+  "fable": {
+    "name": "Claude Fable 5.1",
+    "model": "anthropic/claude-fable-5.1",
+    "reasoning": "low",
+    "max_tokens": 256,
+    "temperature": 0
+  },
+  "gemini": {
+    "name": "Gemini 3.8 Flash",
+    "model": "google/gemini-3.8-flash",
+    "reasoning": "low",
+    "max_tokens": 1024,
+    "temperature": 0
+  },
+  "sonnet": {
+    "name": "Claude Sonnet 5",
+    "model": "anthropic/claude-sonnet-5",
+    "reasoning": "low",
+    "max_tokens": 256,
+    "temperature": 0
+  },
+  "deepseek": {
+    "name": "DeepSeek V4.1 Flash",
+    "model": "deepseek/deepseek-v4.1-flash",
+    "reasoning": "none",
+    "max_tokens": 256,
+    "temperature": 0
+  }
+}
