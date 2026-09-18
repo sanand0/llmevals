@@ -1,5 +1,7 @@
 # Jev vs frontier LLMs on BANKING77
 
+<!-- https://chatgpt.com/c/6aabb0bc-2888-83ec-b5ed-374329c52bca -->
+
 A small paired benchmark of Jev and eight general-purpose LLMs on 77 BANKING77 support-routing cases: one frozen case per intent.
 
 ## Reproduce
