@@ -2,6 +2,7 @@
 
 Explorations in LLM evaluations.
 
+- 25 Sep 2026: [What GPT Image 2.5 Flare quality actually buys you](gpt-image-flare-quality/)
 - 18 Sep 2026: [Jev vs frontier LLMs on BANKING77](jev/)
 - 9 Sep 2026: [Calibrating LLM confidence scores](confidence-calibration/)
 - 13 Oct 2025: [Comparing AI coding agents on quality, cost, speed](coding-agents/)
