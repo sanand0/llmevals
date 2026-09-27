@@ -27,7 +27,7 @@ case "$MODE" in
   *) echo "Usage: $0 [all|prepare|gemma|qwen|codex]" >&2; exit 2 ;;
 esac
 
-for command in git curl timeout tar just; do
+for command in git curl timeout tar just flock; do
   command -v "$command" >/dev/null || { echo "Missing required command: $command" >&2; exit 2; }
 done
 if [[ "$MODE" == all || "$MODE" == gemma || "$MODE" == qwen ]]; then
@@ -37,6 +37,10 @@ if [[ "$MODE" == all || "$MODE" == codex ]]; then
   command -v codex >/dev/null || { echo "Missing required command: codex" >&2; exit 2; }
 fi
 [[ -d "$SCRIPTS/.git" ]] || { echo "Missing source repo: $SCRIPTS" >&2; exit 2; }
+
+mkdir -p "$RUNS"
+exec 9>"$RUNS/.benchmark.lock"
+flock -n 9 || { echo "Another benchmark.sh run is already active." >&2; exit 2; }
 
 repo_for() {
   case "$1" in
@@ -64,7 +68,13 @@ prepare_workspace() {
 }
 
 run_done() {
-  [[ -f "$RUNS/$1/$2/meta.tsv" ]]
+  local model="$1" task="$2" out="$RUNS/$1/$2"
+  [[ -f "$out/meta.tsv" ]] || return 1
+  if [[ "$model" == codex ]]; then
+    [[ -s "$out/session.jsonl" ]] && grep -q '"type":"thread.started"' "$out/session.jsonl"
+  else
+    find "$out/session" -maxdepth 1 -type f -name '*.jsonl' -print -quit 2>/dev/null | grep -q .
+  fi
 }
 
 has_pending() {
@@ -200,7 +210,6 @@ run_task() {
         --model "$CODEX_MODEL" \
         -c "model_reasoning_effort=\"$CODEX_REASONING\"" \
         --sandbox workspace-write \
-        --ask-for-approval never \
         --cd "$workspace" \
         --ephemeral \
         --json \
