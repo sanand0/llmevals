@@ -2,7 +2,7 @@
 
 Explorations in LLM evaluations.
 
-- 27 Sep 2026: [Qwen 3.6 vs Gemma 4 E4B local coding-agent benchmark](qwen-3.6-vs-gemma4-e4b/)
+- 27 Sep 2026: [Qwen 3.6 vs Gemma 4 E4B vs Codex coding-agent benchmark](qwen-3.6-vs-gemma4-e4b/)
 - 25 Sep 2026: [What GPT Image 2.5 Flare quality actually buys you](gpt-image-flare-quality/)
 - 18 Sep 2026: [Jev vs frontier LLMs on BANKING77](jev/)
 - 9 Sep 2026: [Calibrating LLM confidence scores](confidence-calibration/)

@@ -10,6 +10,8 @@ TIMEOUT="${BENCH_TIMEOUT:-15m}"
 
 QWEN_MODEL='ggml-org/Qwen3.6-35B-A3B-GGUF:Q4_K_M'
 GEMMA_MODEL='gemma4:e4b-it-qat'
+CODEX_MODEL="${CODEX_MODEL:-gpt-6-luna}"
+CODEX_REASONING="${CODEX_REASONING:-medium}"
 QWEN_URL='http://127.0.0.1:8080'
 OLLAMA_URL='http://127.0.0.1:11434'
 
@@ -21,13 +23,19 @@ TASKS=(
 )
 
 case "$MODE" in
-  all|prepare|gemma|qwen) ;;
-  *) echo "Usage: $0 [all|prepare|gemma|qwen]" >&2; exit 2 ;;
+  all|prepare|gemma|qwen|codex) ;;
+  *) echo "Usage: $0 [all|prepare|gemma|qwen|codex]" >&2; exit 2 ;;
 esac
 
-for command in git pi curl timeout tar just; do
+for command in git curl timeout tar just; do
   command -v "$command" >/dev/null || { echo "Missing required command: $command" >&2; exit 2; }
 done
+if [[ "$MODE" == all || "$MODE" == gemma || "$MODE" == qwen ]]; then
+  command -v pi >/dev/null || { echo "Missing required command: pi" >&2; exit 2; }
+fi
+if [[ "$MODE" == all || "$MODE" == codex ]]; then
+  command -v codex >/dev/null || { echo "Missing required command: codex" >&2; exit 2; }
+fi
 [[ -d "$SCRIPTS/.git" ]] || { echo "Missing source repo: $SCRIPTS" >&2; exit 2; }
 
 repo_for() {
@@ -55,16 +63,29 @@ prepare_workspace() {
   git -C "$workspace" -c user.name=benchmark -c user.email=benchmark@localhost commit -qm baseline
 }
 
+run_done() {
+  [[ -f "$RUNS/$1/$2/meta.tsv" ]]
+}
+
+has_pending() {
+  local model="$1" row task
+  for row in "${TASKS[@]}"; do
+    IFS='|' read -r task _ <<<"$row"
+    run_done "$model" "$task" || return 0
+  done
+  return 1
+}
+
 prepare_all() {
-  rm -rf "$RUNS"
   mkdir -p "$RUNS"
   for row in "${TASKS[@]}"; do
     IFS='|' read -r task repo_name base reference archive_path verify <<<"$row"
     repo="$(repo_for "$repo_name")"
     git -C "$repo" cat-file -e "$base^{commit}"
     git -C "$repo" cat-file -e "$reference^{commit}"
-    prepare_workspace gemma "$task" "$repo" "$base" "$archive_path"
-    prepare_workspace qwen "$task" "$repo" "$base" "$archive_path"
+    for model in gemma qwen codex; do
+      run_done "$model" "$task" || prepare_workspace "$model" "$task" "$repo" "$base" "$archive_path"
+    done
   done
 }
 
@@ -147,7 +168,12 @@ run_task() {
   local out="$RUNS/$model/$task"
   local workspace="$out/workspace"
   local prompt="$ROOT/tasks/$task/prompt.md"
-  local start end pi_exit verify_exit
+  local start end agent_exit verify_exit
+
+  if run_done "$model" "$task"; then
+    echo "=== $model / $task: already completed; skipping ==="
+    return
+  fi
 
   echo
   echo "=== $model / $task ==="
@@ -161,15 +187,28 @@ run_task() {
         pi --provider ollama --model "$GEMMA_MODEL" --thinking medium \
         --approve --exclude-tools ask_question --session-dir "$out/session" -p "$(cat "$prompt")"
     ) >"$out/agent.txt" 2>"$out/stderr.txt"
-  else
+  elif [[ "$model" == qwen ]]; then
     (
       cd "$workspace"
       timeout --signal=INT --kill-after=30s "$TIMEOUT" \
         pi --provider "llama-server=$QWEN_URL" --model "$QWEN_MODEL" --thinking medium \
         --approve --exclude-tools ask_question --session-dir "$out/session" -p "$(cat "$prompt")"
     ) >"$out/agent.txt" 2>"$out/stderr.txt"
+  else
+    timeout --signal=INT --kill-after=30s "$TIMEOUT" \
+      codex exec \
+        --model "$CODEX_MODEL" \
+        -c "model_reasoning_effort=\"$CODEX_REASONING\"" \
+        --sandbox workspace-write \
+        --ask-for-approval never \
+        --cd "$workspace" \
+        --ephemeral \
+        --json \
+        --color never \
+        --output-last-message "$out/agent.txt" \
+        - <"$prompt" >"$out/session.jsonl" 2>"$out/stderr.txt"
   fi
-  pi_exit=$?
+  agent_exit=$?
   set -e
 
   end="$(date +%s)"
@@ -183,11 +222,11 @@ run_task() {
   set -e
 
   cat >"$out/meta.tsv" <<META
-model	task	elapsed_seconds	pi_exit	verify_exit
-$model	$task	$((end - start))	$pi_exit	$verify_exit
+model	task	elapsed_seconds	agent_exit	verify_exit
+$model	$task	$((end - start))	$agent_exit	$verify_exit
 META
 
-  printf 'Pi exit: %s; verifier: %s; elapsed: %ss; changed: ' "$pi_exit" "$verify_exit" "$((end - start))"
+  printf 'Agent exit: %s; verifier: %s; elapsed: %ss; changed: ' "$agent_exit" "$verify_exit" "$((end - start))"
   if [[ -s "$out/status.txt" ]]; then
     tr '\n' ' ' <"$out/status.txt"
     echo
@@ -211,15 +250,15 @@ write_references() {
 
 write_summary() {
   {
-    echo -e 'model\ttask\telapsed_seconds\tpi_exit\tverify_exit\tchanged_files\tinsertions\tdeletions'
-    for model in gemma qwen; do
+    echo -e 'model\ttask\telapsed_seconds\tagent_exit\tverify_exit\tchanged_files\tinsertions\tdeletions'
+    for model in gemma qwen codex; do
       for row in "${TASKS[@]}"; do
         IFS='|' read -r task _ <<<"$row"
         out="$RUNS/$model/$task"
         [[ -f "$out/meta.tsv" ]] || continue
-        IFS=$'\t' read -r _ _ elapsed pi_exit verify_exit < <(tail -1 "$out/meta.tsv")
+        IFS=$'\t' read -r _ _ elapsed agent_exit verify_exit < <(tail -1 "$out/meta.tsv")
         stat="$(git -C "$out/workspace" diff --numstat | awk '{files++; add+=$1; del+=$2} END {printf "%d\t%d\t%d", files+0, add+0, del+0}')"
-        printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$model" "$task" "$elapsed" "$pi_exit" "$verify_exit" "$stat"
+        printf '%s\t%s\t%s\t%s\t%s\t%s\n' "$model" "$task" "$elapsed" "$agent_exit" "$verify_exit" "$stat"
       done
     done
   } >"$RUNS/summary.tsv"
@@ -227,11 +266,11 @@ write_summary() {
 
 prepare_all
 if [[ "$MODE" == prepare ]]; then
-  echo "Prepared clean workspaces under $RUNS"
+  echo "Prepared missing workspaces under $RUNS; completed runs were preserved."
   exit
 fi
 
-if [[ "$MODE" == all || "$MODE" == gemma ]]; then
+if [[ "$MODE" == all || "$MODE" == gemma ]] && has_pending gemma; then
   command -v ollama >/dev/null || { echo "Missing ollama executable." >&2; exit 2; }
   curl -fsS "$OLLAMA_URL/api/tags" >/dev/null || { echo "Ollama is not reachable at $OLLAMA_URL." >&2; exit 2; }
   stop_qwen
@@ -247,13 +286,20 @@ if [[ "$MODE" == all || "$MODE" == gemma ]]; then
   ollama stop "$GEMMA_MODEL" >/dev/null 2>&1 || true
 fi
 
-if [[ "$MODE" == all || "$MODE" == qwen ]]; then
+if [[ "$MODE" == all || "$MODE" == qwen ]] && has_pending qwen; then
   command -v ollama >/dev/null || { echo "Missing ollama executable." >&2; exit 2; }
   ollama stop "$GEMMA_MODEL" >/dev/null 2>&1 || true
   start_qwen
   for row in "${TASKS[@]}"; do
     IFS='|' read -r task repo_name base reference archive_path verify <<<"$row"
     run_task qwen "$task" "$verify"
+  done
+fi
+
+if [[ "$MODE" == all || "$MODE" == codex ]] && has_pending codex; then
+  for row in "${TASKS[@]}"; do
+    IFS='|' read -r task repo_name base reference archive_path verify <<<"$row"
+    run_task codex "$task" "$verify"
   done
 fi
 
@@ -264,8 +310,4 @@ echo
 column -t -s $'\t' "$RUNS/summary.tsv" 2>/dev/null || cat "$RUNS/summary.tsv"
 echo
 echo "Results: $RUNS"
-if [[ "$MODE" == all || "$MODE" == qwen ]]; then
-  echo "Qwen server is left running on $QWEN_URL."
-else
-  echo "Qwen server is stopped."
-fi
+qwen_is_ready && echo "Qwen server is running on $QWEN_URL." || true
