@@ -1,0 +1,10 @@
+model	task	elapsed_seconds	agent_exit	verify_exit	changed_files	insertions	deletions
+gemma	flare-loading	174	0	0	1	26	3
+gemma	whatsapp-integrity	103	0	0	0	0	0
+gemma	mcpserver-console	89	0	1	0	0	0
+qwen	flare-loading	231	0	0	1	2	0
+qwen	whatsapp-integrity	900	124	2	2	266	0
+qwen	mcpserver-console	900	124	1	1	27	6
+codex	flare-loading	141	0	0	1	8	8
+codex	whatsapp-integrity	183	0	0	2	75	0
+codex	mcpserver-console	117	0	0	2	15	1

@@ -1,0 +1,13 @@
+diff --git a/gpt-image-flare-quality/index.html b/gpt-image-flare-quality/index.html
+index 5b71cc0..53882b0 100644
+--- a/gpt-image-flare-quality/index.html
++++ b/gpt-image-flare-quality/index.html
+@@ -5,6 +5,8 @@
+ <meta name="viewport" content="width=device-width,initial-scale=1">
+ <meta name="color-scheme" content="dark light">
+ <title>What GPT Image 2.5 Flare quality actually buys you</title>
++<link rel="preload" as="image" href="images/portrait-low.avif">
++<link rel="preload" as="image" href="images/portrait-high.avif">
+ <meta name="description" content="A visual experiment across low, medium, high, xhigh and max quality on GPT Image 2.5 Flare.">
+ <style>
+ :root{--bg:#10100f;--panel:#171715;--panel2:#20201d;--text:#f4efe3;--muted:#aaa597;--line:#39362f;--accent:#f2b84b;--accent2:#ffdf95;--max:1120px;--serif:"Iowan Old Style","Palatino Linotype","Book Antiqua",Palatino,serif;--sans:"Avenir Next","Segoe UI",sans-serif}

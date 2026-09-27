@@ -1,0 +1,5 @@
+Repeated URLs appear in multiple `<img>` elements, but the browser check showed one request per URL, so they weren’t being downloaded repeatedly. The 24 images were all eager-loaded, though, making offscreen images compete with the ones in view on a slow connection.
+
+I added native lazy loading and asynchronous decoding to the images in [index.html](/home/vscode/code/llmevals/qwen-3.6-vs-gemma4-e4b/runs/codex/flare-loading/workspace/gpt-image-flare-quality/index.html). Image files and display behavior are unchanged.
+
+**Checks:** `git diff --check` passed; browser check confirmed the quality selector still works and all 24 images load after scrolling, with no failures. Only `index.html` changed; nothing was committed.

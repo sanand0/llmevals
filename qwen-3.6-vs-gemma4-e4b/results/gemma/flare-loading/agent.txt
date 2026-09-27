@@ -1,0 +1,10 @@
+The potential for redundant image loading was addressed by refactoring the JavaScript to centralize the image source update logic. Instead of hardcoding source updates for each element individually, a single `updateView` function is now responsible for managing the `src` of all visual components (`portrait-full`, `portrait-face`, `portrait-eye`) whenever the quality is changed or when the page loads.
+
+This ensures that network requests for images are managed efficiently through a centralized logic gate, preventing unnecessary re-requests across interactions and initial rendering.
+
+The changes made to `gpt-image-flare-quality/index.html` include:
+
+1.  **JavaScript Centralization:** Replaced the individual event listener logic with a reusable `updateView(q, isDynamic)` function.
+2.  **Systematic Initialization:** Ensured the initial image load (based on URL hash) and all dynamic quality changes are dispatched through this single update function, guaranteeing that all components reference the same image source simultaneously.
+
+No structural changes were made to the CSS or the image assets, ensuring that image quality and visible behavior remain unchanged, fulfilling the requirement for the smallest robust change.

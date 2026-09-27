@@ -5,6 +5,8 @@ ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LLMEVALS="$(git -C "$ROOT" rev-parse --show-toplevel)"
 SCRIPTS="${HOME}/code/scripts"
 RUNS="$ROOT/runs"
+RESULTS="$ROOT/results"
+ORIGINALS="$ROOT/originals"
 MODE="${1:-all}"
 TIMEOUT="${BENCH_TIMEOUT:-15m}"
 
@@ -23,11 +25,11 @@ TASKS=(
 )
 
 case "$MODE" in
-  all|prepare|gemma|qwen|codex) ;;
-  *) echo "Usage: $0 [all|prepare|gemma|qwen|codex]" >&2; exit 2 ;;
+  all|prepare|gemma|qwen|codex|export) ;;
+  *) echo "Usage: $0 [all|prepare|gemma|qwen|codex|export]" >&2; exit 2 ;;
 esac
 
-for command in git curl timeout tar just flock; do
+for command in git curl timeout tar just flock jaq; do
   command -v "$command" >/dev/null || { echo "Missing required command: $command" >&2; exit 2; }
 done
 if [[ "$MODE" == all || "$MODE" == gemma || "$MODE" == qwen ]]; then
@@ -273,9 +275,125 @@ write_summary() {
   } >"$RUNS/summary.tsv"
 }
 
+model_id_for() {
+  case "$1" in
+    gemma) printf '%s\n' "$GEMMA_MODEL" ;;
+    qwen) printf '%s\n' "$QWEN_MODEL" ;;
+    codex) printf '%s\n' "$CODEX_MODEL" ;;
+  esac
+}
+
+runner_for() {
+  case "$1" in
+    gemma) printf 'pi+ollama\n' ;;
+    qwen) printf 'pi+llama.cpp\n' ;;
+    codex) printf 'codex\n' ;;
+  esac
+}
+
+usage_for() {
+  local model="$1" task="$2" out="$RUNS/$1/$2" session
+  if [[ "$model" == codex ]]; then
+    jaq -s -r '
+      [.[] | select(.type=="turn.completed") | .usage] | last as $u
+      | [($u.input_tokens // 0), ($u.cached_input_tokens // 0), ($u.output_tokens // 0),
+         ($u.reasoning_output_tokens // 0), ""] | @tsv
+    ' "$out/session.jsonl"
+  else
+    session="$(find "$out/session" -maxdepth 1 -type f -name '*.jsonl' -print -quit)"
+    jaq -s -r '
+      [.[] | select(.type=="message" and .message.role=="assistant" and .message.usage) | .message.usage] as $u
+      | [($u | map(.input // 0) | add // 0),
+         ($u | map(.cacheRead // 0) | add // 0),
+         ($u | map(.output // 0) | add // 0),
+         ($u | map(.reasoning // 0) | add // 0),
+         ($u | last | .totalTokens // 0)] | @tsv
+    ' "$session"
+  fi
+}
+
+export_originals() {
+  rm -rf "$ORIGINALS"
+  mkdir -p "$ORIGINALS"
+  local row task model workspace file destination
+  for row in "${TASKS[@]}"; do
+    IFS='|' read -r task _ <<<"$row"
+    declare -A changed=()
+    workspace=''
+    for model in gemma qwen codex; do
+      run_done "$model" "$task" || continue
+      workspace="$RUNS/$model/$task/workspace"
+      while IFS= read -r file; do
+        [[ -n "$file" ]] && changed["$file"]=1
+      done < <(git -C "$workspace" diff --name-only HEAD)
+    done
+    [[ -n "$workspace" ]] || continue
+    for file in "${!changed[@]}"; do
+      git -C "$workspace" cat-file -e "HEAD:$file" 2>/dev/null || continue
+      destination="$ORIGINALS/$task/$file"
+      mkdir -p "$(dirname "$destination")"
+      git -C "$workspace" show "HEAD:$file" >"$destination"
+    done
+  done
+}
+
+export_results() {
+  rm -rf "$RESULTS"
+  mkdir -p "$RESULTS/reference"
+  cp "$RUNS/summary.tsv" "$RESULTS/summary.tsv"
+  cp "$RUNS/reference/"*.patch "$RESULTS/reference/"
+
+  {
+    echo -e 'model\tmodel_id\trunner\ttask\telapsed_seconds\tagent_exit\tverify_exit\tchanged_files\tinsertions\tdeletions\tinput_tokens\tcached_input_tokens\toutput_tokens\treasoning_output_tokens\tfinal_context_tokens'
+    local model row task out elapsed agent_exit verify_exit stat usage model_id runner
+    for model in gemma qwen codex; do
+      model_id="$(model_id_for "$model")"
+      runner="$(runner_for "$model")"
+      for row in "${TASKS[@]}"; do
+        IFS='|' read -r task _ <<<"$row"
+        run_done "$model" "$task" || continue
+        out="$RUNS/$model/$task"
+        mkdir -p "$RESULTS/$model/$task"
+        cp "$out/agent.txt" "$out/diff.patch" "$out/verify.txt" "$RESULTS/$model/$task/"
+        [[ ! -s "$out/stderr.txt" ]] || cp "$out/stderr.txt" "$RESULTS/$model/$task/"
+
+        IFS=$'\t' read -r _ _ elapsed agent_exit verify_exit < <(tail -1 "$out/meta.tsv")
+        stat="$(git -C "$out/workspace" diff --numstat | awk '{files++; add+=$1; del+=$2} END {printf "%d\t%d\t%d", files+0, add+0, del+0}')"
+        usage="$(usage_for "$model" "$task")"
+        printf '%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\t%s\n' \
+          "$model" "$model_id" "$runner" "$task" "$elapsed" "$agent_exit" "$verify_exit" "$stat" "$usage"
+      done
+    done
+  } >"$RESULTS/details.tsv"
+
+  {
+    printf 'kernel\t%s\n' "$(uname -srmo)"
+    if command -v nvidia-smi >/dev/null; then
+      nvidia-smi --query-gpu=name,memory.total,driver_version,power.limit --format=csv,noheader |
+        sed 's/^/gpu\t/'
+    fi
+    command -v ollama >/dev/null && printf 'ollama\t%s\n' "$(ollama --version 2>&1 | head -1)"
+    command -v llama >/dev/null && printf 'llama\t%s\n' "$(llama --version 2>&1 | head -1)"
+    command -v pi >/dev/null && printf 'pi\t%s\n' "$(pi --version 2>&1 | head -1)"
+    command -v codex >/dev/null && printf 'codex\t%s\n' "$(codex --version 2>&1 | head -1)"
+    printf 'qwen_context\t65536\n'
+    printf 'qwen_cpu_moe\t35\n'
+    printf 'qwen_kv_cache\tq8_0\n'
+  } >"$RESULTS/environment.tsv"
+
+  export_originals
+}
+
 prepare_all
 if [[ "$MODE" == prepare ]]; then
   echo "Prepared missing workspaces under $RUNS; completed runs were preserved."
+  exit
+fi
+if [[ "$MODE" == export ]]; then
+  write_references
+  write_summary
+  export_results
+  echo "Exported review artifacts to $RESULTS and $ORIGINALS."
   exit
 fi
 
@@ -314,6 +432,7 @@ fi
 
 write_references
 write_summary
+export_results
 
 echo
 column -t -s $'\t' "$RUNS/summary.tsv" 2>/dev/null || cat "$RUNS/summary.tsv"

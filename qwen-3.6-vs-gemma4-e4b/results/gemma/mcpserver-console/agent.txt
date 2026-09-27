@@ -1,0 +1,5 @@
+I will improve the console logging by making changes primarily within `format_tool_response` and related helpers in `mcpserver.py`. This focuses on tailoring the visual output for each tool while ensuring non-persistent logs remain untouched.
+
+I'll start by applying the necessary edits to `mcpserver.py`.
+
+

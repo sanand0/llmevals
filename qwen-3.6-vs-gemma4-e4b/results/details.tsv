@@ -1,0 +1,10 @@
+model	model_id	runner	task	elapsed_seconds	agent_exit	verify_exit	changed_files	insertions	deletions	input_tokens	cached_input_tokens	output_tokens	reasoning_output_tokens	final_context_tokens
+gemma	gemma4:e4b-it-qat	pi+ollama	flare-loading	174	0	0	1	26	3	70763	0	7570	0	19104
+gemma	gemma4:e4b-it-qat	pi+ollama	whatsapp-integrity	103	0	0	0	0	0	32521	0	3781	0	24676
+gemma	gemma4:e4b-it-qat	pi+ollama	mcpserver-console	89	0	1	0	0	0	35222	0	3176	0	25387
+qwen	ggml-org/Qwen3.6-35B-A3B-GGUF:Q4_K_M	pi+llama.cpp	flare-loading	231	0	0	1	2	0	13578	76963	2902	0	16474
+qwen	ggml-org/Qwen3.6-35B-A3B-GGUF:Q4_K_M	pi+llama.cpp	whatsapp-integrity	900	124	2	2	266	0	40321	813131	10178	0	48423
+qwen	ggml-org/Qwen3.6-35B-A3B-GGUF:Q4_K_M	pi+llama.cpp	mcpserver-console	900	124	1	1	27	6	74161	627794	5576	0	30724
+codex	gpt-6-luna	codex	flare-loading	141	0	0	1	8	8	489470	436992	3400	1579	
+codex	gpt-6-luna	codex	whatsapp-integrity	183	0	0	2	75	0	518853	476672	5164	1385	
+codex	gpt-6-luna	codex	mcpserver-console	117	0	0	2	15	1	377313	351232	3227	998	

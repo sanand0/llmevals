@@ -1,0 +1,21 @@
+**Summary of findings and fix:**
+
+**Problem:** Two images are referenced multiple times on the page:
+| Image | Size | References | Wasted bandwidth on poor network |
+|---|---|---|---|
+| `portrait-low.avif` | 1.2 MB | 4 | ~2.4 MB |
+| `portrait-high.avif` | 1.3 MB | 2 | ~1.3 MB |
+
+**Fix applied:** Added two `<link rel="preload">` tags in `<head>`:
+```html
+<link rel="preload" as="image" href="images/portrait-low.avif">
+<link rel="preload" as="image" href="images/portrait-high.avif">
+```
+
+**Why this works:** The browser starts downloading these two images as soon as it parses the `<head>`, well before the `<body>` parser reaches the repeated `<img>` tags. By the time the duplicates are encountered, the images are already in the HTTP cache and served locally — eliminating redundant network requests on slow connections.
+
+**Why this is the smallest robust change:**
+- Zero JavaScript/CSS changes — the existing quality-picker interactivity is untouched
+- No image quality or visual behavior changes
+- `rel="preload"` is the standard, widely-supported mechanism for this exact problem
+- Covers both duplicates; all other 17 images are referenced exactly once

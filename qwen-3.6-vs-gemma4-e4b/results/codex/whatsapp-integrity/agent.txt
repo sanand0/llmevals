@@ -1,0 +1,3 @@
+Added a read-only preflight that checks every top-level backup JSONL file before CDP starts. It reports all malformed rows with file and line, rejects rows with a mismatched `conversationId`, and keeps message text out of diagnostics. Regression tests also verify damaged files remain unchanged.
+
+`just test-backup-whatsapp` passed: 12 tests. `git diff --check` passed. No commit was made.

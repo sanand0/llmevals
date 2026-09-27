@@ -1,0 +1,36 @@
+uv run --isolated --no-project --python 3.14 --with pytest --with typer --with websockets pytest -q tests/test_backupwhatsapp.py
+
+==================================== ERRORS ====================================
+________________ ERROR collecting tests/test_backupwhatsapp.py _________________
+/home/sanand/.cache/uv/archive-v0/j6X7b43yLhjZK_Wx/lib/python3.14/site-packages/_pytest/python.py:508: in importtestmodule
+    mod = import_path(
+/home/sanand/.cache/uv/archive-v0/j6X7b43yLhjZK_Wx/lib/python3.14/site-packages/_pytest/pathlib.py:596: in import_path
+    importlib.import_module(module_name)
+/home/sanand/.local/share/uv/python/cpython-3.14.0-linux-x86_64-gnu/lib/python3.14/importlib/__init__.py:88: in import_module
+    return _bootstrap._gcd_import(name[level:], package, level)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+<frozen importlib._bootstrap>:1398: in _gcd_import
+    ???
+<frozen importlib._bootstrap>:1371: in _find_and_load
+    ???
+<frozen importlib._bootstrap>:1342: in _find_and_load_unlocked
+    ???
+<frozen importlib._bootstrap>:938: in _load_unlocked
+    ???
+/home/sanand/.cache/uv/archive-v0/j6X7b43yLhjZK_Wx/lib/python3.14/site-packages/_pytest/assertion/rewrite.py:179: in exec_module
+    source_stat, co = _rewrite_test(fn, self.config)
+                      ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/sanand/.cache/uv/archive-v0/j6X7b43yLhjZK_Wx/lib/python3.14/site-packages/_pytest/assertion/rewrite.py:348: in _rewrite_test
+    tree = ast.parse(source, filename=strfn)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+/home/sanand/.local/share/uv/python/cpython-3.14.0-linux-x86_64-gnu/lib/python3.14/ast.py:46: in parse
+    return compile(source, filename, mode, flags,
+E     File "/home/sanand/code/llmevals/qwen-3.6-vs-gemma4-e4b/runs/qwen/whatsapp-integrity/workspace/tests/test_backupwhatsapp.py", line 172
+E       path.write_text('{"messageId":"m2","time":"2026-01-02T00:00:00Z"}\n", mode="a")
+E                       ^
+E   SyntaxError: unterminated string literal (detected at line 172)
+=========================== short test summary info ============================
+ERROR tests/test_backupwhatsapp.py
+!!!!!!!!!!!!!!!!!!!! Interrupted: 1 error during collection !!!!!!!!!!!!!!!!!!!!
+1 error in 0.17s
+error: recipe `test-backup-whatsapp` failed on line 28 with exit code 2

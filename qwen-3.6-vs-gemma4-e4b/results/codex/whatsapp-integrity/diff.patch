@@ -1,0 +1,101 @@
+diff --git a/backupwhatsapp.py b/backupwhatsapp.py
+index 2dd8888..652b5b5 100755
+--- a/backupwhatsapp.py
++++ b/backupwhatsapp.py
+@@ -630,6 +630,35 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
+     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+ 
+ 
++def validate_backup_files() -> list[str]:
++    """Return safe, line-specific problems in existing conversation backups."""
++    problems = []
++    for path in sorted(OUT_DIR.glob("*.jsonl")):
++        match = re.search(r" \[([^\[\]]+)\]$", path.stem)
++        expected_id = match.group(1) if match else None
++        with path.open("rb") as handle:
++            for line_number, raw_line in enumerate(handle, 1):
++                if not raw_line.strip():
++                    continue
++                try:
++                    line = raw_line.decode("utf-8")
++                    row = json.loads(line, parse_constant=lambda _: (_ for _ in ()).throw(ValueError()))
++                except (UnicodeDecodeError, json.JSONDecodeError, ValueError):
++                    problems.append(f"{path}:{line_number}: malformed JSON")
++                    continue
++                if not isinstance(row, dict):
++                    problems.append(f"{path}:{line_number}: row is not a JSON object")
++                elif expected_id and row.get("conversationId") != expected_id:
++                    problems.append(f"{path}:{line_number}: conversationId does not match filename")
++    return problems
++
++
++def require_valid_backup_files() -> None:
++    problems = validate_backup_files()
++    if problems:
++        raise ValueError("invalid backup JSONL files:\n" + "\n".join(problems))
++
++
+ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+     path.parent.mkdir(parents=True, exist_ok=True)
+     tmp = path.with_name(f".{path.name}.{time.time_ns()}.tmp")
+@@ -1347,6 +1376,7 @@ def main(
+     globals()["OUT_DIR"] = out_dir.expanduser()
+     globals()["SCRAPER"] = scraper.expanduser()
+     try:
++        require_valid_backup_files()
+         asyncio.run(
+             run_backup(
+                 cdp_url,
+diff --git a/tests/test_backupwhatsapp.py b/tests/test_backupwhatsapp.py
+index 74fbdac..4b66d90 100644
+--- a/tests/test_backupwhatsapp.py
++++ b/tests/test_backupwhatsapp.py
+@@ -151,3 +151,48 @@ def test_update_normalizes_legacy_full_jid_user_ids(tmp_path: Path) -> None:
+ 
+     assert changed == 1
+     assert json.loads(path.read_text())["userId"] == "123"
++
++
++def test_validate_backup_files_reports_all_errors_without_message_text(tmp_path: Path, monkeypatch) -> None:
++    monkeypatch.setattr(backup, "OUT_DIR", tmp_path)
++    first = tmp_path / "Family [123@g.us].jsonl"
++    second = tmp_path / "Work [456@g.us].jsonl"
++    first.write_bytes(b'{"conversationId":"123@g.us","text":"private secret"}\nnot json\n\xff\n')
++    second.write_text('{"conversationId":"wrong@g.us","text":"another private secret"}\n')
++    before = {path: path.read_bytes() for path in (first, second)}
++
++    problems = backup.validate_backup_files()
++
++    assert len(problems) == 3
++    assert f"{first}:2: malformed JSON" in problems
++    assert f"{first}:3: malformed JSON" in problems
++    assert f"{second}:1: conversationId does not match filename" in problems
++    assert "private secret" not in "\n".join(problems)
++    assert {path: path.read_bytes() for path in (first, second)} == before
++
++
++def test_main_rejects_corrupt_backups_before_running_cdp(tmp_path: Path, monkeypatch) -> None:
++    from typer.testing import CliRunner
++
++    out_dir = tmp_path / "backups"
++    out_dir.mkdir()
++    bad_a = out_dir / "A [a@g.us].jsonl"
++    bad_b = out_dir / "B [b@g.us].jsonl"
++    bad_a.write_text('broken private message\n')
++    bad_b.write_text('{"conversationId":"wrong@g.us","text":"private secret"}\n')
++    scraper = tmp_path / "scraper.js"
++    scraper.write_text("")
++    before = (bad_a.read_bytes(), bad_b.read_bytes())
++
++    def must_not_connect(*args, **kwargs):
++        raise AssertionError("backup run started before validation")
++
++    monkeypatch.setattr(backup.asyncio, "run", must_not_connect)
++    result = CliRunner().invoke(backup.app, ["--out-dir", str(out_dir), "--scraper", str(scraper)])
++
++    assert result.exit_code == 1
++    assert f"{bad_a}:1: malformed JSON" in result.output
++    assert f"{bad_b}:1: conversationId does not match filename" in result.output
++    assert "private message" not in result.output
++    assert "private secret" not in result.output
++    assert (bad_a.read_bytes(), bad_b.read_bytes()) == before

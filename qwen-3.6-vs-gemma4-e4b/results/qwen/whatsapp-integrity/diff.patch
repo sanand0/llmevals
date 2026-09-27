@@ -1,0 +1,292 @@
+diff --git a/backupwhatsapp.py b/backupwhatsapp.py
+index 2dd8888..c5a210e 100755
+--- a/backupwhatsapp.py
++++ b/backupwhatsapp.py
+@@ -630,6 +630,104 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
+     return [json.loads(line) for line in path.read_text().splitlines() if line.strip()]
+ 
+ 
++# ---- backup JSONL validation ----
++
++_BACKUP_CONVERSATION_KEYS = {"conversationId", "conversationTitle"}
++
++
++def _expected_ids_for_path(path: Path) -> tuple[str, str]:
++    """Derive the conversation id and title from a backup filename.
++
++    Expected format: ``{title} [{id}].jsonl`` or ``{title}.jsonl``.
++    Returns ``(conversation_id, title)`` – ``conversation_id`` is empty for
++    files that do not contain an id in square brackets.
++    """
++    stem = path.stem  # strip .jsonl or .json
++    bracket_match = re.search(r"\[([^\]]+)\]$", stem)
++    if bracket_match:
++        return bracket_match.group(1), stem[: bracket_match.start()].strip()
++    # No bracket — title is the whole stem
++    return "", stem
++
++
++def validate_backup_jsonl(
++    path: Path,
++    expected_conversation_id: str = "",
++    expected_title: str = "",
++) -> list[dict[str, Any]]:
++    """Validate a single backup JSONL file.
++
++    Returns a list of error dicts.  Each dict has keys::
++
++        file  – absolute path string
++        line  – 1-based line number
++        error – short machine-readable error code
++        detail – human-readable message (never message text)
++
++    ``expected_conversation_id`` and ``expected_title`` are used to verify
++    that every row's ``conversationId`` / ``conversationTitle`` fields are
++    consistent with the file's identity.  Empty strings mean "skip this
++    check" (e.g. for files not yet tied to a conversation).
++    """
++    errors: list[dict[str, Any]] = []
++    if not path.exists():
++        return errors
++
++    expected_id = expected_conversation_id.strip()
++    expected_title = expected_title.strip()
++    abs_path = str(path.resolve())
++
++    with open(path, "r", encoding="utf-8") as fh:
++        for lineno, raw_line in enumerate(fh, 1):
++            line = raw_line.strip()
++            if not line:
++                continue
++            try:
++                row = json.loads(line)
++            except json.JSONDecodeError as exc:
++                errors.append(
++                    {
++                        "file": abs_path,
++                        "line": lineno,
++                        "error": "json-parse-error",
++                        "detail": f"line {lineno}: {exc.msg}",
++                    }
++                )
++                continue
++            if not isinstance(row, dict):
++                errors.append(
++                    {
++                        "file": abs_path,
++                        "line": lineno,
++                        "error": "not-object",
++                        "detail": f"line {lineno}: expected JSON object, got {type(row).__name__}",
++                    }
++                )
++                continue
++            # Cross-check conversation identity fields (when we have expectations)
++            row_id = str(row.get("conversationId") or "")
++            row_title = str(row.get("conversationTitle") or "")
++            if expected_id and row_id and row_id != expected_id:
++                errors.append(
++                    {
++                        "file": abs_path,
++                        "line": lineno,
++                        "error": "conversation-id-mismatch",
++                        "detail": f"line {lineno}: expected conversationId={obs.short_hash(expected_id)}, got {obs.short_hash(row_id)}",
++                    }
++                )
++            if expected_title and row_title and row_title != expected_title:
++                errors.append(
++                    {
++                        "file": abs_path,
++                        "line": lineno,
++                        "error": "conversation-title-mismatch",
++                        "detail": f"line {lineno}: expected title={obs.short_hash(expected_title)}, got {obs.short_hash(row_title)}",
++                    }
++                )
++    return errors
++
++
+ def write_jsonl(path: Path, rows: list[dict[str, Any]]) -> None:
+     path.parent.mkdir(parents=True, exist_ok=True)
+     tmp = path.with_name(f".{path.name}.{time.time_ns()}.tmp")
+@@ -1162,6 +1260,27 @@ async def run_backup(
+     )
+     page: CDPPage | None = None
+     run_stats: dict[str, Any] = {"opened_chats": 0, "skipped_chats": 0, "messages_seen": 0, "messages_kept": 0, "rows_changed": 0}
++    # ---- pre-CDP: validate existing backup files ----
++    backup_errors: list[dict[str, Any]] = []
++    for bp in backup_paths():
++        exp_id, exp_title = _expected_ids_for_path(bp)
++        backup_errors.extend(validate_backup_jsonl(bp, exp_id, exp_title))
++    if backup_errors:
++        # Group by file for compact reporting
++        by_file: dict[str, list[dict[str, Any]]] = {}
++        for err in backup_errors:
++            by_file.setdefault(err["file"], []).append(err)
++        parts = []
++        for fpath, file_errors in sorted(by_file.items()):
++            codes = sorted(set(e["error"] for e in file_errors))
++            lines_str = ",".join(str(e["line"]) for e in file_errors)
++            parts.append(f"  {os.path.basename(fpath)}: {len(file_errors)} error(s) – {', '.join(codes)} (lines {lines_str})")
++        typer.echo(
++            f"backupwhatsapp.py: {len(backup_errors)} corrupt backup file(s) found – "
++            f"{len(by_file)} file(s) affected. Fix or remove them before retrying.\n" + "\n".join(parts),
++            err=True,
++        )
++        raise typer.Exit(1)
+     try:
+         with trace.span("cdp_connection", {"cdp_url": cdp_url}):
+             page = await connect_whatsapp_page(cdp_url)
+diff --git a/tests/test_backupwhatsapp.py b/tests/test_backupwhatsapp.py
+index 74fbdac..1c90223 100644
+--- a/tests/test_backupwhatsapp.py
++++ b/tests/test_backupwhatsapp.py
+@@ -151,3 +151,150 @@ def test_update_normalizes_legacy_full_jid_user_ids(tmp_path: Path) -> None:
+ 
+     assert changed == 1
+     assert json.loads(path.read_text())["userId"] == "123"
++
++
++# ---- backup JSONL validation tests ----
++
++
++def test_validate_clean_file_returns_no_errors(tmp_path: Path) -> None:
++    path = tmp_path / "Family [abc123@g.us].jsonl"
++    path.write_text("{" + '"messageId":"m1","time":"2026-01-01T00:00:00Z","conversationId":"abc123@g.us","conversationTitle":"Family"}\n'
++                     + '{"messageId":"m2","time":"2026-01-02T00:00:00Z","conversationId":"abc123@g.us","conversationTitle":"Family"}\n')
++
++    errors = backup.validate_backup_jsonl(path, "abc123@g.us", "Family")
++    assert errors == []
++
++
++def test_validate_json_parse_error_identifies_line_and_file(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1","time":"2026-01-01T00:00:00Z"}\n')
++    path.write_text("not json at all\n", "a")
++    path.write_text('{"messageId":"m2","time":"2026-01-02T00:00:00Z"}\n", mode="a")
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 1
++    assert errors[0]["error"] == "json-parse-error"
++    assert errors[0]["line"] == 2
++    assert errors[0]["file"] == str(path.resolve())
++
++
++def test_validate_conversation_id_mismatch(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1","time":"2026-01-01T00:00:00Z","conversationId":"abc@g.us"}\n')
++    path.write_text('{"messageId":"m2","time":"2026-01-02T00:00:00Z","conversationId":"xyz@g.us"}\n", mode="a")
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 1
++    assert errors[0]["error"] == "conversation-id-mismatch"
++    assert errors[0]["line"] == 2
++
++
++def test_validate_conversation_title_mismatch(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1","time":"2026-01-01T00:00:00Z","conversationTitle":"Chat","conversationId":"abc@g.us"}\n')
++    path.write_text('{"messageId":"m2","time":"2026-01-02T00:00:00Z","conversationTitle":"Other","conversationId":"abc@g.us"}\n", mode="a")
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 1
++    assert errors[0]["error"] == "conversation-title-mismatch"
++
++
++def test_validate_non_dict_object(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('"just a string"\n')
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 1
++    assert errors[0]["error"] == "not-object"
++
++
++def test_validate_empty_file_no_errors(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text("")
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert errors == []
++
++
++def test_validate_blank_lines_skipped(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1"}\n\n   \n{"messageId":"m2"}\n')
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert errors == []
++
++
++def test_validate_missing_file_no_errors(tmp_path: Path) -> None:
++    path = tmp_path / "Missing [abc@g.us].jsonl"
++    assert not path.exists()
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert errors == []
++
++
++def test_validate_does_not_mutate_input(tmp_path: Path) -> None:
++    original = '{"messageId":"m1","time":"2026-01-01T00:00:00Z"}\nbad line\n{"messageId":"m2"}\n'
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text(original)
++
++    backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert path.read_text() == original
++
++
++def test_validate_skips_identity_checks_when_expected_values_empty(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1","conversationId":"wrong@g.us","conversationTitle":"Wrong"}\n')
++
++    errors = backup.validate_backup_jsonl(path)  # no expectations
++    assert errors == []
++
++
++def test_validate_reports_multiple_errors_across_lines(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text("corrupt\n")
++    path.write_text('{"messageId":"m1","conversationId":"wrong@g.us"}\n', mode="a")
++    path.write_text("also corrupt\n", mode="a")
++    path.write_text('42\n', mode="a")  # not an object
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 4
++    assert errors[0]["error"] == "json-parse-error"
++    assert errors[1]["error"] == "conversation-id-mismatch"
++    assert errors[2]["error"] == "json-parse-error"
++    assert errors[3]["error"] == "not-object"
++
++
++def test_validate_no_message_text_in_errors(tmp_path: Path) -> None:
++    path = tmp_path / "Chat [abc@g.us].jsonl"
++    path.write_text('{"messageId":"m1","text":"my super secret message"}\n')
++    path.write_text('{"messageId":"m2","conversationId":"different@g.us"}\n', mode="a")
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert len(errors) == 1
++    detail = errors[0]["detail"]
++    # Detail must never contain the actual message text
++    assert "super secret" not in detail
++    assert "my super secret message" not in detail
++
++
++def test_expected_ids_from_path_with_brackets() -> None:
++    p = Path("/tmp/My Chat [abc123@g.us].jsonl")
++    cid, title = backup._expected_ids_for_path(p)
++    assert cid == "abc123@g.us"
++    assert title == "My Chat"
++
++
++def test_expected_ids_from_path_without_brackets() -> None:
++    p = Path("/tmp/Notes.jsonl")
++    cid, title = backup._expected_ids_for_path(p)
++    assert cid == ""
++    assert title == "Notes"
++
++
++def test_validate_json_file_extension_handled(tmp_path: Path) -> None:
++    # .json files also get validated
++    path = tmp_path / "Chat [abc@g.us].json"
++    path.write_text('{"messageId":"m1","conversationId":"abc@g.us"}\n')
++
++    errors = backup.validate_backup_jsonl(path, "abc@g.us", "Chat")
++    assert errors == []

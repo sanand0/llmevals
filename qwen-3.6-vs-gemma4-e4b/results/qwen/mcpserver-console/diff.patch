@@ -1,0 +1,58 @@
+diff --git a/mcpserver.py b/mcpserver.py
+index 3f0d051..55c57ac 100755
+--- a/mcpserver.py
++++ b/mcpserver.py
+@@ -486,7 +486,7 @@ def format_tool_request(tool: str, arguments: dict[str, Any]) -> list[str]:
+             extras.append("hidden")
+         return [f"{console_path(path)} • {' • '.join(extras)}"]
+     if tool == "search":
+-        query = json.dumps(arguments.get("query", ""), ensure_ascii=False)
++        query = arguments.get("query", "")
+         where = console_path(arguments.get("path", "."))
+         extras = [arguments.get("mode", "content")]
+         if arguments.get("file_glob"):
+@@ -499,18 +499,39 @@ def format_tool_request(tool: str, arguments: dict[str, Any]) -> list[str]:
+             extras.append("hidden")
+         if "max_results" in arguments:
+             extras.append(f"max {arguments['max_results']}")
+-        return [f"{query} in {where} • {' • '.join(extras)}"]
++        return [f"{query!r} in {where} • {' • '.join(extras)}"]
+     if tool == "edit_block" and path:
+         expected = arguments.get("expected_replacements", 1)
+-        return [
++        old = arguments.get("old_string", "")
++        new = arguments.get("new_string", "")
++        lines = [
+             f"{console_path(path)} • expect {expected} {plural(expected, 'replacement')}",
+-            f"old:\n{arguments.get('old_string', '')}",
+-            f"new:\n{arguments.get('new_string', '')}",
+         ]
++        # Truncate multi-line diffs to first 3 lines + "…" for console readability
++        for label, text in (("old", old), ("new", new)):
++            if "\n" in text:
++                first_lines = text.splitlines()
++                if len(first_lines) > 3:
++                    text = "\n".join(first_lines[:3]) + "\n  … (+%d more lines)" % (len(first_lines) - 3)
++                else:
++                    text = text
++            lines.append(f"  {label}: {text}")
++        return lines
+     if tool == "bash":
+         cwd = console_path(arguments["cwd"]) if arguments.get("cwd") else display_path(Path.cwd())
+         timeout = arguments.get("timeout_ms", 30_000) / 1000
+-        return [f"{cwd} • timeout {timeout:g}s", arguments.get("commands", "")]
++        cmd = arguments.get("commands", "")
++        # Show first line prominently, truncate if very long
++        if "\n" in cmd:
++            cmd_display = cmd.splitlines()[0]
++            return [
++                f"{cwd} • timeout {timeout:g}s",
++                f"  {cmd_display}",
++                f"  … ({len(cmd.splitlines()) - 1} more command(s))",
++            ]
++        if len(cmd) > 80:
++            return [f"{cwd} • timeout {timeout:g}s", f"  {cmd[:77]}…"]
++        return [f"{cwd} • timeout {timeout:g}s", f"  {cmd}"]
+     if tool == "save_file":
+         file = arguments.get("file") or {}
+         source = file.get("file_name") or file.get("file_id") or "upload"

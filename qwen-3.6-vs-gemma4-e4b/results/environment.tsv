@@ -1,0 +1,8 @@
+kernel	Linux 6.17.0-35-generic x86_64 GNU/Linux
+gpu	NVIDIA RTX 2000 Ada Generation Laptop GPU, 8188 MiB, 580.178.04, [N/A]
+llama	version: 0.5.0-dev (build 11200, commit 81bc6b83f)
+pi	0.86.1
+codex	codex-cli 0.155.1
+qwen_context	65536
+qwen_cpu_moe	35
+qwen_kv_cache	q8_0

@@ -1,0 +1,38 @@
+diff --git a/mcpserver.py b/mcpserver.py
+index 3f0d051..84857f9 100755
+--- a/mcpserver.py
++++ b/mcpserver.py
+@@ -679,7 +679,8 @@ def console_tool_request(tool: str, arguments: dict[str, Any]) -> None:
+     headline = f"{timestamp} ▶ {tool}" + (f" {lines[0]}" if lines else "")
+     print(console_color(headline, "cyan"), file=sys.stderr)
+     if len(lines) > 1:
+-        print(console_color(indent_lines("\n".join(lines[1:])), "dim"), file=sys.stderr)
++        preview = truncate_middle("\n".join(lines[1:]), CONSOLE_RESPONSE_CHARS)
++        print(console_color(indent_lines(preview), "dim"), file=sys.stderr)
+     sys.stderr.flush()
+ 
+ 
+diff --git a/tests/test_mcpserver.py b/tests/test_mcpserver.py
+index 557f713..8abd804 100644
+--- a/tests/test_mcpserver.py
++++ b/tests/test_mcpserver.py
+@@ -1169,6 +1169,19 @@ def test_main_can_opt_back_into_stateful_http(monkeypatch) -> None:
+     assert calls == [{"transport": "http", "port": 2428, "path": "/mcp2428"}]
+ 
+ 
++def test_console_tool_request_truncates_long_details(monkeypatch, capsys) -> None:
++    monkeypatch.setattr(mcpserver, "CONSOLE_RESPONSE_CHARS", 100)
++    command = "HEAD-" + ("x" * 500) + "-TAIL"
++
++    mcpserver.console_tool_request("bash", {"commands": command, "cwd": "/tmp"})
++
++    console = capsys.readouterr().err
++    assert "▶ bash" in console
++    assert "HEAD-" in console and "-TAIL" in console
++    assert "chars omitted" in console
++    assert command not in console
++
++
+ def test_console_color_uses_ansi_only_on_tty(monkeypatch) -> None:
+     class Tty:
+         def isatty(self):
