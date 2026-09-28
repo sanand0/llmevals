@@ -153,6 +153,7 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
         "jev": (10, 18),
         "deepseek": (10, -10),
         "luna": (10, -10),
+        "luna6": (10, 18),
         "sol": (10, 18),
         "gemini": (10, -10),
         "sonnet": (10, 18),
@@ -164,7 +165,7 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
         f'<svg class="scatter-chart" viewBox="0 0 {width} {height}" role="img" aria-labelledby="scatter-title scatter-desc">',
         '<title id="scatter-title">Cost versus classification accuracy</title>',
         (
-            '<desc id="scatter-desc">Nine models. Cost per thousand requests uses a logarithmic '
+            f'<desc id="scatter-desc">{len(summary)} models. Cost per thousand requests uses a logarithmic '
             'horizontal scale. Accuracy is shown on a clipped vertical range.</desc>'
         ),
     ]
@@ -221,11 +222,11 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
 def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], dict[str, object]]) -> str:
     by_key = {row["key"]: row for row in summary}
     ranked = sorted(summary, key=lambda row: (-float(row["accuracy"]), float(row["cost_77"])))
-    astra, gemini, jev, luna = (by_key[k] for k in ("astra", "gemini", "jev", "luna"))
+    astra, gemini, jev, luna6 = (by_key[k] for k in ("astra", "gemini", "jev", "luna6"))
+    model_count = len(summary)
+    general_model_count = model_count - 1
     all_case_ids = sorted({case_id for _, case_id in unique})
     all_miss = sum(not any(unique[(key, case_id)]["correct"] for key in ORDER) for case_id in all_case_ids)
-    jev_saving_vs_luna = float(luna["cost_per_1000"]) - float(jev["cost_per_1000"])
-    extra_errors_jev_vs_luna = (float(luna["accuracy"]) - float(jev["accuracy"])) * 100
     gemini_discount = 1 - float(gemini["cost_77"]) / float(astra["cost_77"])
     scatter = scatter_svg(summary)
     cases = list(csv.DictReader((DATA / "cases.csv").open()))
@@ -299,7 +300,7 @@ def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Jev vs frontier LLMs: BANKING77 pilot</title>
-<meta name="description" content="A 77-case paired pilot comparing Jev with eight strong language models on banking-support classification, confidence, speed and cost.">
+<meta name="description" content="A 77-case paired pilot comparing Jev with {general_model_count} strong language models on banking-support classification, confidence, speed and cost.">
 <style>
 :root{{--ink:#17212b;--muted:#66717c;--line:#dce2e7;--soft:#f5f7f8;--paper:#fff;--accent:#1769aa;--good:#147a55;--warn:#a85c00;--bad:#b42318;color-scheme:light}}
 *{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}}main{{max-width:980px;margin:auto;padding:clamp(28px,6vw,72px) 22px 80px}}h1,h2,h3{{line-height:1.12;text-wrap:balance}}h1{{font-size:clamp(2.2rem,6vw,4.5rem);letter-spacing:-.045em;margin:.12em 0 .25em}}h2{{font-size:clamp(1.45rem,3vw,2rem);margin:2.2em 0 .55em}}p{{max-width:760px}}.eyebrow{{font-size:.75rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}}.deck{{font-size:clamp(1.1rem,2.2vw,1.35rem);color:#384550;margin-bottom:2rem}}.hero{{border-bottom:1px solid var(--line);padding-bottom:32px}}.callout{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}}.card{{background:var(--soft);padding:18px;border-top:3px solid var(--accent)}}.card b{{display:block;font-size:1.65rem;line-height:1.1;margin:.15em 0 .3em}}.card span{{color:var(--muted);font-size:.85rem}}.takeaway{{border-left:4px solid var(--good);padding:3px 0 3px 18px;margin:24px 0;font-size:1.06rem}}.bar-chart{{display:grid;gap:11px;margin:24px 0 30px}}.bar-row{{display:grid;grid-template-columns:190px 1fr 58px;gap:12px;align-items:center}}.bar-label{{display:flex;justify-content:space-between;gap:8px;font-size:.82rem}}.bar-label span{{color:var(--muted)}}.bar-track{{height:16px;background:#edf1f3;overflow:hidden}}.bar-track span{{display:block;height:100%;background:var(--accent)}}.bar-value{{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}}.table-wrap{{overflow-x:auto;border:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;font-size:.88rem}}th,td{{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}th{{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.035em;background:var(--soft)}}tbody tr:last-child td{{border-bottom:0}}.note{{color:var(--muted);font-size:.84rem}}.decision{{background:#eef7f3;border:1px solid #cce7db;padding:20px 22px;margin:28px 0}}.decision strong{{font-size:1.08rem}}details{{border-top:1px solid var(--line);padding:13px 0}}summary{{cursor:pointer;font-weight:700}}code{{background:var(--soft);padding:.1em .3em}}a{{color:var(--accent)}}footer{{border-top:1px solid var(--line);margin-top:42px;padding-top:18px;color:var(--muted);font-size:.8rem}}
@@ -336,15 +337,15 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 </head>
 <body><main>
 <section class="hero">
-<div class="eyebrow">BANKING77 · 77-case paired pilot · 18 September 2026</div>
+<div class="eyebrow">BANKING77 · 77-case paired pilot · updated 28 September 2026</div>
 <h1>Jev is very cheap.<br>Cheap is not the hard part.</h1>
-<p class="deck">Nine AI models classified exactly the same banking-support requests. Jev cost almost nothing, but the stronger models also cost pennies—and made materially fewer mistakes. For most businesses, <strong>the cost of a wrong decision matters more than the cost of the model call.</strong></p>
+<p class="deck">{model_count} AI models classified exactly the same banking-support requests. Jev cost almost nothing, but GPT-6 Luna cost even less, while stronger models still cost only pennies. For most businesses, <strong>the cost of a wrong decision matters more than the cost of the model call.</strong></p>
 <div class="callout">
   <div class="card"><span>Highest observed accuracy</span><b>{pct(float(astra["accuracy"]))}</b><span>GPT-6 Astra · 68 of 77 correct</span></div>
   <div class="card"><span>Near the top, much cheaper</span><b>{pct(float(gemini["accuracy"]))}</b><span>Gemini 3.8 Flash · {gemini_discount:.0%} cheaper than Astra here</span></div>
-  <div class="card"><span>Jev</span><b>{pct(float(jev["accuracy"]))}</b><span>{money(float(jev["cost_per_1000"]))} per 1,000 classifications</span></div>
+  <div class="card"><span>Cheapest observed</span><b>{money(float(luna6["cost_per_1000"]))}</b><span>GPT-6 Luna per 1,000 · {int(luna6["correct"])}/77 correct</span></div>
 </div>
-<p class="takeaway"><strong>The practical comparison is Jev vs Luna.</strong> On this prompt, Jev saved only <strong>{money(jev_saving_vs_luna)} per 1,000 requests</strong> versus GPT-5.6 Luna, while making about <strong>{extra_errors_jev_vs_luna:.1f} more errors per 100 requests</strong>. At ordinary business volumes, that is a poor trade unless mistakes are almost free.</p>
+<p class="takeaway"><strong>Jev is no longer even the cheapest option in this set.</strong> GPT-6 Luna cost <strong>{money(float(luna6["cost_per_1000"]))} per 1,000 requests</strong> versus Jev's {money(float(jev["cost_per_1000"]))}, and got 60/77 right versus Jev's 58/77. That two-case quality gap is too small to generalize from, but price alone is no longer a Jev advantage here.</p>
 </section>
 
 <section>
@@ -370,7 +371,7 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 
 <section>
 <h2>Confidence is not a guarantee</h2>
-<p>A useful confidence score should behave like a probability: decisions called “90% confident” should be right about 90% of the time. Jev was <strong>{pct(float(jev["mean_confidence"]))} confident on average but only {pct(float(jev["accuracy"]))} correct</strong>. Luna showed a similar gap. Opus and Fable looked better calibrated in aggregate, but 77 cases is too small to certify production thresholds.</p>
+<p>A useful confidence score should behave like a probability: decisions called “90% confident” should be right about 90% of the time. Jev was <strong>{pct(float(jev["mean_confidence"]))} confident on average but only {pct(float(jev["accuracy"]))} correct</strong>. Both Luna generations were similarly overconfident; GPT-6 Luna averaged {pct(float(luna6["mean_confidence"]))} confidence at {pct(float(luna6["accuracy"]))} accuracy. Opus and Fable looked better calibrated in aggregate, but 77 cases is too small to certify production thresholds.</p>
 <p>Jev's confidence was still useful for <em>ranking</em> risk: its AUROC was {float(jev["auroc"]):.3f}. That means the score contains signal about which cases are dangerous—even though the number itself is too optimistic.</p>
 <div class="decision"><strong>Business implication:</strong> never turn “confidence ≥ 95%” directly into “no human review.” Learn that threshold from historical cases with known answers, freeze it, and validate it on untouched cases.</div>
 </section>
@@ -378,8 +379,8 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 <section>
 <h2>What should a company do with Jev?</h2>
 <p><strong>Use it as a specialist, not as a frontier-model replacement.</strong> Jev is attractive when you need huge volumes of bounded, typed decisions, latency matters, and mistakes are cheap or easily caught downstream. Its median response here was {float(jev["median_latency_s"]):.2f}s.</p>
-<p>For higher-stakes classification, this pilot points instead toward a strong general model—especially Gemini 3.8 Flash or Astra—because the absolute inference cost is still tiny. A sensible architecture may be a cheap first pass plus escalation, but the escalation rule should be learned from a larger held-out benchmark, not invented from this pilot.</p>
-<p>Also note the dataset itself is imperfect for this prompt-only setup: <strong>{all_miss} of 77 requests were missed by all nine models.</strong> Several depend on fine distinctions that are clearer with a routing guide than with label names alone. Production evaluation should include the real policy or taxonomy definitions users expect the model to follow.</p>
+<p>For higher-stakes classification, this pilot points instead toward a strong general model—especially Gemini 3.8 Flash or Astra—because the absolute inference cost is still tiny. For ultra-cheap first-pass classification, GPT-6 Luna now undercuts Jev on measured inference cost in this run. A sensible architecture may be a cheap first pass plus escalation, but the escalation rule should be learned from a larger held-out benchmark, not invented from this pilot.</p>
+<p>Also note the dataset itself is imperfect for this prompt-only setup: <strong>{all_miss} of 77 requests were missed by all {model_count} models.</strong> Several depend on fine distinctions that are clearer with a routing guide than with label names alone. Production evaluation should include the real policy or taxonomy definitions users expect the model to follow.</p>
 </section>
 
 <section>
@@ -396,7 +397,7 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 <div class="table-wrap"><table><thead><tr><th>Model</th><th>Accuracy</th><th>Mean confidence</th><th>Gap</th><th>Brier ↓</th><th>ECE ↓</th><th>AUROC ↑</th></tr></thead><tbody>{calibration_rows}</tbody></table></div>
 </details>
 <details><summary>Methodology and reproducibility</summary>
-<p>One deterministic frozen case per BANKING77 class, 77 total. Chat models return one label plus a 0–100 probability of being exactly correct. Jev uses OpenRouter's Decisions endpoint and returns a full choice distribution; its top-choice probability is the comparable confidence score. Reasoning was disabled for Luna, Sol and DeepSeek; low reasoning was requested for Astra, Opus, Fable, Gemini and Sonnet.</p>
+<p>One deterministic frozen case per BANKING77 class, 77 total. Chat models return one label plus a 0–100 probability of being exactly correct. Jev uses OpenRouter's Decisions endpoint and returns a full choice distribution; its top-choice probability is the comparable confidence score. Reasoning was disabled for GPT-5.6 Luna, GPT-6 Luna, GPT-5.6 Sol and DeepSeek; low reasoning was requested for Astra, Opus, Fable, Gemini and Sonnet.</p>
 <p>The runner is resumable: an existing <code>(model, case)</code> result is skipped. Re-running <code>uv run run.py --dry-run</code> should report zero pending calls.</p>
 </details>
 <details><summary>Files</summary>
