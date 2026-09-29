@@ -1,0 +1,2022 @@
+{
+  "all_wrong": [
+    "AAPL/2006/page_100.pdf-1",
+    "ADI/2019/page_29.pdf-1",
+    "DVN/2018/page_35.pdf-4",
+    "GS/2013/page_220.pdf-1",
+    "SYY/2006/page_71.pdf-1",
+    "TMUS/2017/page_29.pdf-3"
+  ],
+  "display_frontier": [
+    "ling3fin",
+    "mimov26",
+    "luna"
+  ],
+  "frontier": [
+    "glm53flash",
+    "mimov26",
+    "luna"
+  ],
+  "luna_wrong_local_right": [
+    {
+      "gold": "18210",
+      "id": "AMAT/2013/page_37.pdf-1",
+      "winners": [
+        "gemma31b"
+      ]
+    },
+    {
+      "gold": "25.3%",
+      "id": "C/2018/page_175.pdf-1",
+      "winners": [
+        "mimov26",
+        "glm53flash",
+        "ling3fin",
+        "qwen27b",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b",
+        "ministral8b"
+      ]
+    },
+    {
+      "gold": "-6.3",
+      "id": "CDW/2015/page_70.pdf-2",
+      "winners": [
+        "qwen27b",
+        "ministral8b"
+      ]
+    },
+    {
+      "gold": "10.6",
+      "id": "ETFC/2012/page_43.pdf-1",
+      "winners": [
+        "ministral8b"
+      ]
+    },
+    {
+      "gold": "27885",
+      "id": "GS/2013/page_149.pdf-3",
+      "winners": [
+        "mimov26",
+        "glm53flash",
+        "ling3fin",
+        "qwen27b",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b",
+        "ministral8b",
+        "qwen9b"
+      ]
+    },
+    {
+      "gold": "45.1%",
+      "id": "IPG/2017/page_92.pdf-4",
+      "winners": [
+        "mimov26",
+        "glm53flash",
+        "ling3fin",
+        "qwen27b",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b",
+        "ministral8b"
+      ]
+    },
+    {
+      "gold": "68.9",
+      "id": "JPM/2010/page_273.pdf-2",
+      "winners": [
+        "qwen27b"
+      ]
+    },
+    {
+      "gold": "227",
+      "id": "MRO/2003/page_45.pdf-1",
+      "winners": [
+        "mimov26",
+        "glm53flash",
+        "ling3fin",
+        "qwen27b",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b",
+        "ministral8b",
+        "qwen9b"
+      ]
+    },
+    {
+      "gold": "-36",
+      "id": "PNC/2012/page_100.pdf-1",
+      "winners": [
+        "mimov26",
+        "glm53flash",
+        "ling3fin",
+        "qwen27b",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b",
+        "ministral8b",
+        "qwen9b",
+        "granite8b"
+      ]
+    },
+    {
+      "gold": "40.2%",
+      "id": "UAA/2016/page_42.pdf-1",
+      "winners": [
+        "ling3fin",
+        "nemotron3super",
+        "deepseekv41",
+        "gemma31b"
+      ]
+    },
+    {
+      "gold": "28809",
+      "id": "UPS/2007/page_49.pdf-1",
+      "winners": [
+        "glm53flash"
+      ]
+    }
+  ],
+  "models": {
+    "deepseekv41": {
+      "accuracy": 0.72,
+      "auroc": 0.7008928571428571,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        }
+      ],
+      "brier": 0.2165,
+      "by_op": {
+        "add": {
+          "accuracy": 0.7692307692307693,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.7027027027027027,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.8333333333333334,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.5454545454545454,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.6470588235294118,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.78125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.6785714285714286,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.3333333333333333,
+          "n": 3
+        }
+      },
+      "category": "Large sparse open",
+      "chart_cost": 0.0038342304,
+      "cost": 0.0038342304,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.1989999999999999,
+      "errors": [
+        {
+          "answer": "$829",
+          "confidence": 100,
+          "gold": "$ 240.41",
+          "id": "AAPL/2006/page_100.pdf-1",
+          "num_steps": 1,
+          "question": "what was the 2006 tax expense?",
+          "root_op": "multiply"
+        },
+        {
+          "answer": "34.1",
+          "confidence": 100,
+          "gold": "-34.1",
+          "id": "C/2015/page_96.pdf-2",
+          "num_steps": 1,
+          "question": "what was the difference in billions in hqla from dec . 31 , 2014 to dec . 31 , 2015?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "2.13%",
+          "confidence": 100,
+          "gold": "1.4",
+          "id": "UPS/2007/page_98.pdf-2",
+          "num_steps": 1,
+          "question": "what is the average expected dividend per share in 2007?",
+          "root_op": "multiply"
+        }
+      ],
+      "family": "DeepSeek",
+      "mean_conf_correct": 0.9444444444444444,
+      "mean_conf_wrong": 0.8321428571428571,
+      "median_latency": 1.2574819735018536,
+      "model_id": "deepseek/deepseek-v4.1-flash",
+      "name": "DeepSeek V4.1 Flash",
+      "oracle_hybrid": 0.89,
+      "p90_latency": 2.5150018639978953,
+      "parameters": {
+        "active": 16,
+        "label": "552B total (8B input / 16B output active)",
+        "total": 552
+      },
+      "provider": [
+        "DeepInfra"
+      ],
+      "quantization": "fp8",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [
+        {
+          "accuracy": 0.82,
+          "cost": 0.006647117399999999,
+          "coverage": 0.25,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.81,
+          "cost": 0.0057364163999999995,
+          "coverage": 0.5,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.81,
+          "cost": 0.0047976984,
+          "coverage": 0.75,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.72,
+          "cost": 0.0038342304,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Large",
+      "tier": "Open-weight sparse API",
+      "worst_ops": [
+        {
+          "accuracy": 0.6470588235294118,
+          "n": 17,
+          "name": "subtract"
+        },
+        {
+          "accuracy": 0.5454545454545454,
+          "n": 11,
+          "name": "multiply"
+        }
+      ],
+      "wrong90": 17
+    },
+    "gemma31b": {
+      "accuracy": 0.7,
+      "auroc": 0.5097619047619047,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        }
+      ],
+      "brier": 0.2901,
+      "by_op": {
+        "add": {
+          "accuracy": 0.6153846153846154,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.6486486486486487,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 1.0,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.7272727272727273,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.7058823529411765,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 0.8,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.5,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.734375,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.6785714285714286,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.3333333333333333,
+          "n": 3
+        }
+      },
+      "category": "Local-sized open",
+      "chart_cost": 0.0034732566,
+      "cost": 0.0034732566,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.289,
+      "errors": [
+        {
+          "answer": "148.36%",
+          "confidence": 100,
+          "gold": "12.16%",
+          "id": "GS/2013/page_220.pdf-2",
+          "num_steps": 5,
+          "question": "what was the difference in percentage cumulative total return for goldman sachs group inc . and the s&p 500 index for the five year period ending 12/31/13?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "not enough information",
+          "confidence": 100,
+          "gold": "26.3%",
+          "id": "HUM/2017/page_118.pdf-3",
+          "num_steps": 5,
+          "question": "in 2017 what was the percent of the total amortization expense that was due in 2019",
+          "root_op": "divide"
+        },
+        {
+          "answer": "$ 4,921,374 thousand",
+          "confidence": 100,
+          "gold": "4781374",
+          "id": "ETR/2017/page_143.pdf-1",
+          "num_steps": 4,
+          "question": "what was the sum of the annual long-term debt maturities outstanding as of december 31 , 2017 , for the next five years",
+          "root_op": "add"
+        }
+      ],
+      "family": "Google Gemma",
+      "mean_conf_correct": 0.9985714285714286,
+      "mean_conf_wrong": 0.9666666666666667,
+      "median_latency": 0.8442792229761835,
+      "model_id": "google/gemma-4-31b-it",
+      "name": "Gemma 4 31B",
+      "oracle_hybrid": 0.9,
+      "p90_latency": 1.457301582035143,
+      "parameters": {
+        "active": 31,
+        "label": "31B",
+        "total": 31
+      },
+      "provider": [
+        "CoreWeave"
+      ],
+      "quantization": "fp4",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [
+        {
+          "accuracy": 0.81,
+          "cost": 0.0062501076,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.75,
+          "cost": 0.0053588106,
+          "coverage": 0.5,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.72,
+          "cost": 0.0044486045999999994,
+          "coverage": 0.75,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.7,
+          "cost": 0.0034732566,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Medium",
+      "tier": "~64 GB MacBook Pro",
+      "worst_ops": [
+        {
+          "accuracy": 0.6153846153846154,
+          "n": 13,
+          "name": "add"
+        },
+        {
+          "accuracy": 0.5,
+          "n": 4,
+          "name": "table_sum"
+        }
+      ],
+      "wrong90": 29
+    },
+    "glm53flash": {
+      "accuracy": 0.79,
+      "auroc": 0.6169379144062689,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        }
+      ],
+      "brier": 0.177525,
+      "by_op": {
+        "add": {
+          "accuracy": 0.9230769230769231,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.7297297297297297,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.6666666666666666,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.6363636363636364,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.8235294117647058,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 1.0,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.8125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.7857142857142857,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.25,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 1.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 1.0,
+          "n": 3
+        }
+      },
+      "category": "Large sparse open",
+      "chart_cost": 0.0010130076,
+      "cost": 0.0010130076,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.13949999999999996,
+      "errors": [
+        {
+          "answer": "69.4",
+          "confidence": 95,
+          "gold": "68.9",
+          "id": "JPM/2010/page_273.pdf-2",
+          "num_steps": 3,
+          "question": "in 2010 and 2009 , what was the total fair value in billions of assets segregated for the benefit of securities and futures brokerage customers?",
+          "root_op": "add"
+        },
+        {
+          "answer": "15.5%",
+          "confidence": 95,
+          "gold": "15.53%",
+          "id": "RCL/2012/page_75.pdf-3",
+          "num_steps": 3,
+          "question": "what was the percentage increase in port costs from 2010 to 2012",
+          "root_op": "multiply"
+        },
+        {
+          "answer": "-30%",
+          "confidence": 95,
+          "gold": "-29.9%",
+          "id": "D/2002/page_87.pdf-4",
+          "num_steps": 2,
+          "question": "what is the growth rate in rental expense included in other operations and maintenance expense in 2001 compare to 2000?",
+          "root_op": "divide"
+        }
+      ],
+      "family": "Z.ai / GLM",
+      "mean_conf_correct": 0.9265822784810126,
+      "mean_conf_wrong": 0.8928571428571428,
+      "median_latency": 1.2315701990155503,
+      "model_id": "z-ai/glm-5.3-flash",
+      "name": "GLM 5.3 Flash",
+      "oracle_hybrid": 0.89,
+      "p90_latency": 2.065078852989245,
+      "parameters": {
+        "active": 18,
+        "label": "320B total (18B active)",
+        "total": 320
+      },
+      "provider": [
+        "OpenInference"
+      ],
+      "quantization": "fp4",
+      "reasoning_required": true,
+      "reasoning_tokens": 1154,
+      "retry_rows": 1,
+      "routing": [
+        {
+          "accuracy": 0.83,
+          "cost": 0.0038018376,
+          "coverage": 0.25,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.82,
+          "cost": 0.0028891565999999997,
+          "coverage": 0.5,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.83,
+          "cost": 0.0019384596,
+          "coverage": 0.75,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.79,
+          "cost": 0.0010130076,
+          "coverage": 1,
+          "cutoff": 0.6
+        }
+      ],
+      "size_tier": "Large",
+      "tier": "Open-weight API workhorse",
+      "worst_ops": [
+        {
+          "accuracy": 0.6666666666666666,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 0.6363636363636364,
+          "n": 11,
+          "name": "multiply"
+        }
+      ],
+      "wrong90": 15
+    },
+    "granite8b": {
+      "accuracy": 0.25,
+      "auroc": 0.6405333333333333,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        },
+        {
+          "accuracy": 0.6666666666666666,
+          "n": 6,
+          "name": "greater"
+        }
+      ],
+      "brier": 0.594274,
+      "by_op": {
+        "add": {
+          "accuracy": 0.38461538461538464,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.13513513513513514,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.6666666666666666,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.0,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.29411764705882354,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 0.2,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.0,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.296875,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.21428571428571427,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.0,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.0,
+          "n": 3
+        }
+      },
+      "category": "Compact / 8B-class",
+      "chart_cost": 0.0027814544999999998,
+      "cost": 0.0027814544999999998,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.6208,
+      "errors": [
+        {
+          "answer": "44.8",
+          "confidence": 100,
+          "gold": "55%",
+          "id": "AOS/2010/page_18.pdf-1",
+          "num_steps": 5,
+          "question": "what was the difference in the cumulative total return for a o smith corp and the s&p small cap 600 index for the five year period ended 12/31/10?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "Goldman Sachs Group Inc. cumulative total return: 248.36%; S&P 500 cumulative total return: 236.20%; difference in percentage cumulative total return: 12.16%",
+          "confidence": 100,
+          "gold": "12.16%",
+          "id": "GS/2013/page_220.pdf-2",
+          "num_steps": 5,
+          "question": "what was the difference in percentage cumulative total return for goldman sachs group inc . and the s&p 500 index for the five year period ending 12/31/13?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "34.7",
+          "confidence": 100,
+          "gold": "68.9",
+          "id": "JPM/2010/page_273.pdf-2",
+          "num_steps": 3,
+          "question": "in 2010 and 2009 , what was the total fair value in billions of assets segregated for the benefit of securities and futures brokerage customers?",
+          "root_op": "add"
+        }
+      ],
+      "family": "IBM Granite",
+      "mean_conf_correct": 0.976,
+      "mean_conf_wrong": 0.8357333333333333,
+      "median_latency": 0.558131622034125,
+      "model_id": "ibm-granite/granite-4.2-8b",
+      "name": "Granite 4.2-8B",
+      "oracle_hybrid": 0.84,
+      "p90_latency": 0.7665944679756649,
+      "parameters": {
+        "active": 8,
+        "label": "8B",
+        "total": 8
+      },
+      "provider": [
+        "CoreWeave"
+      ],
+      "quantization": "bf16",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 20,
+      "routing": [
+        {
+          "accuracy": 0.69,
+          "cost": 0.0056136465,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.55,
+          "cost": 0.0047069055,
+          "coverage": 0.5,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.42,
+          "cost": 0.0037384874999999997,
+          "coverage": 0.75,
+          "cutoff": 0.9
+        },
+        {
+          "accuracy": 0.25,
+          "cost": 0.0027814544999999998,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Small",
+      "tier": "<=8 GB GPU fallback",
+      "worst_ops": [
+        {
+          "accuracy": 0.0,
+          "n": 11,
+          "name": "multiply"
+        },
+        {
+          "accuracy": 0.0,
+          "n": 4,
+          "name": "table_sum"
+        }
+      ],
+      "wrong90": 58
+    },
+    "ling3fin": {
+      "accuracy": 0.77,
+      "auroc": 0.5691699604743083,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        }
+      ],
+      "brier": 0.212626,
+      "by_op": {
+        "add": {
+          "accuracy": 0.9230769230769231,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.7027027027027027,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.8333333333333334,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.7272727272727273,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.7058823529411765,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.8125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.75,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 1.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.3333333333333333,
+          "n": 3
+        }
+      },
+      "category": "Finance-specialized",
+      "chart_cost": 0.00212584284,
+      "cost": 0.00212584284,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.19540000000000005,
+      "errors": [
+        {
+          "answer": "2010: $34.7 billion; 2009: $34.2 billion",
+          "confidence": 100,
+          "gold": "68.9",
+          "id": "JPM/2010/page_273.pdf-2",
+          "num_steps": 3,
+          "question": "in 2010 and 2009 , what was the total fair value in billions of assets segregated for the benefit of securities and futures brokerage customers?",
+          "root_op": "add"
+        },
+        {
+          "answer": "849/5424",
+          "confidence": 100,
+          "gold": "15.7%",
+          "id": "AAL/2013/page_172.pdf-1",
+          "num_steps": 1,
+          "question": "what portion of the total bankruptcy settlement obligations are related to labor deemed claims?",
+          "root_op": "divide"
+        },
+        {
+          "answer": "$829",
+          "confidence": 100,
+          "gold": "$ 240.41",
+          "id": "AAPL/2006/page_100.pdf-1",
+          "num_steps": 1,
+          "question": "what was the 2006 tax expense?",
+          "root_op": "multiply"
+        }
+      ],
+      "family": "inclusionAI / Ling",
+      "mean_conf_correct": 0.9628571428571429,
+      "mean_conf_wrong": 0.9565217391304347,
+      "median_latency": 0.8148137544922065,
+      "model_id": "inclusionai/ling-3.0-flash-fin",
+      "name": "Ling 3.0 Flash Fin",
+      "oracle_hybrid": 0.89,
+      "p90_latency": 1.2572135649970733,
+      "parameters": {
+        "active": 5.1,
+        "label": "124B total (5.1B active)",
+        "total": 124
+      },
+      "provider": [
+        "DeepInfra"
+      ],
+      "quantization": "fp4",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 1,
+      "routing": [
+        {
+          "accuracy": 0.82,
+          "cost": 0.00497783484,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.8,
+          "cost": 0.00402783084,
+          "coverage": 0.5,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.78,
+          "cost": 0.00309485484,
+          "coverage": 0.75,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.77,
+          "cost": 0.00212584284,
+          "coverage": 1,
+          "cutoff": 0.8
+        }
+      ],
+      "size_tier": "Large",
+      "tier": "Finance-specialized open-weight API",
+      "worst_ops": [
+        {
+          "accuracy": 0.7058823529411765,
+          "n": 17,
+          "name": "subtract"
+        },
+        {
+          "accuracy": 0.7027027027027027,
+          "n": 37,
+          "name": "divide"
+        }
+      ],
+      "wrong90": 23
+    },
+    "luna": {
+      "accuracy": 0.83,
+      "auroc": 0.6406803685329554,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        }
+      ],
+      "brier": 0.165988,
+      "by_op": {
+        "add": {
+          "accuracy": 0.9230769230769231,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.8378378378378378,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 1.0,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.7272727272727273,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.8235294117647058,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.5,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.828125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.8571428571428571,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 1.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 1.0,
+          "n": 3
+        }
+      },
+      "category": "Frontier anchor",
+      "chart_cost": 0.003715371,
+      "cost": 0.003715371,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.1748,
+      "errors": [
+        {
+          "answer": "34.7 billion in 2010 and 34.2 billion in 2009",
+          "confidence": 100,
+          "gold": "68.9",
+          "id": "JPM/2010/page_273.pdf-2",
+          "num_steps": 3,
+          "question": "in 2010 and 2009 , what was the total fair value in billions of assets segregated for the benefit of securities and futures brokerage customers?",
+          "root_op": "add"
+        },
+        {
+          "answer": "8.62%",
+          "confidence": 100,
+          "gold": "7%",
+          "id": "SYY/2006/page_71.pdf-1",
+          "num_steps": 2,
+          "question": "what was the percentage change in total rental expense under operating leases from july 2 , 2005 to july 1 , 2006?",
+          "root_op": "divide"
+        },
+        {
+          "answer": "$829",
+          "confidence": 100,
+          "gold": "$ 240.41",
+          "id": "AAPL/2006/page_100.pdf-1",
+          "num_steps": 1,
+          "question": "what was the 2006 tax expense?",
+          "root_op": "multiply"
+        }
+      ],
+      "family": "OpenAI",
+      "mean_conf_correct": 0.9751807228915662,
+      "mean_conf_wrong": 0.96,
+      "median_latency": 1.0414217255020048,
+      "model_id": "openai/gpt-6-luna",
+      "name": "GPT-6 Luna",
+      "oracle_hybrid": null,
+      "p90_latency": 1.4867559230187908,
+      "parameters": {
+        "active": null,
+        "label": "Undisclosed",
+        "total": null
+      },
+      "provider": [
+        "OpenAI"
+      ],
+      "quantization": "unknown",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [],
+      "size_tier": "Unknown",
+      "tier": "Frontier anchor",
+      "worst_ops": [
+        {
+          "accuracy": 0.5,
+          "n": 4,
+          "name": "table_max"
+        },
+        {
+          "accuracy": 0.5,
+          "n": 4,
+          "name": "table_sum"
+        }
+      ],
+      "wrong90": 16
+    },
+    "mimov26": {
+      "accuracy": 0.8,
+      "auroc": 0.574375,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        }
+      ],
+      "brier": 0.166935,
+      "by_op": {
+        "add": {
+          "accuracy": 0.9230769230769231,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.8108108108108109,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 1.0,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.5454545454545454,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.7058823529411765,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.84375,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.7857142857142857,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.25,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 1.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.6666666666666666,
+          "n": 3
+        }
+      },
+      "category": "Large sparse open",
+      "chart_cost": 0.00353653839,
+      "cost": 0.00353653839,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.09909999999999991,
+      "errors": [
+        {
+          "answer": "18.21%",
+          "confidence": 95,
+          "gold": "18210",
+          "id": "AMAT/2013/page_37.pdf-1",
+          "num_steps": 3,
+          "question": "what is the total return if 100000 are invested in applied materials in 2008 and sold in 2011?",
+          "root_op": "multiply"
+        },
+        {
+          "answer": "34.7",
+          "confidence": 95,
+          "gold": "68.9",
+          "id": "JPM/2010/page_273.pdf-2",
+          "num_steps": 3,
+          "question": "in 2010 and 2009 , what was the total fair value in billions of assets segregated for the benefit of securities and futures brokerage customers?",
+          "root_op": "add"
+        },
+        {
+          "answer": "243.16%",
+          "confidence": 95,
+          "gold": "98.27%",
+          "id": "AMAT/2018/page_33.pdf-2",
+          "num_steps": 2,
+          "question": "what is the roi for applied materials if the investment made on october 2013 was sold 5 years later?",
+          "root_op": "divide"
+        }
+      ],
+      "family": "Xiaomi / MiMo",
+      "mean_conf_correct": 0.90325,
+      "mean_conf_wrong": 0.8825,
+      "median_latency": 1.9244355780247133,
+      "model_id": "xiaomi/mimo-v2.6-flash",
+      "name": "MiMo-V2.6-Flash",
+      "oracle_hybrid": 0.88,
+      "p90_latency": 5.160873335029464,
+      "parameters": {
+        "active": 15,
+        "label": "309B total (15B active)",
+        "total": 309
+      },
+      "provider": [
+        "DeepInfra"
+      ],
+      "quantization": "fp8",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [
+        {
+          "accuracy": 0.81,
+          "cost": 0.00631398339,
+          "coverage": 0.25,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.82,
+          "cost": 0.00541090539,
+          "coverage": 0.5,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.82,
+          "cost": 0.00451515339,
+          "coverage": 0.75,
+          "cutoff": 0.85
+        },
+        {
+          "accuracy": 0.8,
+          "cost": 0.00353653839,
+          "coverage": 1,
+          "cutoff": 0.7
+        }
+      ],
+      "size_tier": "Large",
+      "tier": "Open-weight sparse API",
+      "worst_ops": [
+        {
+          "accuracy": 0.7058823529411765,
+          "n": 17,
+          "name": "subtract"
+        },
+        {
+          "accuracy": 0.5454545454545454,
+          "n": 11,
+          "name": "multiply"
+        }
+      ],
+      "wrong90": 9
+    },
+    "ministral8b": {
+      "accuracy": 0.55,
+      "auroc": 0.5222222222222223,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 4,
+          "name": "table_max"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 3,
+          "name": "table_min"
+        }
+      ],
+      "brier": 0.4309,
+      "by_op": {
+        "add": {
+          "accuracy": 0.6923076923076923,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.32432432432432434,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.8333333333333334,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.5454545454545454,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.6470588235294118,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 0.4,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 1.0,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.65625,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.4642857142857143,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.0,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.0,
+          "n": 3
+        }
+      },
+      "category": "Compact / 8B-class",
+      "chart_cost": 0.0043159148999999996,
+      "cost": 0.0043159148999999996,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.43300000000000005,
+      "errors": [
+        {
+          "answer": "75.0%",
+          "confidence": 100,
+          "gold": "55%",
+          "id": "AOS/2010/page_18.pdf-1",
+          "num_steps": 5,
+          "question": "what was the difference in the cumulative total return for a o smith corp and the s&p small cap 600 index for the five year period ended 12/31/10?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "11.04%",
+          "confidence": 100,
+          "gold": "12.16%",
+          "id": "GS/2013/page_220.pdf-2",
+          "num_steps": 5,
+          "question": "what was the difference in percentage cumulative total return for goldman sachs group inc . and the s&p 500 index for the five year period ending 12/31/13?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "$4981374",
+          "confidence": 100,
+          "gold": "4781374",
+          "id": "ETR/2017/page_143.pdf-1",
+          "num_steps": 4,
+          "question": "what was the sum of the annual long-term debt maturities outstanding as of december 31 , 2017 , for the next five years",
+          "root_op": "add"
+        }
+      ],
+      "family": "Mistral",
+      "mean_conf_correct": 1.0,
+      "mean_conf_wrong": 0.9622222222222222,
+      "median_latency": 1.271573810983682,
+      "model_id": "mistralai/ministral-8b-2512",
+      "name": "Ministral 3 8B",
+      "oracle_hybrid": 0.9,
+      "p90_latency": 2.070619684003759,
+      "parameters": {
+        "active": 8,
+        "label": "8B",
+        "total": 8
+      },
+      "provider": [
+        "Mistral"
+      ],
+      "quantization": "unknown",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [
+        {
+          "accuracy": 0.75,
+          "cost": 0.0070987059,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.68,
+          "cost": 0.006212457899999999,
+          "coverage": 0.5,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.64,
+          "cost": 0.0052982919,
+          "coverage": 0.75,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.55,
+          "cost": 0.0043159148999999996,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Small",
+      "tier": "<=8 GB GPU candidate",
+      "worst_ops": [
+        {
+          "accuracy": 0.4,
+          "n": 5,
+          "name": "table_average"
+        },
+        {
+          "accuracy": 0.32432432432432434,
+          "n": 37,
+          "name": "divide"
+        }
+      ],
+      "wrong90": 43
+    },
+    "nemotron3super": {
+      "accuracy": 0.74,
+      "auroc": 0.5974532224532224,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        }
+      ],
+      "brier": 0.23945,
+      "by_op": {
+        "add": {
+          "accuracy": 0.8461538461538461,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.6486486486486487,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 1.0,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.6363636363636364,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.7058823529411765,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.8125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.75,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.25,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.0,
+          "n": 3
+        }
+      },
+      "category": "Large sparse open",
+      "chart_cost": 0.00317599,
+      "cost": 0,
+      "cost_basis": "paid-equivalent",
+      "cost_note": "Free OpenRouter/NVIDIA endpoint; paid endpoints currently rate-limited during benchmark",
+      "ece": 0.239,
+      "errors": [
+        {
+          "answer": "78.8%",
+          "confidence": 100,
+          "gold": "55%",
+          "id": "AOS/2010/page_18.pdf-1",
+          "num_steps": 5,
+          "question": "what was the difference in the cumulative total return for a o smith corp and the s&p small cap 600 index for the five year period ended 12/31/10?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "148.36",
+          "confidence": 100,
+          "gold": "12.16%",
+          "id": "GS/2013/page_220.pdf-2",
+          "num_steps": 5,
+          "question": "what was the difference in percentage cumulative total return for goldman sachs group inc . and the s&p 500 index for the five year period ending 12/31/13?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "760000",
+          "confidence": 100,
+          "gold": "4781374",
+          "id": "ETR/2017/page_143.pdf-1",
+          "num_steps": 4,
+          "question": "what was the sum of the annual long-term debt maturities outstanding as of december 31 , 2017 , for the next five years",
+          "root_op": "add"
+        }
+      ],
+      "family": "NVIDIA / Nemotron",
+      "mean_conf_correct": 0.9797297297297297,
+      "mean_conf_wrong": 0.9,
+      "median_latency": 0.8440986779751256,
+      "model_id": "nvidia/nemotron-3-super-120b-a12b:free",
+      "name": "Nemotron 3 Super 120B-A12B",
+      "oracle_hybrid": 0.89,
+      "p90_latency": 1.5935321580036543,
+      "parameters": {
+        "active": 12,
+        "label": "120B total (12B active)",
+        "total": 120
+      },
+      "provider": [
+        "Nvidia"
+      ],
+      "quantization": "unknown",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 28,
+      "routing": [
+        {
+          "accuracy": 0.8,
+          "cost": 0.002795265,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.77,
+          "cost": 0.00190476,
+          "coverage": 0.5,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.78,
+          "cost": 0.000992079,
+          "coverage": 0.75,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.74,
+          "cost": 0,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Large",
+      "tier": "Open-weight enterprise API",
+      "worst_ops": [
+        {
+          "accuracy": 0.6486486486486487,
+          "n": 37,
+          "name": "divide"
+        },
+        {
+          "accuracy": 0.6363636363636364,
+          "n": 11,
+          "name": "multiply"
+        }
+      ],
+      "wrong90": 23
+    },
+    "qwen27b": {
+      "accuracy": 0.76,
+      "auroc": 0.537828947368421,
+      "best_ops": [
+        {
+          "accuracy": 1.0,
+          "n": 5,
+          "name": "table_average"
+        },
+        {
+          "accuracy": 1.0,
+          "n": 4,
+          "name": "table_max"
+        }
+      ],
+      "brier": 0.222025,
+      "by_op": {
+        "add": {
+          "accuracy": 0.8461538461538461,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.7027027027027027,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.6666666666666666,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.6363636363636364,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.7647058823529411,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 1.0,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 1.0,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 1.0,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.8125,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.6428571428571429,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.75,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 1.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.6666666666666666,
+          "n": 3
+        }
+      },
+      "category": "Local-sized open",
+      "chart_cost": 0.005282046,
+      "cost": 0.005282046,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.20550000000000002,
+      "errors": [
+        {
+          "answer": "19.61%",
+          "confidence": 100,
+          "gold": "2%",
+          "id": "GS/2017/page_179.pdf-1",
+          "num_steps": 2,
+          "question": "what was the percentage change in dividends declared per common share between 2015 and 2016?",
+          "root_op": "divide"
+        },
+        {
+          "answer": "6",
+          "confidence": 100,
+          "gold": "300%",
+          "id": "HWM/2015/page_173.pdf-1",
+          "num_steps": 2,
+          "question": "how bigger were the interest and penalties concerning the interest income in the year 2015?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "7.2",
+          "confidence": 100,
+          "gold": "9.8",
+          "id": "IP/2009/page_84.pdf-4",
+          "num_steps": 2,
+          "question": "what was the sum of the temporary differences between 2007 and 2009 in billions",
+          "root_op": "add"
+        }
+      ],
+      "family": "Qwen",
+      "mean_conf_correct": 0.9677631578947368,
+      "mean_conf_wrong": 0.9583333333333333,
+      "median_latency": 1.3919393245014362,
+      "model_id": "qwen/qwen3.8-27b",
+      "name": "Qwen3.8-27B",
+      "oracle_hybrid": 0.9,
+      "p90_latency": 2.282034163014032,
+      "parameters": {
+        "active": 27,
+        "label": "27B",
+        "total": 27
+      },
+      "provider": [
+        "Darkbloom"
+      ],
+      "quantization": "fp4",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 1,
+      "routing": [
+        {
+          "accuracy": 0.79,
+          "cost": 0.008103744,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.77,
+          "cost": 0.007197795,
+          "coverage": 0.5,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.78,
+          "cost": 0.006259077,
+          "coverage": 0.75,
+          "cutoff": 0.95
+        },
+        {
+          "accuracy": 0.76,
+          "cost": 0.005282046,
+          "coverage": 1,
+          "cutoff": 0.85
+        }
+      ],
+      "size_tier": "Medium",
+      "tier": "~64 GB MacBook Pro",
+      "worst_ops": [
+        {
+          "accuracy": 0.6666666666666666,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 0.6363636363636364,
+          "n": 11,
+          "name": "multiply"
+        }
+      ],
+      "wrong90": 22
+    },
+    "qwen9b": {
+      "accuracy": 0.41,
+      "auroc": 0.5293509714758164,
+      "best_ops": [
+        {
+          "accuracy": 0.8333333333333334,
+          "n": 6,
+          "name": "greater"
+        },
+        {
+          "accuracy": 0.75,
+          "n": 4,
+          "name": "table_sum"
+        }
+      ],
+      "brier": 0.58425,
+      "by_op": {
+        "add": {
+          "accuracy": 0.46153846153846156,
+          "n": 13
+        },
+        "divide": {
+          "accuracy": 0.21621621621621623,
+          "n": 37
+        },
+        "greater": {
+          "accuracy": 0.8333333333333334,
+          "n": 6
+        },
+        "multiply": {
+          "accuracy": 0.2727272727272727,
+          "n": 11
+        },
+        "subtract": {
+          "accuracy": 0.5294117647058824,
+          "n": 17
+        },
+        "table_average": {
+          "accuracy": 0.6,
+          "n": 5
+        },
+        "table_max": {
+          "accuracy": 0.5,
+          "n": 4
+        },
+        "table_min": {
+          "accuracy": 0.6666666666666666,
+          "n": 3
+        },
+        "table_sum": {
+          "accuracy": 0.75,
+          "n": 4
+        }
+      },
+      "by_steps": {
+        "1": {
+          "accuracy": 0.484375,
+          "n": 64
+        },
+        "2": {
+          "accuracy": 0.32142857142857145,
+          "n": 28
+        },
+        "3": {
+          "accuracy": 0.25,
+          "n": 4
+        },
+        "4": {
+          "accuracy": 0.0,
+          "n": 1
+        },
+        "5": {
+          "accuracy": 0.0,
+          "n": 3
+        }
+      },
+      "category": "Compact / 8B-class",
+      "chart_cost": 0.0033405867,
+      "cost": 0.0033405867,
+      "cost_basis": "measured",
+      "cost_note": null,
+      "ece": 0.587,
+      "errors": [
+        {
+          "answer": "45.0",
+          "confidence": 100,
+          "gold": "55%",
+          "id": "AOS/2010/page_18.pdf-1",
+          "num_steps": 5,
+          "question": "what was the difference in the cumulative total return for a o smith corp and the s&p small cap 600 index for the five year period ended 12/31/10?",
+          "root_op": "subtract"
+        },
+        {
+          "answer": "0",
+          "confidence": 100,
+          "gold": "26.3%",
+          "id": "HUM/2017/page_118.pdf-3",
+          "num_steps": 5,
+          "question": "in 2017 what was the percent of the total amortization expense that was due in 2019",
+          "root_op": "divide"
+        },
+        {
+          "answer": "5118774",
+          "confidence": 100,
+          "gold": "4781374",
+          "id": "ETR/2017/page_143.pdf-1",
+          "num_steps": 4,
+          "question": "what was the sum of the annual long-term debt maturities outstanding as of december 31 , 2017 , for the next five years",
+          "root_op": "add"
+        }
+      ],
+      "family": "Qwen",
+      "mean_conf_correct": 0.975609756097561,
+      "mean_conf_wrong": 0.9779661016949153,
+      "median_latency": 1.1932741900382098,
+      "model_id": "qwen/qwen3.5-9b",
+      "name": "Qwen3.5-9B",
+      "oracle_hybrid": 0.86,
+      "p90_latency": 1.637423360021785,
+      "parameters": {
+        "active": 9,
+        "label": "9B",
+        "total": 9
+      },
+      "provider": [
+        "Darkbloom"
+      ],
+      "quantization": "fp4",
+      "reasoning_required": false,
+      "reasoning_tokens": 0,
+      "retry_rows": 0,
+      "routing": [
+        {
+          "accuracy": 0.74,
+          "cost": 0.0061160517,
+          "coverage": 0.25,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.64,
+          "cost": 0.005257028699999999,
+          "coverage": 0.5,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.54,
+          "cost": 0.004346426699999999,
+          "coverage": 0.75,
+          "cutoff": 1.0
+        },
+        {
+          "accuracy": 0.41,
+          "cost": 0.0033405867,
+          "coverage": 1,
+          "cutoff": 0.0
+        }
+      ],
+      "size_tier": "Small",
+      "tier": "<=8 GB GPU",
+      "worst_ops": [
+        {
+          "accuracy": 0.2727272727272727,
+          "n": 11,
+          "name": "multiply"
+        },
+        {
+          "accuracy": 0.21621621621621623,
+          "n": 37,
+          "name": "divide"
+        }
+      ],
+      "wrong90": 58
+    }
+  }
+}

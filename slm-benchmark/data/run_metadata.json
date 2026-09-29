@@ -1,0 +1,78 @@
+{
+  "accidental_duplicate_cost_usd": 0.009052461000000001,
+  "actual_total_api_spend_usd": 0.0276451758,
+  "anomaly_note": "The long-running remote command exceeded its command-session timeout while work continued. Duplicate later-model calls were observed. Canonical results keep the first successful response for every model/case pair; duplicate calls are excluded from benchmark metrics.",
+  "benchmark_rows": 500,
+  "canonical_benchmark_cost_usd": 0.0185927148,
+  "canonical_results_sha256": "54709b2f8daf73ce45f3dbf461b6d3a2f5de9e327661af4f7b7308caeeb1d72a",
+  "canonicalization": "first successful row per (model_key, id)",
+  "duplicate_pairs_by_model": {
+    "gemma31b": 95,
+    "luna": 95,
+    "qwen27b": 40
+  },
+  "duplicate_pairs_with_changed_answer": 46,
+  "duplicate_pairs_with_changed_confidence": 32,
+  "duplicate_pairs_with_changed_correctness": 13,
+  "duplicate_success_rows_excluded": 230,
+  "expected_model_case_pairs": 500,
+  "current_expected_model_case_pairs": 1100,
+  "current_canonical_total_rows": 1100,
+  "current_canonical_measured_cost_usd": 0.03341824893,
+  "current_chart_normalized_cost_usd": 0.03659423893,
+  "current_results_sha256": "99dece4b72e855a73483e07afa0b39e056fdbb36d6429b16e2bda1677ea34bf9",
+  "extension_2026_09_29": {
+    "canonical_extension_cost_usd": 0.01482553413,
+    "canonical_results_sha256": "99dece4b72e855a73483e07afa0b39e056fdbb36d6429b16e2bda1677ea34bf9",
+    "canonical_success_rows_added": 600,
+    "canonical_total_rows": 1100,
+    "canonical_extension_retry_rows": 30,
+    "canonical_extension_extra_retry_attempts": 54,
+    "canonical_extension_reasoning_tokens": 1154,
+    "excluded_paid_nemotron_spend_usd": 0.0009495882,
+    "excluded_paid_nemotron_success_rows": 30,
+    "glm_reasoning_note": "GLM 5.3 Flash requires reasoning on its pinned endpoint; benchmark uses low effort with reasoning excluded from response text.",
+    "models": [
+      "glm53flash",
+      "ministral8b",
+      "deepseekv41",
+      "mimov26",
+      "nemotron3super",
+      "ling3fin"
+    ],
+    "nemotron_canonical_endpoint": "nvidia/nemotron-3-super-120b-a12b:free via Nvidia",
+    "nemotron_cost_note": "Measured canonical spend is $0 on the logged public-data free endpoint; report uses current DeepInfra paid-equivalent token rates ($0.085/M input, $0.40/M output) for cost-vs-quality placement.",
+    "pilot_or_provider_error_rows_excluded": 8,
+    "success_rows_by_model": {
+      "deepseekv41": 100,
+      "gemma31b": 100,
+      "glm53flash": 100,
+      "granite8b": 100,
+      "ling3fin": 100,
+      "luna": 100,
+      "mimov26": 100,
+      "ministral8b": 100,
+      "nemotron3super": 100,
+      "qwen27b": 100,
+      "qwen9b": 100
+    }
+  },
+  "extra_retry_attempts": 29,
+  "raw_rows_observed_after_command_timeout": 730,
+  "reasoning_tokens_total": 0,
+  "retry_error_http_statuses": {
+    "429": 29
+  },
+  "retry_rows": 21,
+  "retry_rows_by_model": {
+    "granite8b": 20,
+    "qwen27b": 1
+  },
+  "successful_pairs_by_model": {
+    "gemma31b": 100,
+    "granite8b": 100,
+    "luna": 100,
+    "qwen27b": 100,
+    "qwen9b": 100
+  }
+}

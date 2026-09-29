@@ -1,0 +1,116 @@
+{
+  "cases_sha256": "b245d567f2980eaae80118ec1d3509a587cda3c7692a8a32c8df197c23fb4469",
+  "dataset": "FinQA",
+  "eligibility_filter": "published human answer agrees with exe_ans after numeric rounding and percent-unit normalization",
+  "license": "MIT",
+  "model_input": "question + gold evidence snippets only; programs and full report context are excluded",
+  "sample_size": 100,
+  "sample_stats": {
+    "evidence_count_distribution": {
+      "1": 58,
+      "2": 35,
+      "3": 4,
+      "4": 1,
+      "5": 2
+    },
+    "root_op_counts": {
+      "add": 13,
+      "divide": 37,
+      "greater": 6,
+      "multiply": 11,
+      "subtract": 17,
+      "table_average": 5,
+      "table_max": 4,
+      "table_min": 3,
+      "table_sum": 4
+    },
+    "step_bucket_counts": {
+      "1": 64,
+      "2": 28,
+      "3+": 8
+    }
+  },
+  "sampling": {
+    "eligible_size": 1005,
+    "excluded_inconsistent_gold_count": 142,
+    "full_test_size": 1147,
+    "method": "after gold-consistency filtering: sqrt-frequency root operation quotas; proportional step-count quotas with minimum one per nonempty step bucket",
+    "root_counts_eligible": {
+      "add": 80,
+      "divide": 663,
+      "greater": 20,
+      "multiply": 58,
+      "subtract": 152,
+      "table_average": 11,
+      "table_max": 10,
+      "table_min": 4,
+      "table_sum": 7
+    },
+    "root_counts_full_test": {
+      "add": 97,
+      "divide": 741,
+      "greater": 20,
+      "multiply": 72,
+      "subtract": 179,
+      "table_average": 15,
+      "table_max": 10,
+      "table_min": 4,
+      "table_sum": 9
+    },
+    "root_quota": {
+      "add": 13,
+      "divide": 37,
+      "greater": 6,
+      "multiply": 11,
+      "subtract": 17,
+      "table_average": 5,
+      "table_max": 4,
+      "table_min": 3,
+      "table_sum": 4
+    },
+    "step_quota_by_root": {
+      "add": {
+        "1": 6,
+        "2": 5,
+        "3+": 2
+      },
+      "divide": {
+        "1": 18,
+        "2": 17,
+        "3+": 2
+      },
+      "greater": {
+        "1": 5,
+        "2": 1
+      },
+      "multiply": {
+        "1": 6,
+        "2": 3,
+        "3+": 2
+      },
+      "subtract": {
+        "1": 13,
+        "2": 2,
+        "3+": 2
+      },
+      "table_average": {
+        "1": 5
+      },
+      "table_max": {
+        "1": 4
+      },
+      "table_min": {
+        "1": 3
+      },
+      "table_sum": {
+        "1": 4
+      }
+    }
+  },
+  "seed": 20260929,
+  "source_commit": "0f16e2867befa6840783e58be38c9efb9229d742",
+  "source_repo": "https://github.com/czyssrs/FinQA",
+  "source_test_sha256": "831dbfb2e785dbc227f895ce3f24046433467aec67b09db2bd6ac7692a8a30dc",
+  "source_url": "https://raw.githubusercontent.com/czyssrs/FinQA/0f16e2867befa6840783e58be38c9efb9229d742/dataset/test.json",
+  "split": "test"
+}

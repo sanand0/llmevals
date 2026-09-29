@@ -1,0 +1,208 @@
+{
+  "qwen9b": {
+    "name": "Qwen3.5-9B",
+    "model": "qwen/qwen3.5-9b",
+    "tier": "<=8 GB GPU",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "provider": {
+      "only": [
+        "Darkbloom"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "hosted_quantization": "fp4",
+    "family": "Qwen",
+    "category": "Compact / 8B-class"
+  },
+  "granite8b": {
+    "name": "Granite 4.2-8B",
+    "model": "ibm-granite/granite-4.2-8b",
+    "tier": "<=8 GB GPU fallback",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "provider": {
+      "only": [
+        "CoreWeave"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "hosted_quantization": "bf16",
+    "family": "IBM Granite",
+    "category": "Compact / 8B-class"
+  },
+  "qwen27b": {
+    "name": "Qwen3.8-27B",
+    "model": "qwen/qwen3.8-27b",
+    "tier": "~64 GB MacBook Pro",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "provider": {
+      "only": [
+        "Darkbloom"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "hosted_quantization": "fp4",
+    "family": "Qwen",
+    "category": "Local-sized open"
+  },
+  "gemma31b": {
+    "name": "Gemma 4 31B",
+    "model": "google/gemma-4-31b-it",
+    "tier": "~64 GB MacBook Pro",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "provider": {
+      "only": [
+        "CoreWeave"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "hosted_quantization": "fp4",
+    "family": "Google Gemma",
+    "category": "Local-sized open"
+  },
+  "luna": {
+    "name": "GPT-6 Luna",
+    "model": "openai/gpt-6-luna",
+    "tier": "Frontier anchor",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "provider": {
+      "only": [
+        "OpenAI"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "hosted_quantization": "unknown",
+    "family": "OpenAI",
+    "category": "Frontier anchor"
+  },
+  "glm53flash": {
+    "name": "GLM 5.3 Flash",
+    "model": "z-ai/glm-5.3-flash",
+    "tier": "Open-weight API workhorse",
+    "family": "Z.ai / GLM",
+    "reasoning": "low",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "fp4",
+    "provider": {
+      "only": [
+        "OpenInference"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Large sparse open",
+    "reasoning_required": true
+  },
+  "ministral8b": {
+    "name": "Ministral 3 8B",
+    "model": "mistralai/ministral-8b-2512",
+    "tier": "<=8 GB GPU candidate",
+    "family": "Mistral",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "unknown",
+    "provider": {
+      "only": [
+        "Mistral"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Compact / 8B-class",
+    "send_reasoning": false
+  },
+  "deepseekv41": {
+    "name": "DeepSeek V4.1 Flash",
+    "model": "deepseek/deepseek-v4.1-flash",
+    "tier": "Open-weight sparse API",
+    "family": "DeepSeek",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "fp8",
+    "provider": {
+      "only": [
+        "DeepInfra"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Large sparse open"
+  },
+  "mimov26": {
+    "name": "MiMo-V2.6-Flash",
+    "model": "xiaomi/mimo-v2.6-flash",
+    "tier": "Open-weight sparse API",
+    "family": "Xiaomi / MiMo",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "fp8",
+    "provider": {
+      "only": [
+        "DeepInfra"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Large sparse open"
+  },
+  "nemotron3super": {
+    "name": "Nemotron 3 Super 120B-A12B",
+    "model": "nvidia/nemotron-3-super-120b-a12b:free",
+    "tier": "Open-weight enterprise API",
+    "family": "NVIDIA / Nemotron",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "unknown",
+    "provider": {
+      "only": [
+        "Nvidia"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Large sparse open",
+    "structured_output": true,
+    "cost_note": "Free OpenRouter/NVIDIA endpoint; paid endpoints currently rate-limited during benchmark",
+    "min_interval_s": 3.2,
+    "paid_equivalent_pricing": {
+      "input_per_m": 0.085,
+      "output_per_m": 0.4
+    }
+  },
+  "ling3fin": {
+    "name": "Ling 3.0 Flash Fin",
+    "model": "inclusionai/ling-3.0-flash-fin",
+    "tier": "Finance-specialized open-weight API",
+    "family": "inclusionAI / Ling",
+    "reasoning": "none",
+    "max_tokens": 96,
+    "temperature": 0,
+    "hosted_quantization": "fp4",
+    "provider": {
+      "only": [
+        "DeepInfra"
+      ],
+      "allow_fallbacks": false,
+      "require_parameters": true
+    },
+    "category": "Finance-specialized"
+  }
+}

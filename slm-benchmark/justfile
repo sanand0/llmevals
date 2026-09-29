@@ -1,0 +1,31 @@
+set shell := ["bash", "-euo", "pipefail", "-c"]
+
+validate:
+    uv run --no-project scripts/validate_data.py
+    uv run --no-project scripts/test_score.py
+
+dry-run *args:
+    uv run --no-project run.py --dry-run {{args}}
+
+smoke:
+    rm -rf .build
+    mkdir -p .build
+    uv run --no-project run.py --models all --limit 1 --concurrency 2 --results .build/smoke-results.jsonl
+    uv run --no-project analyze.py --results .build/smoke-results.jsonl
+
+# Five deliberately diverse frozen cases x all models, for measurement validation.
+pilot:
+    rm -rf .build
+    mkdir -p .build
+    uv run --no-project run.py --models all --ids $(cat data/validation_ids.txt) --concurrency 2 --results .build/pilot-results.jsonl
+    uv run --no-project scripts/validate_results.py --results .build/pilot-results.jsonl --ids-file data/validation_ids.txt
+    uv run --no-project analyze.py --results .build/pilot-results.jsonl
+
+run *args:
+    uv run --no-project run.py {{args}}
+
+validate-results results="data/results.jsonl":
+    uv run --no-project scripts/validate_results.py --results {{results}}
+
+analyze results="data/results.jsonl":
+    uv run --no-project analyze.py --results {{results}}
