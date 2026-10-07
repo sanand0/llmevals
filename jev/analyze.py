@@ -152,6 +152,9 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
     offsets = {
         "jev": (10, 18),
         "deepseek": (10, -10),
+        "openai_decisions": (-10, 12),
+        "clef": (10, -10),
+        "clef_flash": (10, 18),
         "luna": (10, -10),
         "luna6": (10, 18),
         "sol": (10, 18),
@@ -205,7 +208,7 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
         xx, yy = x(float(row["cost_per_1000"])), y(float(row["accuracy"]))
         dx, dy = offsets.get(key, (10, -10))
         anchor = "end" if dx < 0 else "start"
-        klass = " scatter-model-jev" if key == "jev" else ""
+        klass = " scatter-model-focus" if key == "clef_flash" else (" scatter-model-jev" if key == "jev" else "")
         title = (
             f'{row["name"]}: {float(row["accuracy"])*100:.1f}% accuracy, '
             f'{money(float(row["cost_per_1000"]))} per 1,000'
@@ -222,12 +225,22 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
 def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], dict[str, object]]) -> str:
     by_key = {row["key"]: row for row in summary}
     ranked = sorted(summary, key=lambda row: (-float(row["accuracy"]), float(row["cost_77"])))
-    astra, gemini, jev, luna6 = (by_key[k] for k in ("astra", "gemini", "jev", "luna6"))
+    astra, jev, luna6, openai_decisions, clef, clef_flash = (
+        by_key[k] for k in ("astra", "jev", "luna6", "openai_decisions", "clef", "clef_flash")
+    )
     model_count = len(summary)
-    general_model_count = model_count - 1
     all_case_ids = sorted({case_id for _, case_id in unique})
     all_miss = sum(not any(unique[(key, case_id)]["correct"] for key in ORDER) for case_id in all_case_ids)
-    gemini_discount = 1 - float(gemini["cost_77"]) / float(astra["cost_77"])
+    clef_only_vs_astra = sum(
+        unique[("clef", case_id)]["correct"] and not unique[("astra", case_id)]["correct"]
+        for case_id in all_case_ids
+    )
+    astra_only_vs_clef = sum(
+        unique[("astra", case_id)]["correct"] and not unique[("clef", case_id)]["correct"]
+        for case_id in all_case_ids
+    )
+    flash_cost_advantage = float(astra["cost_per_1000"]) / float(clef_flash["cost_per_1000"])
+    decisions_speedup = float(luna6["median_latency_s"]) / float(openai_decisions["median_latency_s"])
     scatter = scatter_svg(summary)
     cases = list(csv.DictReader((DATA / "cases.csv").open()))
     table_keys = [str(row["key"]) for row in ranked]
@@ -299,8 +312,8 @@ def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], 
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Jev vs frontier LLMs: BANKING77 pilot</title>
-<meta name="description" content="A 77-case paired pilot comparing Jev with {general_model_count} strong language models on banking-support classification, confidence, speed and cost.">
+<title>Decision models vs frontier LLMs: BANKING77 pilot</title>
+<meta name="description" content="A 77-case paired pilot comparing {model_count} decision-model and LLM systems on banking-support classification, confidence, speed and cost.">
 <style>
 :root{{--ink:#17212b;--muted:#66717c;--line:#dce2e7;--soft:#f5f7f8;--paper:#fff;--accent:#1769aa;--good:#147a55;--warn:#a85c00;--bad:#b42318;color-scheme:light}}
 *{{box-sizing:border-box}}body{{margin:0;background:var(--paper);color:var(--ink);font:16px/1.55 system-ui,-apple-system,"Segoe UI",sans-serif}}main{{max-width:980px;margin:auto;padding:clamp(28px,6vw,72px) 22px 80px}}h1,h2,h3{{line-height:1.12;text-wrap:balance}}h1{{font-size:clamp(2.2rem,6vw,4.5rem);letter-spacing:-.045em;margin:.12em 0 .25em}}h2{{font-size:clamp(1.45rem,3vw,2rem);margin:2.2em 0 .55em}}p{{max-width:760px}}.eyebrow{{font-size:.75rem;font-weight:750;letter-spacing:.09em;text-transform:uppercase;color:var(--accent)}}.deck{{font-size:clamp(1.1rem,2.2vw,1.35rem);color:#384550;margin-bottom:2rem}}.hero{{border-bottom:1px solid var(--line);padding-bottom:32px}}.callout{{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin:24px 0}}.card{{background:var(--soft);padding:18px;border-top:3px solid var(--accent)}}.card b{{display:block;font-size:1.65rem;line-height:1.1;margin:.15em 0 .3em}}.card span{{color:var(--muted);font-size:.85rem}}.takeaway{{border-left:4px solid var(--good);padding:3px 0 3px 18px;margin:24px 0;font-size:1.06rem}}.bar-chart{{display:grid;gap:11px;margin:24px 0 30px}}.bar-row{{display:grid;grid-template-columns:190px 1fr 58px;gap:12px;align-items:center}}.bar-label{{display:flex;justify-content:space-between;gap:8px;font-size:.82rem}}.bar-label span{{color:var(--muted)}}.bar-track{{height:16px;background:#edf1f3;overflow:hidden}}.bar-track span{{display:block;height:100%;background:var(--accent)}}.bar-value{{font-variant-numeric:tabular-nums;font-weight:700;text-align:right}}.table-wrap{{overflow-x:auto;border:1px solid var(--line)}}table{{border-collapse:collapse;width:100%;font-size:.88rem}}th,td{{padding:10px 12px;border-bottom:1px solid var(--line);text-align:right;white-space:nowrap}}th:first-child,td:first-child{{text-align:left}}th{{color:var(--muted);font-size:.72rem;text-transform:uppercase;letter-spacing:.035em;background:var(--soft)}}tbody tr:last-child td{{border-bottom:0}}.note{{color:var(--muted);font-size:.84rem}}.decision{{background:#eef7f3;border:1px solid #cce7db;padding:20px 22px;margin:28px 0}}.decision strong{{font-size:1.08rem}}details{{border-top:1px solid var(--line);padding:13px 0}}summary{{cursor:pointer;font-weight:700}}code{{background:var(--soft);padding:.1em .3em}}a{{color:var(--accent)}}footer{{border-top:1px solid var(--line);margin-top:42px;padding-top:18px;color:var(--muted);font-size:.8rem}}
@@ -312,7 +325,7 @@ def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], 
 .scatter-tick{{fill:var(--muted);font-size:11px}}.scatter-axis-label{{fill:var(--muted);font-size:12px;font-weight:650}}
 .scatter-model{{cursor:pointer;outline:none}}.scatter-model circle{{fill:var(--accent);stroke:var(--paper);stroke-width:2}}
 .scatter-model text{{fill:var(--ink);font-size:12px;font-weight:650;pointer-events:none}}
-.scatter-model-jev circle{{fill:var(--warn)}}.scatter-model:hover circle,.scatter-model:focus-visible circle{{stroke:var(--ink);stroke-width:3}}
+.scatter-model-focus circle{{fill:var(--good)}}.scatter-model-jev circle{{fill:var(--warn)}}.scatter-model:hover circle,.scatter-model:focus-visible circle{{stroke:var(--ink);stroke-width:3}}
 .scatter-caption{{display:flex;gap:12px;justify-content:space-between;align-items:flex-start;color:var(--muted);font-size:.8rem;margin:8px 2px 18px}}
 .scatter-caption strong{{color:var(--ink)}}.mobile-scroll{{display:none}}
 dialog{{width:min(680px,calc(100vw - 32px));border:0;padding:0;box-shadow:0 22px 70px #17212b44;background:var(--paper);color:var(--ink)}}
@@ -337,50 +350,50 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 </head>
 <body><main>
 <section class="hero">
-<div class="eyebrow">BANKING77 · 77-case paired pilot · updated 28 September 2026</div>
-<h1>Jev is very cheap.<br>Cheap is not the hard part.</h1>
-<p class="deck">{model_count} AI models classified exactly the same banking-support requests. Jev cost almost nothing, but GPT-6 Luna cost even less, while stronger models still cost only pennies. For most businesses, <strong>the cost of a wrong decision matters more than the cost of the model call.</strong></p>
+<div class="eyebrow">BANKING77 · 77-case paired pilot · updated 7 October 2026</div>
+<h1>The specialist wins.<br>But not every specialist.</h1>
+<p class="deck">{model_count} AI systems classified exactly the same banking-support requests. Cloudflare's Clef and Clef-flash beat every general-purpose model here, while Jev and OpenAI Decisions did not. <strong>A decision-model architecture can be excellent—but the implementation matters more than the label.</strong></p>
 <div class="callout">
-  <div class="card"><span>Highest observed accuracy</span><b>{pct(float(astra["accuracy"]))}</b><span>GPT-6 Astra · 68 of 77 correct</span></div>
-  <div class="card"><span>Near the top, much cheaper</span><b>{pct(float(gemini["accuracy"]))}</b><span>Gemini 3.8 Flash · {gemini_discount:.0%} cheaper than Astra here</span></div>
-  <div class="card"><span>Cheapest observed</span><b>{money(float(luna6["cost_per_1000"]))}</b><span>GPT-6 Luna per 1,000 · {int(luna6["correct"])}/77 correct</span></div>
+  <div class="card"><span>Highest observed accuracy</span><b>{pct(float(clef["accuracy"]))}</b><span>Clef · {int(clef["correct"])} of 77 correct</span></div>
+  <div class="card"><span>Best value near the top</span><b>{pct(float(clef_flash["accuracy"]))}</b><span>Clef-flash · {money(float(clef_flash["cost_per_1000"]))} per 1,000</span></div>
+  <div class="card"><span>Frontier baseline</span><b>{pct(float(astra["accuracy"]))}</b><span>GPT-6 Astra · {money(float(astra["cost_per_1000"]))} per 1,000</span></div>
 </div>
-<p class="takeaway"><strong>Jev is no longer even the cheapest option in this set.</strong> GPT-6 Luna cost <strong>{money(float(luna6["cost_per_1000"]))} per 1,000 requests</strong> versus Jev's {money(float(jev["cost_per_1000"]))}, and got 60/77 right versus Jev's 58/77. That two-case quality gap is too small to generalize from, but price alone is no longer a Jev advantage here.</p>
+<p class="takeaway"><strong>Clef-flash is the practical winner on this pilot.</strong> It got <strong>{int(clef_flash["correct"])}/77</strong> right versus Astra's {int(astra["correct"])}/77, at about <strong>{flash_cost_advantage:.0f}× lower list-equivalent inference cost</strong>. Full Clef gained one more correct case; against Astra, Clef got {clef_only_vs_astra} cases right that Astra missed, while Astra got {astra_only_vs_clef} that Clef missed.</p>
 </section>
 
 <section>
 <h2>What happened?</h2>
 <p>We selected one request from each of BANKING77's 77 support categories. Every model saw the same request and the same 77 allowed labels. There was no LLM judge: a prediction counted only when it exactly matched the dataset's gold routing label.</p>
 <div class="bar-chart" aria-label="Classification accuracy by model">{bars}</div>
-<p class="note"><strong>Do not over-read the top two.</strong> Astra got 68 cases right; Gemini got 67. They disagreed in only five decisive cases, and this 77-case pilot cannot establish that one is generally better. It can establish that both were substantially stronger than Jev in this sample.</p>
+<p class="note"><strong>Clef and Clef-flash are effectively tied here:</strong> 74/77 versus 73/77. Clef's advantage over Astra is more striking in the paired cases: Clef got {clef_only_vs_astra} requests right that Astra missed, and Astra got {astra_only_vs_clef} that Clef missed. This is still only a 77-case pilot, so treat the exact percentages as directional rather than production SLAs.</p>
 </section>
 
 <section>
 <h2>Model price is rarely the business bottleneck</h2>
 <p>The chart puts quality and inference cost on the same page. Cost uses a log scale because the models span more than two orders of magnitude. Click any model for its details.</p>
 <div class="scatter-shell"><div class="scatter-scroll">{scatter}</div></div>
-<div class="scatter-caption"><span><strong>Up and left is better:</strong> more accurate and cheaper. The vertical axis is intentionally clipped to the observed 72–91% range; it does not start at zero.</span><span class="mobile-scroll">Swipe the chart horizontally →</span></div>
+<div class="scatter-caption"><span><strong>Up and left is better:</strong> more accurate and cheaper. The vertical axis is intentionally clipped to the observed range; it does not start at zero. Costs are list-equivalent for the measured token usage.</span><span class="mobile-scroll">Swipe the chart horizontally →</span></div>
 <p>The table below translates the same experiment into operational units. “Errors per 100” is simply what this small pilot observed; it is not a production SLA.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Model</th><th>Accuracy</th><th>Errors / 100</th><th>Cost / 1,000</th><th>Median latency</th></tr></thead>
 <tbody>{business_rows}</tbody>
 </table></div>
-<p class="note">Costs are the OpenRouter <code>usage.cost</code> reported for the 77 successful calls, extrapolated to 1,000 requests. They include each model's actual token usage in this run, including reasoning tokens where reported. Initial development retries are excluded.</p>
-<div class="decision"><strong>Business implication:</strong> even the most expensive model here cost less than one cent per classification. If a wrong route causes a human hand-off, customer delay, rework, fraud exposure, or compliance risk worth more than a few cents, optimize decision quality first. Optimize token price second.</div>
+<p class="note">Cost uses each system's measured token usage: OpenRouter's reported <code>usage.cost</code> for hosted LLMs/Jev, current direct OpenAI token pricing for OpenAI Decisions, and Cloudflare's listed $0.24/M and $0.09/M input-token prices for Clef and Clef-flash. Cloudflare includes a daily free Workers AI allocation, so actual billed cost can be lower. Development retries are excluded.</p>
+<div class="decision"><strong>Business implication:</strong> Clef-flash is unusual because it improves both axes at once: higher observed accuracy than Astra at roughly {flash_cost_advantage:.0f}× lower list-equivalent cost. Validate that dominance on your own taxonomy before standardizing—but do not assume a frontier general model is automatically the safest choice for a bounded decision.</div>
 </section>
 
 <section>
 <h2>Confidence is not a guarantee</h2>
-<p>A useful confidence score should behave like a probability: decisions called “90% confident” should be right about 90% of the time. Jev was <strong>{pct(float(jev["mean_confidence"]))} confident on average but only {pct(float(jev["accuracy"]))} correct</strong>. Both Luna generations were similarly overconfident; GPT-6 Luna averaged {pct(float(luna6["mean_confidence"]))} confidence at {pct(float(luna6["accuracy"]))} accuracy. Opus and Fable looked better calibrated in aggregate, but 77 cases is too small to certify production thresholds.</p>
-<p>Jev's confidence was still useful for <em>ranking</em> risk: its AUROC was {float(jev["auroc"]):.3f}. That means the score contains signal about which cases are dangerous—even though the number itself is too optimistic.</p>
+<p>A useful confidence score should behave like a probability. Clef-flash was <strong>{pct(float(clef_flash["mean_confidence"]))} confident on average and {pct(float(clef_flash["accuracy"]))} correct</strong>; Clef was {pct(float(clef["mean_confidence"]))} confident at {pct(float(clef["accuracy"]))} accuracy. Both were slightly underconfident rather than aggressively overconfident.</p>
+<p>More importantly, their confidence ranked risk extremely well: Clef-flash's AUROC was {float(clef_flash["auroc"]):.3f} and Clef's was {float(clef["auroc"]):.3f}. Their binary Brier scores ({float(clef_flash["brier"]):.3f} and {float(clef["brier"]):.3f}) were the best in this pilot. By contrast, Jev and OpenAI Decisions remained materially overconfident.</p>
 <div class="decision"><strong>Business implication:</strong> never turn “confidence ≥ 95%” directly into “no human review.” Learn that threshold from historical cases with known answers, freeze it, and validate it on untouched cases.</div>
 </section>
 
 <section>
-<h2>What should a company do with Jev?</h2>
-<p><strong>Use it as a specialist, not as a frontier-model replacement.</strong> Jev is attractive when you need huge volumes of bounded, typed decisions, latency matters, and mistakes are cheap or easily caught downstream. Its median response here was {float(jev["median_latency_s"]):.2f}s.</p>
-<p>For higher-stakes classification, this pilot points instead toward a strong general model—especially Gemini 3.8 Flash or Astra—because the absolute inference cost is still tiny. For ultra-cheap first-pass classification, GPT-6 Luna now undercuts Jev on measured inference cost in this run. A sensible architecture may be a cheap first pass plus escalation, but the escalation rule should be learned from a larger held-out benchmark, not invented from this pilot.</p>
-<p>Also note the dataset itself is imperfect for this prompt-only setup: <strong>{all_miss} of 77 requests were missed by all {model_count} models.</strong> Several depend on fine distinctions that are clearer with a routing guide than with label names alone. Production evaluation should include the real policy or taxonomy definitions users expect the model to follow.</p>
+<h2>What should a company do with decision models?</h2>
+<p><strong>Benchmark the implementation, not the architecture label.</strong> The same broad decision-model idea spans {pct(float(jev["accuracy"]))} accuracy for Jev, {pct(float(openai_decisions["accuracy"]))} for OpenAI Decisions, {pct(float(clef_flash["accuracy"]))} for Clef-flash, and {pct(float(clef["accuracy"]))} for Clef on these exact cases.</p>
+<p><strong>For this task, Clef-flash is the default choice.</strong> Full Clef bought one additional correct answer, but cost more and was slower. OpenAI Decisions tells a different story: using GPT-6 Luna through the typed Decisions API produced 61/77 correct versus 60/77 through chat—essentially no quality change—but cut observed median latency from {float(luna6["median_latency_s"]):.2f}s to {float(openai_decisions["median_latency_s"]):.2f}s, about {decisions_speedup:.1f}× faster. Here, its value is structure and speed, not an accuracy leap.</p>
+<p>Also note the dataset itself is imperfect for this label-name-only setup: <strong>{all_miss} of 77 requests were missed by all {model_count} systems.</strong> Several depend on fine distinctions that are clearer with a routing guide than with label names alone. Production evaluation should include the real policy or taxonomy definitions users expect the model to follow.</p>
 </section>
 
 <section>
@@ -397,14 +410,16 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 <div class="table-wrap"><table><thead><tr><th>Model</th><th>Accuracy</th><th>Mean confidence</th><th>Gap</th><th>Brier ↓</th><th>ECE ↓</th><th>AUROC ↑</th></tr></thead><tbody>{calibration_rows}</tbody></table></div>
 </details>
 <details><summary>Methodology and reproducibility</summary>
-<p>One deterministic frozen case per BANKING77 class, 77 total. Chat models return one label plus a 0–100 probability of being exactly correct. Jev uses OpenRouter's Decisions endpoint and returns a full choice distribution; its top-choice probability is the comparable confidence score. Reasoning was disabled for GPT-5.6 Luna, GPT-6 Luna, GPT-5.6 Sol and DeepSeek; low reasoning was requested for Astra, Opus, Fable, Gemini and Sonnet.</p>
+<p>One deterministic frozen case per BANKING77 class, 77 total. Ordinary chat models receive the 77 labels in the prompt and return one label plus a 0–100 probability of being exactly correct. Decision-model systems receive the same 77 label values plus the same humanized label descriptions through their native typed-choice interface: Jev via OpenRouter Decisions, GPT-6 Luna via OpenAI's direct Decisions API, and Clef/Clef-flash via Cloudflare Workers AI. For all decision models, the chosen label's probability is the comparable confidence score.</p>
+<p class="note">Latency is observed end-to-end from this machine, not model-only latency; provider and network paths differ. Reasoning was disabled for GPT-5.6 Luna, GPT-6 Luna, GPT-5.6 Sol and DeepSeek; low reasoning was requested for Astra, Opus, Fable, Gemini and Sonnet.</p>
 <p>The runner is resumable: an existing <code>(model, case)</code> result is skipped. Re-running <code>uv run run.py --dry-run</code> should report zero pending calls.</p>
+<p class="note">Current interface/pricing references: <a href="https://developers.openai.com/api/reference/resources/decisions/methods/create">OpenAI Decisions API</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef/">Clef</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef-flash/">Clef-flash</a>.</p>
 </details>
 <details><summary>Files</summary>
 <p><a href="data/cases.csv">Frozen 77 cases</a> · <a href="data/results.jsonl">Raw results</a> · <a href="summary.json">Computed summary</a> · <a href="models.json">Model configuration</a> · <a href="prompt.md">Prompt</a> · <a href="run.py">Runner</a> · <a href="analyze.py">Analysis</a></p>
 </details>
 </section>
-<footer>Observed results from 77 paired BANKING77 cases. This is a pilot, not a production model-selection benchmark.</footer>
+<footer>Observed results from 77 paired BANKING77 cases across {model_count} systems. This is a pilot, not a production model-selection benchmark.</footer>
 </main>
 <dialog id="model-dialog" aria-labelledby="model-dialog-title">
   <div class="modal-inner">

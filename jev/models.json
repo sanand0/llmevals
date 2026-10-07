@@ -65,5 +65,25 @@
     "reasoning": "none",
     "max_tokens": 256,
     "temperature": 0
+  },
+  "openai_decisions": {
+    "name": "OpenAI Decisions",
+    "model": "gpt-6-luna",
+    "kind": "openai_decision",
+    "input_price_per_million": 0.1,
+    "cached_input_price_per_million": 0.01,
+    "output_price_per_million": 0.5
+  },
+  "clef": {
+    "name": "Clef",
+    "model": "@cf/cloudflare/clef",
+    "kind": "cloudflare_decision",
+    "input_price_per_million": 0.24
+  },
+  "clef_flash": {
+    "name": "Clef-flash",
+    "model": "@cf/cloudflare/clef-flash",
+    "kind": "cloudflare_decision",
+    "input_price_per_million": 0.09
   }
 }

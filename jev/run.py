@@ -3,7 +3,7 @@
 # requires-python = ">=3.11"
 # dependencies = ["httpx>=0.27"]
 # ///
-"""Run the frozen 77-case BANKING77 pilot through OpenRouter.
+"""Run the frozen 77-case BANKING77 pilot through the configured model providers.
 
 Results append to data/results.jsonl. A (model_key, case_id) already present is skipped,
 so interrupted runs can be resumed safely without re-running completed work.
@@ -33,11 +33,11 @@ BASELINE = (
 )
 
 
-def api_key() -> str:
-    """Prefer the user's configured llm OpenRouter key; fall back to the environment."""
+def llm_key(name: str, env_name: str) -> str:
+    """Prefer an llm-managed key; fall back to the matching environment variable."""
     try:
         p = subprocess.run(
-            ["llm", "keys", "get", "openrouter"],
+            ["llm", "keys", "get", name],
             capture_output=True,
             text=True,
             check=True,
@@ -46,9 +46,26 @@ def api_key() -> str:
             return key
     except (FileNotFoundError, subprocess.CalledProcessError):
         pass
-    if key := os.environ.get("OPENROUTER_API_KEY", "").strip():
+    if key := os.environ.get(env_name, "").strip():
         return key
-    raise RuntimeError("Configure OpenRouter with `llm keys set openrouter` or OPENROUTER_API_KEY")
+    raise RuntimeError(f"Configure {name} with `llm keys set {name}` or {env_name}")
+
+
+def cloudflare_credentials() -> tuple[str, str]:
+    """Return account ID and current OAuth token from the existing Cloudflare CLI login."""
+    whoami = json.loads(
+        subprocess.run(
+            ["cf", "auth", "whoami"],
+            capture_output=True,
+            text=True,
+            check=True,
+        ).stdout
+    )
+    accounts = whoami.get("accounts") or []
+    if len(accounts) != 1:
+        raise RuntimeError(f"Expected exactly one Cloudflare account, found {len(accounts)}")
+    auth = json.loads((Path.home() / ".config/cloudflare/config/default.json").read_text())
+    return accounts[0]["id"], auth["oauth_token"]
 
 
 def load_cases() -> list[dict[str, str]]:
@@ -93,6 +110,23 @@ def parse_json(text: str) -> dict[str, object]:
         return json.loads(match.group())
 
 
+def label_description(label: str) -> str:
+    return label.replace("_", " ").replace("?", "")
+
+
+def token_cost(usage: dict[str, object], spec: dict[str, object]) -> float:
+    """Compute cost from published token prices when the provider does not return it."""
+    input_tokens = int(usage.get("input_tokens") or usage.get("prompt_tokens") or 0)
+    output_tokens = int(usage.get("output_tokens") or usage.get("completion_tokens") or 0)
+    input_details = usage.get("input_tokens_details") or {}
+    cached = int(input_details.get("cached_tokens") or 0) if isinstance(input_details, dict) else 0
+    uncached = max(0, input_tokens - cached)
+    input_price = float(spec.get("input_price_per_million") or 0)
+    cached_price = float(spec.get("cached_input_price_per_million") or input_price)
+    output_price = float(spec.get("output_price_per_million") or 0)
+    return (uncached * input_price + cached * cached_price + output_tokens * output_price) / 1_000_000
+
+
 async def call_jev(
     client: httpx.AsyncClient,
     key: str,
@@ -110,7 +144,7 @@ async def call_jev(
                     "Classify the customer request into exactly one banking support intent. "
                     "The option names correspond to the routing labels."
                 ),
-                "criteria": {label: label.replace("_", " ").replace("?", "") for label in labels},
+                "criteria": {label: label_description(label) for label in labels},
             }
         },
     }
@@ -142,6 +176,122 @@ async def call_jev(
         "latency_s": latency,
         "generation_id": data.get("id"),
         "provider": data.get("provider"),
+    }
+
+
+async def call_openai_decision(
+    client: httpx.AsyncClient,
+    key: str,
+    row: dict[str, str],
+    labels: list[str],
+    spec: dict[str, object],
+) -> dict[str, object]:
+    payload = {
+        "model": spec["model"],
+        "input": row["text"],
+        "questions": [
+            {
+                "type": "choice",
+                "name": "intent",
+                "instructions": (
+                    "Classify the customer request into exactly one banking support intent. "
+                    "The option names correspond to the routing labels."
+                ),
+                "choices": [
+                    {"value": label, "description": label_description(label)}
+                    for label in labels
+                ],
+            }
+        ],
+    }
+    started = time.perf_counter()
+    response = await client.post(
+        "https://api.openai.com/v1/decisions",
+        headers={"Authorization": f"Bearer {key}"},
+        json=payload,
+    )
+    latency = time.perf_counter() - started
+    response.raise_for_status()
+    data = response.json()
+    answer = data["answers"][0]
+    if answer.get("type") == "refusal":
+        raise RuntimeError(f"OpenAI Decisions refused case {row['id']}")
+    prediction = str(answer["choice"])
+    probabilities = {
+        str(item["value"]): float(item["probability"])
+        for item in answer.get("probabilities", [])
+    }
+    confidence = float(probabilities.get(prediction, answer.get("confidence", 0)))
+    usage = data.get("usage") or {}
+    return {
+        "model_returned": data.get("model"),
+        "prediction": prediction,
+        "confidence": confidence,
+        "reported_confidence": answer.get("confidence"),
+        "probabilities": probabilities,
+        "raw": answer,
+        "input_tokens": usage.get("input_tokens"),
+        "output_tokens": usage.get("output_tokens"),
+        "reasoning_tokens": (usage.get("output_tokens_details") or {}).get("reasoning_tokens", 0),
+        "cost": token_cost(usage, spec),
+        "latency_s": latency,
+        "generation_id": data.get("id"),
+        "provider": "OpenAI",
+    }
+
+
+async def call_cloudflare_decision(
+    client: httpx.AsyncClient,
+    credentials: tuple[str, str],
+    row: dict[str, str],
+    labels: list[str],
+    spec: dict[str, object],
+) -> dict[str, object]:
+    account_id, token = credentials
+    short_model = str(spec["model"]).rsplit("/", 1)[-1]
+    payload = {
+        "model": short_model,
+        "state": {"request": row["text"]},
+        "questions": {
+            "intent": {
+                "type": "choice",
+                "instructions": (
+                    "Classify the customer request into exactly one banking support intent. "
+                    "The option names correspond to the routing labels."
+                ),
+                "criteria": {label: label_description(label) for label in labels},
+            }
+        },
+    }
+    started = time.perf_counter()
+    response = await client.post(
+        f"https://api.cloudflare.com/client/v4/accounts/{account_id}/ai/run/{spec['model']}",
+        headers={"Authorization": f"Bearer {token}"},
+        json=payload,
+    )
+    latency = time.perf_counter() - started
+    response.raise_for_status()
+    envelope = response.json()
+    data = envelope.get("result", envelope)
+    answer = data["answers"]["intent"]
+    prediction = str(answer["choice"])
+    probabilities = {str(k): float(v) for k, v in answer["probabilities"].items()}
+    confidence = float(probabilities[prediction])
+    usage = data.get("usage") or {}
+    return {
+        "model_returned": spec["model"],
+        "prediction": prediction,
+        "confidence": confidence,
+        "reported_confidence": answer.get("confidence"),
+        "probabilities": probabilities,
+        "raw": answer,
+        "input_tokens": usage.get("input_tokens"),
+        "output_tokens": usage.get("output_tokens", 0),
+        "reasoning_tokens": 0,
+        "cost": token_cost(usage, spec),
+        "latency_s": latency,
+        "generation_id": response.headers.get("cf-ray"),
+        "provider": "Cloudflare",
     }
 
 
@@ -211,7 +361,6 @@ async def run(args: argparse.Namespace) -> None:
     if args.dry_run or not any(plan.values()):
         return
 
-    key = api_key()
     write_lock = asyncio.Lock()
     semaphore = asyncio.Semaphore(args.concurrency)
     timeout = httpx.Timeout(120, connect=20)
@@ -221,17 +370,30 @@ async def run(args: argparse.Namespace) -> None:
             pending = plan[model]
             if not pending:
                 continue
+            kind = spec.get("kind")
+            credential: str | tuple[str, str]
+            if kind == "cloudflare_decision":
+                credential = cloudflare_credentials()
+            elif kind == "openai_decision":
+                credential = llm_key("openai", "OPENAI_API_KEY")
+            else:
+                credential = llm_key("openrouter", "OPENROUTER_API_KEY")
 
             async def one(row: dict[str, str]) -> None:
                 async with semaphore:
                     error: Exception | None = None
                     for attempt in range(5):
                         try:
-                            result = (
-                                await call_jev(client, key, row, labels, spec)
-                                if spec.get("kind") == "decision"
-                                else await call_chat(client, key, row, labels, spec)
-                            )
+                            if kind == "decision":
+                                result = await call_jev(client, str(credential), row, labels, spec)
+                            elif kind == "openai_decision":
+                                result = await call_openai_decision(client, str(credential), row, labels, spec)
+                            elif kind == "cloudflare_decision":
+                                if not isinstance(credential, tuple):
+                                    raise RuntimeError("Cloudflare credentials were not initialized")
+                                result = await call_cloudflare_decision(client, credential, row, labels, spec)
+                            else:
+                                result = await call_chat(client, str(credential), row, labels, spec)
                             record = {
                                 "model_key": model,
                                 "model_requested": spec["model"],

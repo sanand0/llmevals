@@ -14,4 +14,10 @@ REQUEST
 Return ONLY JSON with label (exactly one allowed label) and confidence (integer 0-100): your probability that your chosen label exactly matches the gold routing label. Treat confidence as a probability of correctness, not a vague feeling.
 ```
 
-Jev uses OpenRouter's Decisions endpoint instead. The customer request is the state, and the same 77 labels are supplied as `choice` criteria with humanized label names. Its chosen-label probability is used as the comparable confidence score.
+Decision-model systems use their native typed-choice endpoints instead of the chat prompt. They receive the same 77 label values and the same humanized label descriptions:
+
+- Jev via OpenRouter Decisions (`choice.criteria`)
+- GPT-6 Luna via OpenAI Decisions (`choice.choices`)
+- Clef and Clef-flash via Cloudflare Workers AI (`choice.criteria`)
+
+The customer request is supplied as the shared input/state required by each API. For comparability, the chosen label's probability is used as the confidence score.
