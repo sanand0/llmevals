@@ -113,6 +113,8 @@ def pct(x: float, decimals: int = 1) -> str:
 
 
 def money(x: float) -> str:
+    if x == 0:
+        return "Free"
     return f"${x:.2f}" if x >= 0.01 else f"${x:.4f}"
 
 
@@ -126,21 +128,27 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
     width, height = 860, 430
     left, right, top, bottom = 70, 24, 28, 62
     costs = [float(row["cost_per_1000"]) for row in summary]
+    paid_costs = [value for value in costs if value > 0]
     accuracies = [float(row["accuracy"]) for row in summary]
-    x_min = 0.05
-    x_max = max(12.0, max(costs) * 1.2)
+    x_min = min(0.01, min(paid_costs))
+    x_max = max(12.0, max(paid_costs) * 1.2)
     y_min = max(0.0, math.floor((min(accuracies) - 0.03) * 100) / 100)
     y_max = min(1.0, math.ceil((max(accuracies) + 0.025) * 100) / 100)
     inner_w, inner_h = width - left - right, height - top - bottom
+    free_gap = 58
+    paid_left = left + free_gap
+    paid_w = inner_w - free_gap
 
     def x(value: float) -> float:
+        if value <= 0:
+            return left
         lo, hi = math.log10(x_min), math.log10(x_max)
-        return left + (math.log10(value) - lo) / (hi - lo) * inner_w
+        return paid_left + (math.log10(value) - lo) / (hi - lo) * paid_w
 
     def y(value: float) -> float:
         return top + (y_max - value) / (y_max - y_min) * inner_h
 
-    x_ticks = [v for v in (0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10) if x_min <= v <= x_max]
+    x_ticks = [v for v in (0.01, 0.02, 0.05, 0.1, 0.25, 0.5, 1, 2.5, 5, 10) if x_min <= v <= x_max]
     y_ticks = [
         v / 100
         for v in range(
@@ -151,25 +159,29 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
     ]
     offsets = {
         "jev": (10, 18),
-        "deepseek": (10, -10),
-        "openai_decisions": (-10, 12),
+        "deepseek": (10, -18),
+        "openai_decisions": (10, 26),
         "clef": (10, -10),
         "clef_flash": (10, 18),
         "luna": (10, -10),
-        "luna6": (10, 18),
+        "luna6": (10, -10),
         "sol": (10, 18),
-        "gemini": (10, -10),
+        "gemini": (10, -8),
         "sonnet": (10, 18),
-        "opus": (10, 18),
-        "astra": (-10, -10),
+        "opus": (10, -10),
+        "astra": (-10, -18),
         "fable": (-10, 18),
+        "decider_v1_1": (10, 10),
+        "liquid_d1": (10, -10),
+        "kev4b": (10, 18),
+        "mercury_decide": (10, -10),
     }
     parts = [
         f'<svg class="scatter-chart" viewBox="0 0 {width} {height}" role="img" aria-labelledby="scatter-title scatter-desc">',
         '<title id="scatter-title">Cost versus classification accuracy</title>',
         (
-            f'<desc id="scatter-desc">{len(summary)} models. Cost per thousand requests uses a logarithmic '
-            'horizontal scale. Accuracy is shown on a clipped vertical range.</desc>'
+            f'<desc id="scatter-desc">{len(summary)} models. Free models are shown at the left edge; paid '
+            'models use a logarithmic cost scale. Accuracy is shown on a clipped vertical range.</desc>'
         ),
     ]
     for tick in y_ticks:
@@ -180,6 +192,9 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
         parts.append(
             f'<text class="scatter-tick" x="{left-10}" y="{yy+4:.1f}" text-anchor="end">{tick*100:.0f}%</text>'
         )
+    parts.append(
+        f'<text class="scatter-tick" x="{left:.1f}" y="{height-bottom+25}" text-anchor="middle">Free</text>'
+    )
     for tick in x_ticks:
         xx = x(tick)
         label = "$" + f"{tick:g}"
@@ -195,7 +210,7 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
             f'<line class="scatter-axis" x1="{left}" y1="{top}" x2="{left}" y2="{height-bottom}"/>',
             (
                 f'<text class="scatter-axis-label" x="{left+inner_w/2:.1f}" y="{height-12}" '
-                'text-anchor="middle">Cost per 1,000 classifications · USD · log scale</text>'
+                'text-anchor="middle">Cost per 1,000 classifications · USD · paid models log-scaled</text>'
             ),
             (
                 f'<text class="scatter-axis-label" transform="translate(17 {top+inner_h/2:.1f}) rotate(-90)" '
@@ -225,8 +240,20 @@ def scatter_svg(summary: list[dict[str, object]]) -> str:
 def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], dict[str, object]]) -> str:
     by_key = {row["key"]: row for row in summary}
     ranked = sorted(summary, key=lambda row: (-float(row["accuracy"]), float(row["cost_77"])))
-    astra, jev, luna6, openai_decisions, clef, clef_flash = (
-        by_key[k] for k in ("astra", "jev", "luna6", "openai_decisions", "clef", "clef_flash")
+    astra, jev, luna6, openai_decisions, clef, clef_flash, mercury, liquid_d1, kev4b, decider = (
+        by_key[k]
+        for k in (
+            "astra",
+            "jev",
+            "luna6",
+            "openai_decisions",
+            "clef",
+            "clef_flash",
+            "mercury_decide",
+            "liquid_d1",
+            "kev4b",
+            "decider_v1_1",
+        )
     )
     model_count = len(summary)
     all_case_ids = sorted({case_id for _, case_id in unique})
@@ -240,6 +267,9 @@ def render_html(summary: list[dict[str, object]], unique: dict[tuple[str, str], 
         for case_id in all_case_ids
     )
     flash_cost_advantage = float(astra["cost_per_1000"]) / float(clef_flash["cost_per_1000"])
+    d1_cost_advantage = float(astra["cost_per_1000"]) / float(liquid_d1["cost_per_1000"])
+    kev_cost_advantage = float(by_key["gemini"]["cost_per_1000"]) / float(kev4b["cost_per_1000"])
+    flash_extra_correct_vs_mercury = int(clef_flash["correct"]) - int(mercury["correct"])
     decisions_speedup = float(luna6["median_latency_s"]) / float(openai_decisions["median_latency_s"])
     scatter = scatter_svg(summary)
     cases = list(csv.DictReader((DATA / "cases.csv").open()))
@@ -350,36 +380,36 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 </head>
 <body><main>
 <section class="hero">
-<div class="eyebrow">BANKING77 · 77-case paired pilot · updated 7 October 2026</div>
-<h1>The specialist wins.<br>But not every specialist.</h1>
-<p class="deck">{model_count} AI systems classified exactly the same banking-support requests. Cloudflare's Clef and Clef-flash beat every general-purpose model here, while Jev and OpenAI Decisions did not. <strong>A decision-model architecture can be excellent—but the implementation matters more than the label.</strong></p>
+<div class="eyebrow">BANKING77 · 77-case paired pilot · updated 8 October 2026</div>
+<h1>Decision models now own<br>the cost-quality frontier.</h1>
+<p class="deck">{model_count} AI systems classified exactly the same banking-support requests. Clef is still the most accurate, Mercury Decide reaches {pct(float(mercury["accuracy"]))} for free, and Liquid d1 matches Astra at a tiny fraction of its cost. But Perplexity Decider v1.1 barely beats Jev here. <strong>The architecture is promising; the model still matters enormously.</strong></p>
 <div class="callout">
   <div class="card"><span>Highest observed accuracy</span><b>{pct(float(clef["accuracy"]))}</b><span>Clef · {int(clef["correct"])} of 77 correct</span></div>
-  <div class="card"><span>Best value near the top</span><b>{pct(float(clef_flash["accuracy"]))}</b><span>Clef-flash · {money(float(clef_flash["cost_per_1000"]))} per 1,000</span></div>
-  <div class="card"><span>Frontier baseline</span><b>{pct(float(astra["accuracy"]))}</b><span>GPT-6 Astra · {money(float(astra["cost_per_1000"]))} per 1,000</span></div>
+  <div class="card"><span>Free</span><b>{pct(float(mercury["accuracy"]))}</b><span>Mercury Decide · {int(mercury["correct"])} of 77 correct</span></div>
+  <div class="card"><span>Matches Astra</span><b>{pct(float(liquid_d1["accuracy"]))}</b><span>Liquid d1 · ~{d1_cost_advantage:.0f}× cheaper here</span></div>
 </div>
-<p class="takeaway"><strong>Clef-flash is the practical winner on this pilot.</strong> It got <strong>{int(clef_flash["correct"])}/77</strong> right versus Astra's {int(astra["correct"])}/77, at about <strong>{flash_cost_advantage:.0f}× lower list-equivalent inference cost</strong>. Full Clef gained one more correct case; against Astra, Clef got {clef_only_vs_astra} cases right that Astra missed, while Astra got {astra_only_vs_clef} that Clef missed.</p>
+<p class="takeaway"><strong>There is no single winner; there is a new frontier.</strong> Mercury Decide is free and got {int(mercury["correct"])}/77 right. Clef-flash buys {flash_extra_correct_vs_mercury} more correct answers for {money(float(clef_flash["cost_per_1000"]))} per 1,000 requests; full Clef buys one more again. Meanwhile Liquid d1 tied Astra at {int(liquid_d1["correct"])}/77 while costing roughly <strong>{d1_cost_advantage:.0f}× less</strong> in this run.</p>
 </section>
 
 <section>
 <h2>What happened?</h2>
 <p>We selected one request from each of BANKING77's 77 support categories. Every model saw the same request and the same 77 allowed labels. There was no LLM judge: a prediction counted only when it exactly matched the dataset's gold routing label.</p>
 <div class="bar-chart" aria-label="Classification accuracy by model">{bars}</div>
-<p class="note"><strong>Clef and Clef-flash are effectively tied here:</strong> 74/77 versus 73/77. Clef's advantage over Astra is more striking in the paired cases: Clef got {clef_only_vs_astra} requests right that Astra missed, and Astra got {astra_only_vs_clef} that Clef missed. This is still only a 77-case pilot, so treat the exact percentages as directional rather than production SLAs.</p>
+<p class="note"><strong>The new models spread across the whole ranking.</strong> Mercury Decide landed third at 71/77; Liquid d1 tied Astra at 68/77; Kev 4B tied Gemini at 67/77; Perplexity Decider v1.1 managed 59/77, only one more than Jev. Clef and Clef-flash remain the top two. This is still only a 77-case pilot, so treat exact percentages as directional rather than production SLAs.</p>
 </section>
 
 <section>
 <h2>Model price is rarely the business bottleneck</h2>
-<p>The chart puts quality and inference cost on the same page. Cost uses a log scale because the models span more than two orders of magnitude. Click any model for its details.</p>
+<p>The chart puts quality and inference cost on the same page. Free models occupy a separate left edge; paid models use a log scale because their costs span hundreds of times. Click any model for its details.</p>
 <div class="scatter-shell"><div class="scatter-scroll">{scatter}</div></div>
-<div class="scatter-caption"><span><strong>Up and left is better:</strong> more accurate and cheaper. The vertical axis is intentionally clipped to the observed range; it does not start at zero. Costs are list-equivalent for the measured token usage.</span><span class="mobile-scroll">Swipe the chart horizontally →</span></div>
+<div class="scatter-caption"><span><strong>Up and left is better:</strong> more accurate and cheaper. “Free” is plotted separately at the left; paid models are log-scaled. The vertical axis is intentionally clipped to the observed range and does not start at zero.</span><span class="mobile-scroll">Swipe the chart horizontally →</span></div>
 <p>The table below translates the same experiment into operational units. “Errors per 100” is simply what this small pilot observed; it is not a production SLA.</p>
 <div class="table-wrap"><table>
 <thead><tr><th>Model</th><th>Accuracy</th><th>Errors / 100</th><th>Cost / 1,000</th><th>Median latency</th></tr></thead>
 <tbody>{business_rows}</tbody>
 </table></div>
-<p class="note">Cost uses each system's measured token usage: OpenRouter's reported <code>usage.cost</code> for hosted LLMs/Jev, current direct OpenAI token pricing for OpenAI Decisions, and Cloudflare's listed $0.24/M and $0.09/M input-token prices for Clef and Clef-flash. Cloudflare includes a daily free Workers AI allocation, so actual billed cost can be lower. Development retries are excluded.</p>
-<div class="decision"><strong>Business implication:</strong> Clef-flash is unusual because it improves both axes at once: higher observed accuracy than Astra at roughly {flash_cost_advantage:.0f}× lower list-equivalent cost. Validate that dominance on your own taxonomy before standardizing—but do not assume a frontier general model is automatically the safest choice for a bounded decision.</div>
+<p class="note">Cost uses each system's measured token usage: OpenRouter's reported <code>usage.cost</code> for hosted models, current direct OpenAI token pricing for OpenAI Decisions, and Cloudflare's listed rates for Clef/Clef-flash. Mercury Decide is currently free on OpenRouter. Cloudflare includes a daily free Workers AI allocation, so its actual billed cost can also be lower. Development retries are excluded.</p>
+<div class="decision"><strong>Business implication:</strong> for bounded classification, a frontier general model is no longer the obvious default. Start with a cheap decision model that sits on your own measured Pareto frontier—Mercury, d1, Clef-flash here—and pay upward only when the avoided errors are worth it.</div>
 </section>
 
 <section>
@@ -391,8 +421,9 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 
 <section>
 <h2>What should a company do with decision models?</h2>
-<p><strong>Benchmark the implementation, not the architecture label.</strong> The same broad decision-model idea spans {pct(float(jev["accuracy"]))} accuracy for Jev, {pct(float(openai_decisions["accuracy"]))} for OpenAI Decisions, {pct(float(clef_flash["accuracy"]))} for Clef-flash, and {pct(float(clef["accuracy"]))} for Clef on these exact cases.</p>
-<p><strong>For this task, Clef-flash is the default choice.</strong> Full Clef bought one additional correct answer, but cost more and was slower. OpenAI Decisions tells a different story: using GPT-6 Luna through the typed Decisions API produced 61/77 correct versus 60/77 through chat—essentially no quality change—but cut observed median latency from {float(luna6["median_latency_s"]):.2f}s to {float(openai_decisions["median_latency_s"]):.2f}s, about {decisions_speedup:.1f}× faster. Here, its value is structure and speed, not an accuracy leap.</p>
+<p><strong>Benchmark the implementation, not the architecture label.</strong> The same broad idea spans {pct(float(jev["accuracy"]))} for Jev, {pct(float(decider["accuracy"]))} for Perplexity Decider v1.1, {pct(float(liquid_d1["accuracy"]))} for Liquid d1, {pct(float(mercury["accuracy"]))} for Mercury Decide, and {pct(float(clef["accuracy"]))} for Clef on these exact cases.</p>
+<p><strong>Start with the cheapest model that meets the error budget.</strong> Mercury is free and only two cases behind Clef-flash. Liquid d1 exactly tied Astra on accuracy while costing roughly {d1_cost_advantage:.0f}× less here. Kev 4B tied Gemini while costing roughly {kev_cost_advantage:.0f}× less. Pay for Clef-flash or Clef only when those extra avoided errors are worth the premium.</p>
+<p>OpenAI Decisions tells a different story: using GPT-6 Luna through the typed Decisions API produced 61/77 correct versus 60/77 through chat—essentially no quality change—but cut observed median latency from {float(luna6["median_latency_s"]):.2f}s to {float(openai_decisions["median_latency_s"]):.2f}s, about {decisions_speedup:.1f}× faster. Here, its value is structure and speed, not an accuracy leap.</p>
 <p>Also note the dataset itself is imperfect for this label-name-only setup: <strong>{all_miss} of 77 requests were missed by all {model_count} systems.</strong> Several depend on fine distinctions that are clearer with a routing guide than with label names alone. Production evaluation should include the real policy or taxonomy definitions users expect the model to follow.</p>
 </section>
 
@@ -410,10 +441,14 @@ dialog::backdrop{{background:#17212b99}}.modal-inner{{padding:24px}}.modal-head{
 <div class="table-wrap"><table><thead><tr><th>Model</th><th>Accuracy</th><th>Mean confidence</th><th>Gap</th><th>Brier ↓</th><th>ECE ↓</th><th>AUROC ↑</th></tr></thead><tbody>{calibration_rows}</tbody></table></div>
 </details>
 <details><summary>Methodology and reproducibility</summary>
-<p>One deterministic frozen case per BANKING77 class, 77 total. Ordinary chat models receive the 77 labels in the prompt and return one label plus a 0–100 probability of being exactly correct. Decision-model systems receive the same 77 label values plus the same humanized label descriptions through their native typed-choice interface: Jev via OpenRouter Decisions, GPT-6 Luna via OpenAI's direct Decisions API, and Clef/Clef-flash via Cloudflare Workers AI. For all decision models, the chosen label's probability is the comparable confidence score.</p>
+<p>One deterministic frozen case per BANKING77 class, 77 total. Ordinary chat models receive the 77 labels in the prompt and return one label plus a 0–100 probability of being exactly correct. Decision-model systems receive the same 77 label values plus the same humanized label descriptions through their native typed-choice interface: Jev, Perplexity Decider v1.1, Liquid d1, Kev 4B, and Mercury Decide via OpenRouter Decisions; GPT-6 Luna via OpenAI's direct Decisions API; and Clef/Clef-flash via Cloudflare Workers AI. For all decision models, the chosen label's probability is the comparable confidence score.</p>
 <p class="note">Latency is observed end-to-end from this machine, not model-only latency; provider and network paths differ. Reasoning was disabled for GPT-5.6 Luna, GPT-6 Luna, GPT-5.6 Sol and DeepSeek; low reasoning was requested for Astra, Opus, Fable, Gemini and Sonnet.</p>
 <p>The runner is resumable: an existing <code>(model, case)</code> result is skipped. Re-running <code>uv run run.py --dry-run</code> should report zero pending calls.</p>
-<p class="note">Current interface/pricing references: <a href="https://developers.openai.com/api/reference/resources/decisions/methods/create">OpenAI Decisions API</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef/">Clef</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef-flash/">Clef-flash</a>.</p>
+<p class="note">Current interface/pricing references: <a href="https://developers.openai.com/api/reference/resources/decisions/methods/create">OpenAI Decisions API</a> · <a href="https://developers.openai.com/api/docs/pricing">OpenAI pricing</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef/">Clef</a> · <a href="https://developers.cloudflare.com/ai/models/%40cf/cloudflare/clef-flash/">Clef-flash</a> · <a href="https://openrouter.ai/rankings/decisions">OpenRouter Decisions ranking</a>.</p>
+</details>
+<details><summary>How the 8 October additions were selected</summary>
+<p>We started from OpenRouter's public Decisions ranking and added popular models that could express this exact 77-way Choice task without changing the benchmark: Perplexity Decider v1.1, Liquid d1, Kev 4B, and Mercury Decide. Their successful calls cost $0.00569 in total, including preflights.</p>
+<p class="note">Span-01 Lite was excluded after a 77-way Choice preflight returned HTTP 400; its native interface is specialized for Noul/behavior scoring. Solar Decide was excluded after HTTP 422 because its Choice endpoint supports at most 26 options. Tev1 was not run because its Choice formulation is limited to about 20 options. Splitting BANKING77 into a hierarchy would make those models runnable, but it would no longer be the same experiment.</p>
 </details>
 <details><summary>Files</summary>
 <p><a href="data/cases.csv">Frozen 77 cases</a> · <a href="data/results.jsonl">Raw results</a> · <a href="summary.json">Computed summary</a> · <a href="models.json">Model configuration</a> · <a href="prompt.md">Prompt</a> · <a href="run.py">Runner</a> · <a href="analyze.py">Analysis</a></p>
@@ -446,7 +481,7 @@ const modelData = {model_data};
 const modelDialog = document.querySelector("#model-dialog");
 const setDetail = (name, value) => {{ modelDialog.querySelector('[data-detail="' + name + '"]').textContent = value; }};
 const pctValue = value => (value * 100).toFixed(1) + "%";
-const moneyValue = value => value >= 0.01 ? "$" + value.toFixed(2) : "$" + value.toFixed(4);
+const moneyValue = value => value === 0 ? "Free" : (value >= 0.01 ? "$" + value.toFixed(2) : "$" + value.toFixed(4));
 const openModel = key => {{
   const model = modelData[key];
   setDetail("name", model.name);

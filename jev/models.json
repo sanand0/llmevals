@@ -85,5 +85,25 @@
     "model": "@cf/cloudflare/clef-flash",
     "kind": "cloudflare_decision",
     "input_price_per_million": 0.09
+  },
+  "decider_v1_1": {
+    "name": "Perplexity Decider v1.1 27B",
+    "model": "perplexity/pplx-decider-v1.1-27b",
+    "kind": "decision"
+  },
+  "liquid_d1": {
+    "name": "Liquid d1",
+    "model": "liquid/d1",
+    "kind": "decision"
+  },
+  "kev4b": {
+    "name": "Kev 4B",
+    "model": "jaredpalmer/kev-4b",
+    "kind": "decision"
+  },
+  "mercury_decide": {
+    "name": "Mercury Decide",
+    "model": "inception/mercury-decide:free",
+    "kind": "decision"
   }
 }

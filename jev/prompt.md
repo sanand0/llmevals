@@ -16,7 +16,7 @@ Return ONLY JSON with label (exactly one allowed label) and confidence (integer 
 
 Decision-model systems use their native typed-choice endpoints instead of the chat prompt. They receive the same 77 label values and the same humanized label descriptions:
 
-- Jev via OpenRouter Decisions (`choice.criteria`)
+- Jev, Perplexity Decider v1.1, Liquid d1, Kev 4B, and Mercury Decide via OpenRouter Decisions (`choice.criteria`)
 - GPT-6 Luna via OpenAI Decisions (`choice.choices`)
 - Clef and Clef-flash via Cloudflare Workers AI (`choice.criteria`)
 
