@@ -1,0 +1,7 @@
+__pycache__/
+*.pyc
+.run.lock
+logs/
+.venv/
+.pytest_cache/
+.ruff_cache/

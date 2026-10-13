@@ -2,6 +2,7 @@
 
 Explorations in LLM evaluations.
 
+- 13 Oct 2026: [How large can frontier models multiply numbers?](2026-10-llm-math/)
 - 30 Sep 2026. [SLM vs LLM on FinQA](slm-benchmark/)
 - 27 Sep 2026: [Qwen 3.6 vs Gemma 4 E4B vs Codex coding-agent benchmark](qwen-3.6-vs-gemma4-e4b/)
 - 25 Sep 2026: [What GPT Image 2.5 Flare quality actually buys you](gpt-image-flare-quality/)

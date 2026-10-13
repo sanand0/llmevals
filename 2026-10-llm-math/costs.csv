@@ -1,0 +1,10 @@
+model,attempts,priced_replies,unpriced_errors,input_tokens,output_tokens,estimated_usd
+anthropic/claude-opus-5.5,120,117,3,7200,284302,5.71484
+anthropic/claude-sonnet-5.5,120,119,1,7280,470430,4.71886
+google/gemini-3.1-pro-preview,67,67,0,2557,187568,2.25593
+google/gemini-3.8-flash,112,112,0,5025,319186,1.20072
+openai/gpt-6.1-sol,152,99,53,3794,107936,1.08695
+x-ai/grok-4.7,118,79,39,100028,122644,0.93592
+qwen/qwen3.8-max-0902,95,87,8,8158,89717,0.55462
+deepseek/deepseek-v4-pro,117,111,6,5875,69495,0.13838
+openai/gpt-6-luna,60,60,0,1900,28041,0.01421

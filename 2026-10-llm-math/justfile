@@ -1,0 +1,27 @@
+# Cached by individual model/problem/token-budget. No API calls if data/results.jsonl is complete.
+
+build:
+    uv run run.py
+    uv run analyze.py
+
+# Only inspect what calls would be needed; no API calls.
+check:
+    uv run run.py --dry-run
+
+# Retry only OpenRouter 402 insufficient-credit errors after replenishing credits (PAID).
+retry-credits:
+    uv run run.py --retry-credit-errors
+    uv run analyze.py
+
+# Retry every recorded error/timeout (may incur substantial API charges).
+retry-errors:
+    uv run run.py --retry-errors
+    uv run analyze.py
+
+# Recompute tables/report from existing raw data. Never calls an LLM.
+analyze:
+    uv run analyze.py
+
+# Local tests with synthetic data; no API calls.
+test:
+    uv run test_run.py

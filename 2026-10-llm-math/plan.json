@@ -1,0 +1,14 @@
+{
+  "description": "Fixed-seed, tool-free decimal multiplication, 10 cases per size and condition",
+  "seed": 20261013,
+  "trials": 10,
+  "runs": [
+    {"models": ["sol", "luna", "opus", "sonnet", "gemini-pro", "gemini-flash", "grok", "deepseek", "qwen"], "digits": [2, 4, 6, 8, 12, 15], "max_tokens": 4096, "timeout": 105},
+    {"models": ["sol", "opus", "sonnet", "gemini-flash"], "digits": [20, 30], "max_tokens": 4096, "timeout": 105},
+    {"models": ["sol"], "digits": [35, 40, 50], "max_tokens": 4096, "timeout": 105},
+    {"models": ["opus", "sonnet"], "digits": [40, 50], "max_tokens": 12000, "timeout": 105},
+    {"models": ["sonnet"], "digits": [30], "max_tokens": 12000, "timeout": 105},
+    {"models": ["sonnet"], "digits": [50], "max_tokens": 20000, "timeout": 115},
+    {"models": ["sol"], "digits": [40, 50], "trials": 1, "max_tokens": 12000, "timeout": 105}
+  ]
+}

@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-13T15:15:31.717853+08:00",
+  "source": "https://openrouter.ai/api/v1/models",
+  "prices": {
+    "openai/gpt-6.1-sol": {
+      "prompt": "0.000002",
+      "completion": "0.00001",
+      "internal_reasoning": null
+    },
+    "anthropic/claude-sonnet-5.5": {
+      "prompt": "0.000002",
+      "completion": "0.00001",
+      "internal_reasoning": null
+    },
+    "openai/gpt-6-luna": {
+      "prompt": "0.0000001",
+      "completion": "0.0000005",
+      "internal_reasoning": null
+    },
+    "anthropic/claude-opus-5.5": {
+      "prompt": "0.000004",
+      "completion": "0.00002",
+      "internal_reasoning": null
+    },
+    "x-ai/grok-4.7": {
+      "prompt": "0.000002",
+      "completion": "0.000006",
+      "internal_reasoning": null
+    },
+    "qwen/qwen3.8-max-0902": {
+      "prompt": "0.000002",
+      "completion": "0.000006",
+      "internal_reasoning": null
+    },
+    "google/gemini-3.8-flash": {
+      "prompt": "0.00000075",
+      "completion": "0.00000375",
+      "internal_reasoning": "0.00000375"
+    },
+    "deepseek/deepseek-v4-pro": {
+      "prompt": "0.00000095526",
+      "completion": "0.00000191052",
+      "internal_reasoning": null
+    },
+    "google/gemini-3.1-pro-preview": {
+      "prompt": "0.000002",
+      "completion": "0.000012",
+      "internal_reasoning": "0.000012"
+    }
+  }
+}
